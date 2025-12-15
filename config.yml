@@ -1,0 +1,7 @@
+tunnel: a99bf978-ec24-474d-80be-4e534427ce8e
+credentials-file: /Users/mufti/.cloudflared/a99bf978-ec24-474d-80be-4e534427ce8e.json
+
+ingress:
+  - hostname: mylabproject.cloud/
+    service: http://127.0.0.1:8000
+  - service: http_status:404

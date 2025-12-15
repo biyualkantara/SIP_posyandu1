@@ -1,0 +1,2 @@
+ai/model/*.joblib
+ai/model/*.pkl

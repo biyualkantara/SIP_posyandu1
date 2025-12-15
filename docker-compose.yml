@@ -1,0 +1,87 @@
+services:
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sip-php
+    volumes:
+      - .:/var/www
+    depends_on:
+      - mysql
+      - ai
+    networks:
+      - laravel
+
+  vite:
+    image: node:20
+    container_name: sip-vite
+    working_dir: /var/www
+    command: sh -c "npm install && npm run dev -- --host"
+    volumes:
+      - .:/var/www
+      - node_modules_vite:/var/www/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    networks:
+      - laravel
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: sip-nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - vite
+    networks:
+      - laravel
+
+  mysql:
+    image: mysql:8
+    container_name: sip-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: SIP_posyandu
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - laravel
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: sip-phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: sip-mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - mysql
+    networks:
+      - laravel
+
+  ai:
+    build:
+      context: ./ai
+      dockerfile: Dockerfile.ai
+    container_name: sip-ai
+    ports:
+      - "5005:5005"
+    networks:
+      - laravel
+
+networks:
+  laravel:
+
+volumes:
+  db_data:
+  node_modules_vite:
