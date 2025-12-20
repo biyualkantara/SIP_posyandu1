@@ -209,3 +209,6 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+Route::get('/jelajah-edukasi', function () {
+    return Inertia::render('landingpage/jelajahedukasi'); // Nama file Vue di resources/js/Pages/
+})->name('jelajah-edukasi');

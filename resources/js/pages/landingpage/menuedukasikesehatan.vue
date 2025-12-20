@@ -50,7 +50,7 @@
             </ul>
           </div>
 
-          <a href="#" class="btn-jelajah">Jelajahi materi</a>
+          <a href="/jelajah-edukasi" class="btn-jelajah">Jelajahi materi</a>
         </div>
       </section>
     </div>

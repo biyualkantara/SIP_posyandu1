@@ -42,7 +42,7 @@
               <p>Pantau perkembangan status gizi anak secara keseluruhan melalui diagram interaktif di eSIP</p>
             </a>
 
-            <a href="#edukasi-kesehatan" class="fitur-card link-card">
+            <a href="/jelajah-edukasi" class="fitur-card link-card">
               <h4>Edukasi Kesehatan</h4>
               <p>Temukan berbagai informasi dan panduan kesehatan untuk ibu dan anak.</p>
             </a>

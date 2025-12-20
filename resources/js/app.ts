@@ -51,7 +51,9 @@ createInertiaApp({
             const publicPages = [
                 'welcome',
                 'auth/login',
-                'auth/loginlanding'
+                'auth/loginlanding',
+                'landingpage/jelajahedukasi'
+
             ];
 
             if (publicPages.includes(lower)) {
