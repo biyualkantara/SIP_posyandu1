@@ -32,7 +32,9 @@ use App\Http\Controllers\OperatorController;
 Route::get('/', function () {
     return Inertia::render('Welcome'); 
 })->name('landing');
-
+Route::get('/testing', function () {
+    return Inertia::render('testing');
+})->name('testing');
 // Auth
 Route::get('/login', [AuthController::class,'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class,'login']);
@@ -204,4 +206,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/ai/stunting/predict-all', 
         [AiStuntingPredictController::class, 'predictForAll']
     )->name('ai.stunting.predictAll');
+
 });
+
