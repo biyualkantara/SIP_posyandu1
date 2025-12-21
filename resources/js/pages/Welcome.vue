@@ -1,12 +1,7 @@
 <template>
   <div>
     <Head title="Selamat Datang di eSIP Kota Cimahi" />
-
-    <!-- Navbar (atas, diasumsikan sudah fixed/sticky di komponennya) -->
     <NavbarLanding />
-
-    <!-- Konten utama -->
-    <!-- pb-24 supaya konten tidak ketutup footer -->
     <main class="pb-24">
       <HeroLanding />
       <Tentangesip />
@@ -15,8 +10,6 @@
       <Halamandaftarposyandu />
       <Kontakesip />
     </main>
-
-    <!-- Footer NAMBANG / FIXED seperti navbar -->
     <div class="fixed bottom-0 left-0 w-full z-50">
       <AppFooterImpl />
     </div>

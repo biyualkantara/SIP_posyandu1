@@ -2,130 +2,100 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 import joblib
 import numpy as np
+import pandas as pd
 
-APP_MODEL_PATH = "model/model_sipintar.joblib"
+# KONFIGURASI
+MODEL_PATH = "model/model_sipintar.joblib"
 
-app = FastAPI(title="SIP AI - Analisis Stunting")
+app = FastAPI(
+    title="SIPINTAR AI - Analisis Stunting",
+    version="1.0.0"
+)
 
-art = joblib.load(APP_MODEL_PATH)
+# LOAD MODEL
+try:
+    ART = joblib.load(MODEL_PATH)
+except Exception as e:
+    raise RuntimeError(f"Gagal load model: {e}")
 
+# SCHEMA INPUT
 class PayloadAnalisis(BaseModel):
     umur_bulan: int = Field(..., ge=0, le=24)
-    berat_badan: float = Field(..., ge=0)
-    tinggi_badan: float = Field(..., ge=0)
+    berat_badan: float = Field(..., gt=0)
+    tinggi_badan: float = Field(..., gt=0)
     jenis_kelamin: str = Field(..., pattern="^(L|P)$")
-    tinggi_ibu: float = Field(..., ge=0)
-    tinggi_ayah: float = Field(..., ge=0)
+    tinggi_ibu: float = Field(..., gt=0)
+    tinggi_ayah: float = Field(..., gt=0)
 
-def buat_rasio_bb_tb(bb: float, tb: float) -> float:
-    if tb <= 0:
-        return 0.0
-    return float(bb) / float(tb)
+# HELPER
+def hitung_rasio(bb: float, tb: float) -> float:
+    return bb / tb if tb > 0 else 0.0
 
-def ringkas(status: str, risiko: float) -> str:
-    return f"Status {status} dengan estimasi risiko {risiko:.1f}%."
-
-def rekomendasi_prioritas(defisit: dict, umur_bulan: int) -> list:
-    # rekomendasi berbasis defisit prediksi (bukan rumus WHO)
-    kandidat = []
-
-    if defisit.get("defisit_protein") == 1:
-        kandidat += ["telur", "ikan", "tempe", "ayam"]
-    if defisit.get("defisit_energi") == 1:
-        kandidat += ["nasi tim", "kentang", "ubi", "bubur kacang hijau"]
-    if defisit.get("defisit_zat_besi") == 1:
-        kandidat += ["hati ayam (porsi kecil)", "bayam", "daging sapi (cincang)"]
-    if defisit.get("defisit_zink") == 1:
-        kandidat += ["ikan", "telur", "kacang-kacangan"]
-    if defisit.get("defisit_vitA") == 1:
-        kandidat += ["wortel", "labu", "pepaya"]
-
-    # rapikan + batasi
-    seen = set()
-    out = []
-    for x in kandidat:
-        if x not in seen:
-            out.append(x)
-            seen.add(x)
-    if not out:
-        out = ["pola makan seimbang sesuai umur"]
-
-    return out[:8]
-
-def faktor_sederhana(umur, bb, tb, ibu, ayah):
-    # skor sederhana untuk dipakai sebagai "faktor_utama/pending" (masih data-driven di model utama)
-    faktor = []
-    if tb < (50 + umur*1.0):
-        faktor.append(("tinggi badan relatif rendah untuk umur", 0.8))
-    if bb < (3 + umur*0.2):
-        faktor.append(("berat badan relatif rendah untuk umur", 0.7))
-    if ibu < 150:
-        faktor.append(("tinggi ibu cenderung rendah", 0.5))
-    if ayah < 160:
-        faktor.append(("tinggi ayah cenderung rendah", 0.4))
-
-    if not faktor:
-        faktor = [("parameter fisik relatif sesuai umur", 0.3)]
-
-    utama = [{"nama": n, "skor": float(s)} for n, s in faktor[:3]]
-    pendukung = [{"nama": n, "skor": float(s)} for n, s in faktor[3:6]]
-    return utama, pendukung
-
+# HEALTH CHECK
 @app.get("/health")
 def health():
-    return {"ok": True}
+    return {"status": "ok"}
 
+# ENDPOINT ANALISIS STUNTING
 @app.post("/stunting/analisis")
 def analisis(payload: PayloadAnalisis):
-    rasio = buat_rasio_bb_tb(payload.berat_badan, payload.tinggi_badan)
+    try:
+        # BENTUK DATAFRAME
+        X = pd.DataFrame([{
+            "umur_bulan": payload.umur_bulan,
+            "berat_badan": payload.berat_badan,
+            "tinggi_badan": payload.tinggi_badan,
+            "jenis_kelamin": payload.jenis_kelamin,
+            "tinggi_ibu": payload.tinggi_ibu,
+            "tinggi_ayah": payload.tinggi_ayah,
+            "rasio_bb_tb": hitung_rasio(
+                payload.berat_badan,
+                payload.tinggi_badan
+            )
+        }])
 
-    X = [{
-        "umur_bulan": payload.umur_bulan,
-        "berat_badan": payload.berat_badan,
-        "tinggi_badan": payload.tinggi_badan,
-        "jenis_kelamin": payload.jenis_kelamin,
-        "tinggi_ibu": payload.tinggi_ibu,
-        "tinggi_ayah": payload.tinggi_ayah,
-        "rasio_bb_tb": rasio
-    }]
+        # STATUS GIZI (LOGISTIC / RF)
+        proba = ART["model_status"].predict_proba(X)[0]
+        idx = int(np.argmax(proba))
+        status = ART["model_status"].classes_[idx]
+        confidence = float(proba[idx])
 
-    # status + confidence
-    proba = art["model_status"].predict_proba(X)[0]
-    idx = int(np.argmax(proba))
-    status = art["model_status"].classes_[idx]
-    confidence = float(proba[idx])
+        # RISIKO (%)
+        risiko = float(ART["model_risiko"].predict(X)[0])
+        risiko = max(0.0, min(100.0, risiko))
 
-    # risiko %
-    risiko = float(art["model_risiko"].predict(X)[0])
-    risiko = max(0.0, min(100.0, risiko))
+        # DEFISIT GIZI (MULTI-LABEL)
+        d = ART["model_defisit"].predict(X)[0]
+        defisit = {
+            "defisit_protein": int(d[0]),
+            "defisit_energi": int(d[1]),
+            "defisit_zat_besi": int(d[2]),
+            "defisit_zink": int(d[3]),
+            "defisit_vitA": int(d[4]),
+        }
 
-    # defisit
-    pred_def = art["model_defisit"].predict(X)[0]
-    defisit = {
-        "defisit_protein": int(pred_def[0]),
-        "defisit_energi": int(pred_def[1]),
-        "defisit_zat_besi": int(pred_def[2]),
-        "defisit_zink": int(pred_def[3]),
-        "defisit_vitA": int(pred_def[4]),
-    }
+        # CLUSTER (KMEANS)
+        num_cols = ART["num_cols"]
+        vec = X[num_cols].values
+        vec = ART["scaler_cluster"].transform(vec)
+        id_klaster = int(ART["kmeans"].predict(vec)[0])
 
-    # cluster
-    num_cols = art["num_cols"]
-    vec = np.array([[X[0][c] for c in num_cols]], dtype=float)
-    vec_s = art["scaler_cluster"].transform(vec)
-    id_klaster = int(art["kmeans"].predict(vec_s)[0])
+        # RESPONSE FINAL
+        return {
+            "status_gizi": status,
+            "tingkat_risiko": round(risiko, 2),
+            "confidence": round(confidence, 4),
+            "id_klaster": id_klaster,
+            "ringkasan": f"Status {status} dengan estimasi risiko {risiko:.1f}%",
+            "defisit": defisit,
+            "rekomendasi_prioritas": [],
+            "faktor_utama": [],
+            "faktor_pendukung": [],
+            "z_score": None
+        }
 
-    utama, pendukung = faktor_sederhana(payload.umur_bulan, payload.berat_badan, payload.tinggi_badan, payload.tinggi_ibu, payload.tinggi_ayah)
-
-    return {
-        "status_gizi": status,
-        "tingkat_risiko": round(risiko, 2),
-        "confidence": round(confidence, 4),
-        "id_klaster": id_klaster,
-        "ringkasan": ringkas(status, risiko),
-        "faktor_utama": utama,
-        "faktor_pendukung": pendukung,
-        "rekomendasi_prioritas": rekomendasi_prioritas(defisit, payload.umur_bulan),
-        "defisit": defisit,
-        "z_score": None
-    }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )

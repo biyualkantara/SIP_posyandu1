@@ -436,3 +436,83 @@ const safeSummary = computed(() => {
 
   </div>
 </template>
+<style scoped>
+* {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1e293b; 
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a; 
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.grid > div p:first-child {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569; /* slate-600 */
+}
+
+.grid > div p:last-child {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+table {
+  font-size: 14px;
+}
+
+thead th {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+tbody td {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+table .text-\[10px\] {
+  font-size: 12px !important;
+  font-weight: 600;
+}
+
+button {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.space-y-3 > div {
+  font-size: 15px;
+}
+
+.space-y-3 p {
+  font-size: 14px;
+}
+
+.space-y-3 .font-semibold {
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.italic {
+  font-size: 13px;
+  color: #475569; /* slate-600 */
+}
+
+.text-slate-400,
+.text-slate-500 {
+  font-size: 14px;
+  color: #64748b !important;
+}
+</style>
