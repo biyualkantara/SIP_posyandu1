@@ -3,3 +3,4 @@ lalu nanti jangan lupa npm run dev
 
 setelah berhasil
 lalu di terminal nya juga jalankan npm run dev
+# coba compare
