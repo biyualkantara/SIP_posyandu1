@@ -10,8 +10,7 @@
     </script>
     <script src="/ckeditor/ckeditor.js"></script>
 
-    @vite('resources/js/app.ts')
-
+    @vite(['resources/css/app.css', 'resources/js/app.ts'])
     @inertiaHead
 </head>
 <body>
