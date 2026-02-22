@@ -138,7 +138,6 @@ import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 
 const keyword = ref("");
 const activeFilter = ref("all");
-
 /* dummy data (tinggal ganti dari API nanti) */
 const items = ref([
   {
@@ -146,7 +145,7 @@ const items = ref([
     title: "Pentingnya Imunisasi Dasar Untuk Anak",
     searchTitle: "imunisasi anak",
     type: "artikel",
-    img: "/assets/periksa.png",
+    img: "/storage/jelajahedukasi/periksa.png",
     href: "#",
   },
   {
@@ -154,7 +153,7 @@ const items = ref([
     title: "Rekomendasi Menu untuk MP-ASI",
     searchTitle: "mpasi menu",
     type: "berita",
-    img: "/assets/makanan.png",
+    img: "/storage/jelajahedukasi/makanan.png",
     href: "#",
   },
   {
@@ -162,7 +161,7 @@ const items = ref([
     title: "Cara memberikan MP-ASI Pertama kali",
     searchTitle: "cara mpasi video",
     type: "video",
-    img: "/assets/bayi.png",
+    img: "/storage/jelajahedukasi/bayi.png",
     href: "#",
   },
   {
@@ -170,7 +169,7 @@ const items = ref([
     title: "Cegah stunting dengan pola makan seimbang",
     searchTitle: "stunting pola makan",
     type: "video",
-    img: "/assets/makanan.png",
+    img: "/storage/jelajahedukasi/makanan.png",
     href: "#",
   },
   {
@@ -178,7 +177,7 @@ const items = ref([
     title: "Panduan Pencegahan Stunting Anak usia 0 sampai 5 tahun",
     searchTitle: "panduan stunting anak",
     type: "artikel",
-    img: "/assets/imunisasi.png",
+    img: "/storage/jelajahedukasi/imunisasi.png",
     href: "#",
   },
   {
@@ -186,7 +185,7 @@ const items = ref([
     title: "Pencegahan Stunting pada Ibu Hamil untuk Janin",
     searchTitle: "pencegahan stunting ibu hamil",
     type: "artikel",
-    img: "/assets/bumil.png",
+    img: "/storage/jelajahedukasi/bumil.png",
     href: "#",
   },
 ]);

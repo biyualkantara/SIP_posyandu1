@@ -1,53 +1,75 @@
 <script setup>
-import AdminLayout from '@/layouts/AdminLayout.vue'
-import { Link, useForm } from '@inertiajs/vue3'
+import { Link, useForm, router } from '@inertiajs/vue3'
+
+const props = defineProps({
+  posyandu: Array
+})
 
 const form = useForm({
-  name: '',
-  email: '',
+  nama: '',
+  username: '',
   password: '',
-  status: 'aktif'
+  role: '',
+  id_posyandu: null,
+  email: '',
+  no_hp: ''
 })
+
+function submit() {
+  form.post('/operator', {
+    onSuccess: () => router.visit('/operator')
+  })
+}
 </script>
 
 <template>
-  <AdminLayout>
-    <div class="bg-white p-4 main-container">
-      <div class="header-flex mb-3">
-        <h2>Tambah Operator</h2>
-        <Link href="/operator" class="btn btn-secondary">← Kembali</Link>
-      </div>
+<AdminLayout>
+  <div class="bg-white p-4 main-container">
+    <div class="header-flex mb-3">
+      <h2>Tambah Operator</h2>
+      <Link href="/operator" class="btn btn-secondary">← Kembali</Link>
+    </div>
 
-      <hr />
-
-      <form @submit.prevent="form.post('/operator')">
-        <div class="mb-3">
-          <label>Nama</label>
-          <input class="form-control" v-model="form.name" />
+    <form @submit.prevent="submit">
+      <div class="row">
+        <div class="col-lg-6 mb-3">
+          <label>Nama Operator</label>
+          <input class="form-control" v-model="form.nama">
         </div>
 
-        <div class="mb-3">
-          <label>Email</label>
-          <input type="email" class="form-control" v-model="form.email" />
+        <div class="col-lg-6 mb-3">
+          <label>Username</label>
+          <input class="form-control" v-model="form.username">
         </div>
 
-        <div class="mb-3">
+        <div class="col-lg-6 mb-3">
           <label>Password</label>
-          <input type="password" class="form-control" v-model="form.password" />
+          <input type="password" class="form-control" v-model="form.password">
         </div>
 
-        <div class="mb-3">
-          <label>Status</label>
-          <select class="form-control" v-model="form.status">
-            <option value="aktif">Aktif</option>
-            <option value="nonaktif">Nonaktif</option>
+        <div class="col-lg-6 mb-3">
+          <label>Role</label>
+          <select class="form-control" v-model="form.role">
+            <option value="">-- Pilih --</option>
+            <option value="superadmin">Super Admin</option>
+            <option value="admin">Admin</option>
+            <option value="kader">Kader</option>
           </select>
         </div>
 
-        <div class="text-center">
-          <button class="btn btn-primary px-5">Simpan</button>
+        <div class="col-lg-6 mb-3">
+          <label>Posyandu</label>
+          <select class="form-control" v-model="form.id_posyandu">
+            <option value="">-- Opsional --</option>
+            <option v-for="p in posyandu" :key="p.id_posyandu" :value="p.id_posyandu">
+              {{ p.nama_posyandu }}
+            </option>
+          </select>
         </div>
-      </form>
-    </div>
-  </AdminLayout>
+      </div>
+
+      <button class="btn btn-primary mt-3">Simpan</button>
+    </form>
+  </div>
+</AdminLayout>
 </template>

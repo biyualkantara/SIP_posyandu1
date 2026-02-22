@@ -2,60 +2,76 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class OperatorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::where('role', 'operator');
+        $q = $request->get('q', '');
 
-        if ($request->filled('q')) {
-            $q = $request->q;
-            $query->where(function ($x) use ($q) {
-                $x->where('name', 'like', "%{$q}%")
-                  ->orWhere('email', 'like', "%{$q}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $data = $query->orderByDesc('id')->paginate(15)->withQueryString();
+        $data = DB::table('operator as o')
+            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'o.id_posyandu')
+            ->select([
+                'o.id_operator',
+                'o.nama',
+                'o.username',
+                'o.role',
+                'o.email',
+                'o.no_hp',
+                'd.nama_posyandu',
+            ])
+            ->when($q, function ($x) use ($q) {
+                $x->where('o.nama', 'like', "%{$q}%")
+                  ->orWhere('o.username', 'like', "%{$q}%")
+                  ->orWhere('d.nama_posyandu', 'like', "%{$q}%");
+            })
+            ->orderBy('o.nama')
+            ->paginate(15)
+            ->withQueryString();
 
         return Inertia::render('operator/Index', [
             'data' => $data,
             'filter' => [
-                'q' => $request->q ?? '',
-                'status' => $request->status ?? '',
-            ],
+                'q' => $q
+            ]
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('operator/Create');
+        $posyandu = DB::table('duspy')
+            ->select('id_posyandu', 'nama_posyandu')
+            ->orderBy('nama_posyandu')
+            ->get();
+
+        return Inertia::render('operator/Create', [
+            'posyandu' => $posyandu
+        ]);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:150',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-            'status' => 'required|in:aktif,nonaktif',
+        $request->validate([
+            'nama'        => 'required|string|max:150',
+            'username'    => 'required|string|max:100|unique:operator,username',
+            'password'    => 'required|string|min:6',
+            'role'        => 'required|in:superadmin,admin,kader',
+            'id_posyandu' => 'nullable|integer|exists:duspy,id_posyandu',
+            'email'       => 'nullable|email',
+            'no_hp'       => 'nullable|string|max:30',
         ]);
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'operator',
-            'status' => $validated['status'],
+        DB::table('operator')->insert([
+            'nama'        => $request->nama,
+            'username'    => $request->username,
+            'password'    => bcrypt($request->password),
+            'role'        => $request->role,
+            'id_posyandu' => $request->id_posyandu,
+            'email'       => $request->email,
+            'no_hp'       => $request->no_hp,
         ]);
 
         return redirect('/operator')->with('success', 'Operator berhasil ditambahkan');
@@ -63,49 +79,72 @@ class OperatorController extends Controller
 
     public function show($id)
     {
-        $row = User::where('role', 'operator')->findOrFail($id);
+        $row = DB::table('operator as o')
+            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'o.id_posyandu')
+            ->select(
+                'o.*',
+                'd.nama_posyandu'
+            )
+            ->where('o.id_operator', $id)
+            ->first();
+
+        abort_if(!$row, 404);
 
         return Inertia::render('operator/Show', [
-            'row' => $row,
+            'row' => $row
         ]);
     }
 
     public function edit($id)
     {
-        $row = User::where('role', 'operator')->findOrFail($id);
+        $row = DB::table('operator')
+            ->where('id_operator', $id)
+            ->first();
+
+        abort_if(!$row, 404);
+
+        $posyandu = DB::table('duspy')
+            ->select('id_posyandu', 'nama_posyandu')
+            ->orderBy('nama_posyandu')
+            ->get();
 
         return Inertia::render('operator/Edit', [
             'row' => $row,
+            'posyandu' => $posyandu
         ]);
     }
 
     public function update(Request $request, $id)
     {
-        $row = User::where('role', 'operator')->findOrFail($id);
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:150',
-            'email' => 'required|email|unique:users,email,' . $row->id,
-            'password' => 'nullable|min:6',
-            'status' => 'required|in:aktif,nonaktif',
+        $request->validate([
+            'nama'        => 'required|string|max:150',
+            'username'    => 'required|string|max:100|unique:operator,username,' . $id . ',id_operator',
+            'role'        => 'required|in:superadmin,admin,kader',
+            'id_posyandu' => 'nullable|integer|exists:duspy,id_posyandu',
+            'email'       => 'nullable|email',
+            'no_hp'       => 'nullable|string|max:30',
         ]);
 
-        $row->name = $validated['name'];
-        $row->email = $validated['email'];
-        $row->status = $validated['status'];
-
-        if (!empty($validated['password'])) {
-            $row->password = Hash::make($validated['password']);
-        }
-
-        $row->save();
+        DB::table('operator')
+            ->where('id_operator', $id)
+            ->update([
+                'nama'        => $request->nama,
+                'username'    => $request->username,
+                'role'        => $request->role,
+                'id_posyandu' => $request->id_posyandu,
+                'email'       => $request->email,
+                'no_hp'       => $request->no_hp,
+            ]);
 
         return redirect('/operator')->with('success', 'Operator berhasil diperbarui');
     }
 
     public function destroy($id)
     {
-        User::where('role', 'operator')->findOrFail($id)->delete();
-        return back()->with('success', 'Operator berhasil dihapus');
+        DB::table('operator')
+            ->where('id_operator', $id)
+            ->delete();
+
+        return redirect('/operator')->with('success', 'Operator berhasil dihapus');
     }
 }

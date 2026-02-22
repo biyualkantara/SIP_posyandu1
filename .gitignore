@@ -1,2 +1,35 @@
+# Laravel
+/vendor
+/node_modules
+/public/build
+/public/hot
+/storage/*.key
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Environment
+.env
+.env.backup
+.env.production
+
+# Composer
+composer.lock
+
+# NPM
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# AI model kamu
 ai/model/*.joblib
 ai/model/*.pkl

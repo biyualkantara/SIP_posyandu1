@@ -52,7 +52,10 @@ createInertiaApp({
                 'welcome',
                 'auth/login',
                 'auth/loginlanding',
-                'landingpage/jelajahedukasi'
+                'landingpage/jelajahedukasi',
+                'landingpage/halamanberita',
+                'landingpage/halamandaftarposyandu',
+                
 
             ];
 

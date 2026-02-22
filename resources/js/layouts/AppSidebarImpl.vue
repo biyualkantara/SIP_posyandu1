@@ -57,14 +57,14 @@ const sidebarItems = computed(() => {
       icon: 'icon-users4',
       label: 'Registrasi Bayi',
       children: [
-        { label: 'Biodata', path: '/data_bayi/biodata' },
-        { label: 'Penimbangan', path: '/data_bayi/penimbangan' },
-        { label: 'Imunisasi', path: '/data_bayi/imunisasi' },
-        { label: 'Kematian', path: '/data_bayi/kematian' }
+        { label: 'Biodata', path: '/posyandu/bayi' },
+        { label: 'Penimbangan', path: '/posyandu/bayi-pnb' },
+        { label: 'Imunisasi', path: '/posyandu/bayi-imun' },
+        { label: 'Kematian', path: '/posyandu/bayi-wafat' }
       ]
     },
     {
-      icon: 'icon-users9',
+      icon: 'icon-newspaper2',
       label: 'Berita',
       children: [
         { label: 'Berita', path: '/berita' }

@@ -9,9 +9,9 @@
       <!-- Menu + Login -->
       <div class="menu-and-login" v-if="!isMobile">
         <nav class="menu-links">
-          <a href="#" class="menu-link">Beranda</a>
-          <a href="#" class="menu-link">Berita</a>
-          <a href="#" class="menu-link">Daftar Posyandu</a>
+          <a href="/" class="menu-link">Beranda</a>
+          <a href="/berita-posyandu" class="menu-link">Berita</a>
+          <a href="/halaman-posyandu" class="menu-link">Daftar Posyandu</a>
         </nav>
         <a href="/login" class="btn-login">Login</a>
       </div>

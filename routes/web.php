@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\BeritaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\Berita;
 
 // Controllers
 use App\Http\Controllers\AuthController;
@@ -14,7 +16,11 @@ use App\Http\Controllers\Posyandu\WuspusImunisasiController;
 use App\Http\Controllers\Posyandu\WuspusKontrasepsiController;
 use App\Http\Controllers\Posyandu\WuspusKematianController;
 
-use App\Http\Controllers\BayiController;
+use App\Http\Controllers\Posyandu\Bayi\BayiBiodataController;
+use App\Http\Controllers\Posyandu\Bayi\BayiPenimbanganController;
+use App\Http\Controllers\Posyandu\Bayi\BayiImunisasiController;
+use App\Http\Controllers\Posyandu\Bayi\BayiWafatController;
+
 
 use App\Http\Controllers\Posyandu\BumilBiodataController;
 use App\Http\Controllers\Posyandu\BumilPenimbanganController;
@@ -25,13 +31,24 @@ use App\Http\Controllers\RekapitulasiController;
 use App\Http\Controllers\AiStuntingPredictController;
 use App\Http\Controllers\SipintarChatbotController;
 use App\Http\Controllers\SipintarStuntingController;
-
 use App\Http\Controllers\OperatorController;
 
 // Landing Page
 Route::get('/', function () {
     return Inertia::render('Welcome'); 
 })->name('landing');
+
+Route::get('/berita-posyandu', function () {
+    return Inertia::render('landingpage/halamanberita', [
+        'berita' => Berita::orderByDesc('tanggal_waktu')->get(),
+    ]);
+})->name('brposyandu');
+
+Route::get('/halaman-posyandu', function () {
+    return Inertia::render('landingpage/halamandaftarposyandu'); 
+})->name('brposyandus');
+
+
 Route::get('/testing', function () {
     return Inertia::render('testing');
 })->name('testing');
@@ -39,6 +56,15 @@ Route::get('/testing', function () {
 Route::get('/login', [AuthController::class,'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class,'login']);
 Route::post('/logout', [AuthController::class,'logout']);
+Route::middleware(['auth', 'role:superadmin'])->group(function () {
+    Route::get('/operator', [OperatorController::class, 'index']);
+    Route::get('/operator/create', [OperatorController::class, 'create']);
+    Route::post('/operator', [OperatorController::class, 'store']);
+    Route::get('/operator/{id}', [OperatorController::class, 'show']);
+    Route::get('/operator/{id}/edit', [OperatorController::class, 'edit']);
+    Route::put('/operator/{id}', [OperatorController::class, 'update']);
+    Route::delete('/operator/{id}', [OperatorController::class, 'destroy']);
+});
 
 // Auth Protected Routes
 Route::middleware(['auth'])->group(function () {
@@ -51,34 +77,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::get('/profile/edit', [ProfileController::class, 'edit']);
     Route::put('/profile', [ProfileController::class, 'update']);
-
-    // BAGIAN BAYI
-     Route::prefix('data_bayi')->group(function () {
-        Route::get('/biodata', [BayiController::class, 'showBiodataView']);
-        Route::get('/biodata/add', [BayiController::class, 'showAddBiodataView']);
-        Route::post('/biodata', [BayiController::class, 'handlePostBiodata']);
-        Route::get('/biodata/{id}/edit', [BayiController::class,'showEditBiodataView']);
-        Route::put('/biodata/{id}', [BayiController::class,'handleUpdateBiodata']);
-        Route::delete('/biodata/{id}', [BayiController::class,'handleDeleteBiodata']);
-        Route::get('/penimbangan', [BayiController::class, 'showPenimbanganView']);
-        Route::get('/penimbangan/tambah', [BayiController::class, 'showAddPenimbanganView']);
-        Route::post('/penimbangan', [BayiController::class,'handlePostPenimbangan']);
-        Route::get('/penimbangan/{id}/edit', [BayiController::class, 'showEditPenimbanganView']);
-        Route::put('/penimbangan/{id}', [BayiController::class, 'handleUpdatePenimbangan']);
-        Route::delete('/penimbangan/{id}', [BayiController::class, 'handleDeletePenimbangan']);
-        Route::get('/imunisasi', [BayiController::class, 'showImunisasiView']);
-        Route::get('/imunisasi/tambah', [BayiController::class, 'showAddImunisasiView']);
-        Route::post('/imunisasi', [BayiController::class, 'handlePostImunisasi']);
-        Route::get('/imunisasi/{id}/edit', [BayiController::class, 'showEditImunisasiView']);
-        Route::put('/imunisasi/{id}', [BayiController::class, 'handleUpdateImunisasi']);
-        Route::delete('/imunisasi/{id}', [BayiController::class, 'handleDeleteImunisasi']);
-        Route::get('/kematian', [BayiController::class, 'showKematianView']);
-        Route::get('/kematian/tambah', [BayiController::class, 'showAddKematianView']);
-        Route::post('/kematian', [BayiController::class, 'handlePostKematian']);
-        Route::get('/kematian/{id}/edit', [BayiController::class, 'showEditKematianView']);
-        Route::put('/kematian/{id}', [BayiController::class, 'handleUpdateKematian']);
-        Route::delete('/kematian/{id}', [BayiController::class, 'handleDeleteKematian']);
-    });
 
      // POSYANDU - DATA UMUM
     Route::prefix('posyandu/data-umum')->name('posyandu.data-umum.')->group(function () {
@@ -168,25 +166,64 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/bumil-pnb/{id}/edit', [BumilPenimbanganController::class, 'edit']);
         Route::put('/bumil-pnb/{id}', [BumilPenimbanganController::class, 'update']);
         Route::delete('/bumil-pnb/{id}', [BumilPenimbanganController::class, 'destroy']);
+
+        // BAYI BIODATA
+    Route::get('/bayi', [BayiBiodataController::class, 'index']);
+    Route::get('/bayi/create', [BayiBiodataController::class, 'create']);
+    Route::post('/bayi/store-multiple', [BayiBiodataController::class, 'storeMultiple']);
+    Route::get('/bayi/{id}', [BayiBiodataController::class, 'show']);
+    Route::get('/bayi/{id}/edit', [BayiBiodataController::class, 'edit']);
+    Route::put('/bayi/{id}', [BayiBiodataController::class, 'update']);
+    Route::delete('/bayi/{id}', [BayiBiodataController::class, 'destroy']);  
+    
+    // BAYI PENIMBANGAN
+    Route::get('/bayi-pnb', [BayiPenimbanganController::class, 'index']);
+    Route::get('/bayi-pnb/create', [BayiPenimbanganController::class, 'create']);
+    Route::post('/bayi-pnb/store-multiple', [BayiPenimbanganController::class, 'storeMultiple']);
+    Route::get('/bayi-pnb/{id}', [BayiPenimbanganController::class, 'show']);
+    Route::get('/bayi-pnb/{id}/edit', [BayiPenimbanganController::class, 'edit']);
+    Route::put('/bayi-pnb/{id}', [BayiPenimbanganController::class, 'update']);
+    Route::delete('/bayi-pnb/{id}', [BayiPenimbanganController::class, 'destroy']);
+
+    // BAYI IMUNISASI
+    Route::get('/bayi-imun', [BayiImunisasiController::class, 'index']);
+    Route::get('/bayi-imun/create', [BayiImunisasiController::class, 'create']);
+    Route::post('/bayi-imun/store-multiple', [BayiImunisasiController::class, 'storeMultiple']);
+    Route::get('/bayi-imun/{id}', [BayiImunisasiController::class, 'show']);
+    Route::get('/bayi-imun/{id}/edit', [BayiImunisasiController::class, 'edit']);
+    Route::put('/bayi-imun/{id}', [BayiImunisasiController::class, 'update']);
+    Route::delete('/bayi-imun/{id}', [BayiImunisasiController::class, 'destroy']);
+
+    // BAYI KEMATIAN (bayi_wafat)
+    Route::get('/bayi-wafat', [BayiWafatController::class, 'index']);
+    Route::get('/bayi-wafat/create', [BayiWafatController::class, 'create']);
+    Route::post('/bayi-wafat/store-multiple', [BayiWafatController::class, 'storeMultiple']);
+    Route::get('/bayi-wafat/{id}', [BayiWafatController::class, 'show']);
+    Route::get('/bayi-wafat/{id}/edit', [BayiWafatController::class, 'edit']);
+    Route::put('/bayi-wafat/{id}', [BayiWafatController::class, 'update']);
+    Route::delete('/bayi-wafat/{id}', [BayiWafatController::class, 'destroy']);
     });
 
 
-    // REKAP
+  // REKAP
     Route::get('/rekapitulasi', [RekapitulasiController::class, 'showRekapitulasiView'])
         ->name('rekapitulasi');
-    
-    // Operator
-    Route::middleware('role:superadmin')->group(function () {
 
-        Route::get('/operator', [OperatorController::class, 'index']);
-        Route::get('/operator/create', [OperatorController::class, 'create']);
-        Route::post('/operator', [OperatorController::class, 'store']);
-        Route::get('/operator/{id}', [OperatorController::class, 'show']);
-        Route::get('/operator/{id}/edit', [OperatorController::class, 'edit']);
-        Route::put('/operator/{id}', [OperatorController::class, 'update']);
-        Route::delete('/operator/{id}', [OperatorController::class, 'destroy']);
+    Route::get('/rekapitulasi/{format}/export', [RekapitulasiController::class, 'exportFormat'])
+        ->name('rekapitulasi.exportFormat');
 
-    });
+     Route::get('/berita', [BeritaController::class, 'index'])
+        ->name('berita');
+    Route::get('/berita/create', [BeritaController::class, 'create'])
+        ->name('berita.create');
+    Route::post('/berita', [BeritaController::class, 'store'])
+        ->name('berita.store');
+    Route::get('/berita/{id}/edit', [BeritaController::class, 'edit'])
+        ->name('berita.edit');
+    Route::put('/berita/{id}', [BeritaController::class, 'update'])
+        ->name('berita.update');
+    Route::delete('/berita/{id}', [BeritaController::class, 'destroy'])
+        ->name('berita.destroy');
 
     // SIPINTAR - CHATBOT
     Route::get('/sipintar/chatbot', [SipintarChatbotController::class, 'index'])
@@ -210,5 +247,5 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/jelajah-edukasi', function () {
-    return Inertia::render('landingpage/jelajahedukasi'); // Nama file Vue di resources/js/Pages/
+    return Inertia::render('landingpage/jelajahedukasi'); 
 })->name('jelajah-edukasi');

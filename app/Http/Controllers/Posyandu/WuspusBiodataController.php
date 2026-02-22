@@ -271,7 +271,7 @@ class WuspusBiodataController extends Controller
             'ket' => $request->ket,
         ]);
 
-        return redirect('/posyandu/wuspus')->with('success', 'Data biodata WUS/PUS berhasil diperbarui');
+        return redirect('/posyandu/wuspus')->zwith('success', 'Data biodata WUS/PUS berhasil diperbarui');
     }
 
     public function destroy($id)

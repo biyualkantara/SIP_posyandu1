@@ -1,60 +1,76 @@
 <template>
+  <NavbarLanding />
+
+  <HeroLanding />
+
   <AdminLayout>
     <div class="esip-news-page">
       <div class="content-inner">
         <h2 class="news-heading">Berita Utama</h2>
 
         <div class="news-grid">
-          <!-- CARD 1 -->
-          <div class="news-card panel panel-body">
+          <!-- CARD dari DATABASE -->
+          <div
+            v-for="item in top3"
+            :key="item.id_berita"
+            class="news-card panel panel-body"
+          >
             <div class="news-image"></div>
 
             <div class="news-content">
-              <div class="news-category">Judul</div>
-              <h3 class="news-title">Nama Penulis, tanggal</h3>
-              <div class="news-date">Isi berita</div>
+              <!-- Judul -->
+              <div class="news-category">{{ item.judul }}</div>
 
-              <a href="#" class="view-detail" aria-label="Lihat detail"></a>
+              <!-- Nama penulis + tanggal -->
+              <h3 class="news-title">{{ item.penulis }}, {{ formatDate(item.tanggal_waktu) }}</h3>
+
+              <!-- Isi berita: ringkasan -->
+              <div class="news-date">{{ item.ringkasan }}</div>
+
+              <a :href="`/berita/${item.id_berita}`" class="view-detail" aria-label="Lihat detail"></a>
             </div>
           </div>
 
-          <!-- CARD 2 -->
-          <div class="news-card panel panel-body">
-            <div class="news-image"></div>
-
-            <div class="news-content">
-              <div class="news-category">Judul</div>
-              <h3 class="news-title">Nama Penulis, tanggal</h3>
-              <div class="news-date">Isi berita</div>
-
-              <a href="#" class="view-detail" aria-label="Lihat detail"></a>
-            </div>
-          </div>
-
-          <!-- CARD 3 -->
-          <div class="news-card panel panel-body">
-            <div class="news-image"></div>
-
-            <div class="news-content">
-              <div class="news-category">Judul</div>
-              <h3 class="news-title">Nama Penulis, tanggal</h3>
-              <div class="news-date">Isi berita</div>
-
-              <a href="#" class="view-detail" aria-label="Lihat detail"></a>
-            </div>
+          <!-- Kalau belum ada berita -->
+          <div v-if="berita.length === 0" class="panel panel-body">
+            Belum ada berita.
           </div>
         </div>
 
         <div class="view-all-container">
-          <a href="#" class="view-all-btn">Lihat semua berita</a>
+          <a href="/halamanberita" class="view-all-btn">Lihat semua berita</a>
         </div>
       </div>
     </div>
   </AdminLayout>
+
+  <Kontakesip />
+  <AppFooterImpl />
 </template>
 
 <script setup>
-import { onMounted, onBeforeUnmount } from "vue";
+import { onMounted, onBeforeUnmount, computed } from "vue";
+import NavbarLanding from "../../components/SIPVue/NavbarLanding.vue";
+import AppFooterImpl from "@/layouts/AppFooterImpl.vue";
+
+/**
+ * Ambil berita dari DB via Inertia props
+ * (tidak perlu import axios/fetch)
+ */
+const props = defineProps({
+  berita: { type: Array, default: () => [] },
+});
+
+const berita = computed(() => props.berita || []);
+const top3 = computed(() => berita.value.slice(0, 3));
+
+function formatDate(dt) {
+  if (!dt) return "";
+  const d = new Date(dt);
+  // kalau format dt dari DB aneh, minimal tetap tampil string mentah
+  if (isNaN(d.getTime())) return String(dt);
+  return d.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 onMounted(() => document.body.classList.add("esip-news-body"));
 onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));

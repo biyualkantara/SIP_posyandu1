@@ -1,4 +1,5 @@
 <template>
+  <NavbarLanding />
   <AdminLayout>
     <div class="esip-posyandu-page">
       <div class="posyandu-inner">
@@ -136,10 +137,13 @@
       <!-- /MODAL -->
     </div>
   </AdminLayout>
+  <AppFooterImpl />
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import NavbarLanding from "../../components/SIPVue/NavbarLanding.vue";
+import AppFooterImpl from "@/layouts/AppFooterImpl.vue";
 
 onMounted(() => document.body.classList.add("esip-posyandu-body"));
 onBeforeUnmount(() => document.body.classList.remove("esip-posyandu-body"));

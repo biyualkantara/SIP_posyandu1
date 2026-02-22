@@ -1,10 +1,6 @@
 <script setup>
-import AdminLayout from '@/layouts/AdminLayout.vue'
 import { Link, router } from '@inertiajs/vue3'
-import Table from '@/components/ui/Table.vue'
-import TableHead from '@/components/ui/TableHead.vue'
-import TableRow from '@/components/ui/TableRow.vue'
-import TableCol from '@/components/ui/TableCol.vue'
+import DataTable from '@/components/ui/DataTable.vue'
 import { ref, computed } from 'vue'
 
 const props = defineProps({
@@ -13,113 +9,110 @@ const props = defineProps({
 })
 
 const rows = computed(() => props.data?.data ?? [])
-const searchText = ref(props.filter.q)
-const status = ref(props.filter.status)
 
-const modalOpen = ref(false)
-const selected = ref({})
+const columns = [
+  { key: 'id_operator', label: 'ID', sortable: true },
+  { key: 'nama', label: 'Nama Operator', sortable: true },
+  { key: 'username', label: 'Username', sortable: true },
+  { key: 'role', label: 'Role', sortable: true },
+  { key: 'nama_posyandu', label: 'Posyandu', sortable: true },
+  { key: 'actions', label: 'Aksi', sortable: false },
+]
+
+const searchText = ref(props.filter?.q ?? '')
 
 function applyFilter() {
   router.get('/operator', {
-    q: searchText.value || '',
-    status: status.value || '',
-  }, { preserveState:true, preserveScroll:true })
+    q: searchText.value || ''
+  }, { preserveState: true, preserveScroll: true })
 }
+
+/* MODAL HAPUS */
+const modalOpen = ref(false)
+const selected = ref({})
 
 function deleteRow(row) {
   selected.value = row
   modalOpen.value = true
 }
-
 function closeModal() {
   modalOpen.value = false
   selected.value = {}
 }
-
 function confirmDelete() {
-  router.delete(`/operator/${selected.value.id}`, {
-    onFinish: () => closeModal()
+  router.delete(`/operator/${selected.value.id_operator}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      closeModal()
+      router.reload({ only: ['data'] })
+    }
   })
 }
 </script>
 
 <template>
-  <AdminLayout>
-    <div class="bg-white p-4 main-container">
-      <div class="header-flex mb-3">
-        <h2>Daftar Operator</h2>
-        <Link href="/operator/create" class="btn btn-primary">Tambah Operator</Link>
-      </div>
-
-      <hr />
-
-      <div class="row mb-3">
-        <div class="col-lg-4 mb-2">
-          <input class="form-control" v-model="searchText" placeholder="Cari nama / email"
-                 @keyup.enter="applyFilter" />
-        </div>
-
-        <div class="col-lg-3 mb-2">
-          <select class="form-control" v-model="status" @change="applyFilter">
-            <option value="">-- Semua Status --</option>
-            <option value="aktif">Aktif</option>
-            <option value="nonaktif">Nonaktif</option>
-          </select>
-        </div>
-
-        <div class="col-lg-2 mb-2">
-          <button class="btn btn-secondary w-100" @click="applyFilter">Terapkan</button>
-        </div>
-      </div>
-
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCol>Nama</TableCol>
-            <TableCol>Email</TableCol>
-            <TableCol>Status</TableCol>
-            <TableCol class="text-center">Aksi</TableCol>
-          </TableRow>
-        </TableHead>
-
-        <tbody>
-          <TableRow v-for="r in rows" :key="r.id">
-            <TableCol>{{ r.name }}</TableCol>
-            <TableCol>{{ r.email }}</TableCol>
-            <TableCol>
-              <span :class="r.status === 'aktif' ? 'badge bg-success' : 'badge bg-secondary'">
-                {{ r.status }}
-              </span>
-            </TableCol>
-
-            <TableCol class="text-center">
-              <Link :href="`/operator/${r.id}`" class="bg-primary p-3 d-inline-flex justify-content-center">
-                <i class="icon-eye"></i>
-              </Link>
-
-              <Link :href="`/operator/${r.id}/edit`" class="bg-warning p-3 d-inline-flex justify-content-center ms-2">
-                <i class="icon-pencil"></i>
-              </Link>
-
-              <span class="bg-danger p-3 d-inline-flex justify-content-center ms-2"
-                    @click="deleteRow(r)">
-                <i class="icon-trash"></i>
-              </span>
-            </TableCol>
-          </TableRow>
-        </tbody>
-      </Table>
+<AdminLayout>
+  <div class="mt-3 p-4 bg-white main-container">
+    <div class="header-flex mb-3">
+      <h1>Data Operator</h1>
+      <Link href="/operator/create" class="btn btn-primary">+ Tambah Operator</Link>
     </div>
 
-    <div v-if="modalOpen" class="overlay-blur" @click.self="closeModal">
-      <div class="modal-card border border-danger">
-        <h3>Konfirmasi Hapus</h3>
-        <p>Hapus operator <b>{{ selected.name }}</b>?</p>
-        <div class="d-flex gap-2 mt-3">
-          <button class="btn btn-danger w-50" @click="confirmDelete">Hapus</button>
-          <button class="btn btn-secondary w-50" @click="closeModal">Batal</button>
-        </div>
+    <DataTable :columns="columns" :rows="rows" :perPage="10">
+      <template #col-role="{ row }">
+        <span class="badge bg-info text-uppercase">{{ row.role }}</span>
+      </template>
+
+      <template #col-actions="{ row }">
+        <Link :href="`/operator/${row.id_operator}`">
+          <span class="bg-info p-3 mr-2 rounded-circle text-white">
+            <i class="icon-eye"></i>
+          </span>
+        </Link>
+
+        <Link :href="`/operator/${row.id_operator}/edit`">
+          <span class="bg-primary p-3 mr-2 rounded-circle text-white">
+            <i class="icon-pencil"></i>
+          </span>
+        </Link>
+
+        <span class="bg-danger p-3 rounded-circle text-white" @click="deleteRow(row)">
+          <i class="icon-trash"></i>
+        </span>
+      </template>
+    </DataTable>
+
+    <!-- PAGINATION -->
+    <div class="mt-3 d-flex justify-content-end" v-if="props.data?.links?.length">
+      <ul class="pagination mb-0">
+        <li v-for="(l, i) in props.data.links" :key="i"
+            class="page-item" :class="{ active: l.active, disabled: !l.url }">
+          <a class="page-link" href="#"
+             @click.prevent="l.url && router.visit(l.url, { preserveScroll:true })"
+             v-html="l.label"></a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- MODAL HAPUS -->
+  <div v-if="modalOpen" class="overlay-blur" @click.self="closeModal">
+    <div class="modal-card">
+      <h3 class="text-center">Hapus Operator?</h3>
+      <hr>
+      <p class="text-center"><b>{{ selected.nama }}</b></p>
+      <div class="d-flex justify-content-center mt-4">
+        <button class="btn btn-light" @click="closeModal">Batal</button>
+        <button class="btn btn-danger ms-2" @click="confirmDelete">Hapus</button>
       </div>
     </div>
-  </AdminLayout>
+  </div>
+</AdminLayout>
 </template>
+
+<style scoped>
+.main-container{min-height:100vh}
+.header-flex{display:flex;justify-content:space-between;align-items:center}
+.overlay-blur{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center}
+.modal-card{width:420px;background:#fff;border-radius:14px;padding:18px}
+</style>

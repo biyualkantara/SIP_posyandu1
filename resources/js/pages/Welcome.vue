@@ -6,8 +6,6 @@
       <HeroLanding />
       <Tentangesip />
       <Menuedukasikesehatan />
-      <Halamanberita />
-      <Halamandaftarposyandu />
       <Kontakesip />
     </main>
     <div class="fixed bottom-0 left-0 w-full z-50">

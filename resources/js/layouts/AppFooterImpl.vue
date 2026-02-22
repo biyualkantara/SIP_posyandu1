@@ -7,7 +7,7 @@ import logoeSIP from '../../images/eSIP.png'
     <footer class="footer-layout">
         <div class="footer-left">
             <img :src="logoCimahi" class="footer-logo">
-            <span class="footer-text">DINSOSP2KBP3A</span>
+            <span class="footer-text">DP3AP2KB</span>
         </div>
 
         <img :src="logoeSIP" class="footer-esip">
