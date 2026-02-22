@@ -11,6 +11,7 @@
     <script src="/ckeditor/ckeditor.js"></script>
 
     @vite('resources/js/app.ts')
+
     @inertiaHead
 </head>
 <body>
