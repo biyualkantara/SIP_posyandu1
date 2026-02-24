@@ -107,7 +107,7 @@ Route::middleware(['auth'])->group(function () {
     // Wuspus
     // Wuspus Biodata      
     Route::get('/wuspus', [WuspusBiodataController::class, 'index']);
-    Route::get('/wuspus/create', [WuspusBiodataController::class, 'create']);
+    Route::get('/wuspus-kontrasepsi/create', [WuspusKontrasepsiController::class, 'create']);
     Route::post('/wuspus/store-multiple', [WuspusBiodataController::class, 'storeMultiple']);
     Route::get('/wuspus/{id}', [WuspusBiodataController::class, 'show']);
     Route::get('/wuspus/{id}/edit', [WuspusBiodataController::class, 'edit']);
