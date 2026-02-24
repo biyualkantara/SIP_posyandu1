@@ -28,18 +28,19 @@ class DummyDataSeeder extends Seeder
         ]);
 
         // Operator
-        DB::table('operator')->insert([
+        DB::table('operator')->updateOrInsert(
+            ['username' => 'superadmin'],
             [
-                'username' => 'admin', 'password' => sha1('admin123'), 'nama' => 'Admin Posyandu',
-                'alamat' => 'Kantor Posyandu', 'kcmtn' => 1, 'klrhn' => 1, 'id_posyandu' => 1,
-                'email' => 'admin@posyandu.local', 'no_hp' => '081234567890'
-            ],
-            [
-                'username' => 'kader1', 'password' => sha1('kader123'), 'nama' => 'Siti Kader',
-                'alamat' => 'Rumah Siti', 'kcmtn' => 1, 'klrhn' => 1, 'id_posyandu' => 1,
-                'email' => 'siti@posyandu.local', 'no_hp' => '081234567891'
-            ],
-        ]);
+                'password' => sha1('super123'),
+                'nama' => 'Super Admin Posyandu',
+                'alamat' => 'Kantor Pusat',
+                'kcmtn' => 1,
+                'klrhn' => 1,
+                'id_posyandu' => 1,
+                'email' => 'superadmin@posyandu.local',
+                'no_hp' => '081200000000'
+            ]
+        );
 
         // Menu
         DB::table('menu')->insert([
@@ -245,15 +246,9 @@ class DummyDataSeeder extends Seeder
         ]);
 
         // operator role map
-        DB::table('operator_role_map')->insert([
-            [
-                'id_operator' => 1,
-                'lvl_id'      => 2,
-            ],
-            [
-                'id_operator' => 2,
-                'lvl_id'      => 3,
-            ],
-        ]);
+        DB::table('operator_role_map')->updateOrInsert(
+            ['id_operator' => 1],
+            ['lvl_id' => 1]
+        );  
     }
 }
