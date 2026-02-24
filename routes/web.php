@@ -53,8 +53,10 @@ Route::get('/testing', function () {
     return Inertia::render('testing');
 })->name('testing');
 // Auth
+Route::middleware('guest')->group(function () {
 Route::get('/login', [AuthController::class,'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class,'login']);
+});
 Route::post('/logout', [AuthController::class,'logout']);
 Route::middleware(['auth', 'role:superadmin'])->group(function () {
     Route::get('/operator', [OperatorController::class, 'index']);
