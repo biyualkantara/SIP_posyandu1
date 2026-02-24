@@ -71,9 +71,11 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
 :global(.sidebar),
 :global(.sidebar.sidebar-main),
 :global(aside.sidebar){
-  flex: 0 0 auto !important;
   flex-shrink: 0 !important;
-  min-width: 260px; 
+}
+
+:global(body:not(.sidebar-xs) .sidebar-main){
+  min-width: 260px;
 }
 
 :global(.main-content),
