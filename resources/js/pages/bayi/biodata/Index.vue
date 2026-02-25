@@ -102,7 +102,7 @@ function confirmDelete() {
     <div class="mt-3 p-4 bg-white main-container">
       <div class="header-flex mb-3">
         <h1>Data Bayi - Biodata</h1>
-        <Link href="/posyandu/bayi/biodata/create" class="btn btn-primary">+ Tambah</Link>
+       <Link href="/posyandu/bayi/create" class="btn btn-primary">+ Tambah</Link>
       </div>
       <hr>
 
