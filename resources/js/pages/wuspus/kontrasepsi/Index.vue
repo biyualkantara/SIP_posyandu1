@@ -50,7 +50,7 @@ function confirmDelete(){
         </span>
       </Link>
 
-      <Link :href="`/posyandu/wuspus-kontrasepsi/${row.id_wkp}/edit`">
+      <Link :href="`/posyandu/wuspus-kontrasepsi/edit/${row.id_wkp}`">
         <span class="bg-primary p-3 mr-2 rounded-circle text-white">
           <i class="icon-pencil"></i>
         </span>

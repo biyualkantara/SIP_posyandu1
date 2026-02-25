@@ -217,6 +217,7 @@ function submit(){
 .modal-card{
   width:420px;
   background:#fff;
+  background:#fff;
   border-radius:14px;
   padding:18px;
   box-shadow:0 20px 60px rgba(0,0,0,.2);
