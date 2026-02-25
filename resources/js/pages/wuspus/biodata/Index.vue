@@ -84,7 +84,7 @@ function confirmDelete() {
     <div class="mt-3 p-4 bg-white main-container">
       <div class="header-flex mb-3">
         <h1>WUS/PUS - Biodata</h1>
-        <Link href="/posyandu/wuspus-biodata/create" class="btn btn-primary">+ Tambah</Link>
+        <Link href="/posyandu/wuspus/create" class="btn btn-primary">+ Tambah</Link>
       </div>
 
       <hr>  
