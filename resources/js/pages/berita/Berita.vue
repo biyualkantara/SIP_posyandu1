@@ -82,7 +82,7 @@ const modalOpen = ref(false);
                 <template #footer>
                 <ModalFooter>
                     <button type="buttom" class="btn btn-danger" @click.prevent="modalOpen = false">Tidak</button>
-                    <button type="submit" class="btn btn-link">Ya, Hapus</button>
+                    <button type="submit" class="btn btn-link" @click="modalOpen = false">Ya, Hapus</button>
                 </ModalFooter>
                 </template>
             </BaseModal>
