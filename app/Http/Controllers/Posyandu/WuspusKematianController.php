@@ -70,8 +70,7 @@ class WuspusKematianController extends Controller
         $wuspus = DB::table('wuspus')
             ->select('id_wuspus','id_posyandu','nik_wuspus','nama_wuspus','status')
             ->orderBy('nama_wuspus')
-            ->get()
-            ->groupBy('id_posyandu');
+            ->get();
 
         return Inertia::render('wuspus/kematian/Create', [
             'kecamatan'=>$kecamatan,

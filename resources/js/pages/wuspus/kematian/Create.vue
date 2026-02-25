@@ -1,4 +1,6 @@
 <script setup>
+import AdminLayout from '@/layouts/AdminLayout.vue'
+
 import { Link, useForm, router } from '@inertiajs/vue3'
 import VueSelect from 'vue3-select-component'
 
@@ -17,19 +19,19 @@ function submit(){
   if(!form.id_wuspus) return alert('WUS/PUS wajib dipilih')
   if(!form.tgl_wafat) return alert('Tanggal wafat wajib diisi')
 
-  form.post('/posyandu/wuspus-wafat', {
+  form.post('/posyandu/wuspus-kematian', {
     preserveScroll:true,
-    onSuccess:()=>router.visit('/posyandu/wuspus-wafat')
+    onSuccess:()=>router.visit('/posyandu/wuspus-kematian')
   })
 }
 </script>
 
 <template>
-  <AdminLayout>
+
     <div class="p-4 bg-white main-container">
       <div class="header-flex mb-3">
         <h2>Tambah Data Kematian WUS/PUS</h2>
-        <Link href="/posyandu/wuspus-wafat" class="btn btn-secondary">← Kembali</Link>
+        <Link href="/posyandu/wuspus-kematian" class="btn btn-secondary">← Kembali</Link>
       </div>
 
       <hr>
@@ -60,10 +62,10 @@ function submit(){
         </div>
 
         <button class="btn btn-primary">Simpan</button>
-        <Link href="/posyandu/wuspus-wafat" class="btn btn-secondary ms-2">Batal</Link>
+        <Link href="/posyandu/wuspus-kematian" class="btn btn-secondary ms-2">Batal</Link>
       </form>
     </div>
-  </AdminLayout>
+
 </template>
 
 <style scoped>

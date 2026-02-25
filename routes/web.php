@@ -105,14 +105,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('kehadiran-kader/{id}', [KehadiranKaderController::class, 'destroy']);
 
     // Wuspus
-            // Wuspus Biodata
-        Route::get('/wuspus', [WuspusBiodataController::class, 'index']);
-        Route::get('/wuspus-biodata/create', [WuspusBiodataController::class, 'create']); // untuk halaman tambah
-        Route::post('/wuspus/store-multiple', [WuspusBiodataController::class, 'storeMultiple']); // untuk simpan data
-        Route::get('/wuspus/{id}', [WuspusBiodataController::class, 'show']);
-        Route::get('/wuspus/{id}/edit', [WuspusBiodataController::class, 'edit']);
-        Route::put('/wuspus/{id}', [WuspusBiodataController::class, 'update']);
-        Route::delete('/wuspus/{id}', [WuspusBiodataController::class, 'destroy']);
+    // Wuspus Biodata      
+    Route::get('/wuspus', [WuspusBiodataController::class, 'index']);
+    Route::get('/wuspus-kontrasepsi/create', [WuspusKontrasepsiController::class, 'create']);
+    Route::post('/wuspus/store-multiple', [WuspusBiodataController::class, 'storeMultiple']);
+    Route::get('/wuspus/{id}', [WuspusBiodataController::class, 'show']);
+    Route::get('/wuspus/{id}/edit', [WuspusBiodataController::class, 'edit']);
+    Route::put('/wuspus/{id}', [WuspusBiodataController::class, 'update']);
+    Route::delete('/wuspus/{id}', [WuspusBiodataController::class, 'destroy']);
     
     // WUSPUS Imunisasi
     Route::get('/wuspus-imun', [WuspusImunisasiController::class, 'index']);
