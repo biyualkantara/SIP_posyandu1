@@ -98,8 +98,6 @@ function submit(){
 </script>
 
 <template>
-<AdminLayout>
-
 <div class="page-wrapper">
 
   <!-- Breadcrumb -->
@@ -273,8 +271,6 @@ function submit(){
     </button>
   </div>
 </div>
-
-</AdminLayout>
 </template>
 
 <style scoped>
