@@ -33,7 +33,7 @@ function closeModal(){
 }
 
 function confirmDelete(){
-  router.delete(`/posyandu/wuspus-wafat/${selected.value.id_wuspus_wafat}`,{
+  router.delete(`/posyandu/wuspus-kematian/${selected.value.id_wuspus_wafat}`,{
     preserveScroll:true,
     onSuccess:()=>{
       closeModal()
@@ -44,11 +44,11 @@ function confirmDelete(){
 </script>
 
 <template>
-  <AdminLayout>
+
     <div class="p-4 bg-white main-container">
       <div class="header-flex mb-3">
         <h2>Kematian WUS/PUS</h2>
-        <Link href="/posyandu/wuspus-wafat/create" class="btn btn-primary">
+        <Link href="/posyandu/wuspus-kematian/create" class="btn btn-primary">
           + Tambah Data
         </Link>
       </div>
@@ -57,13 +57,13 @@ function confirmDelete(){
 
       <DataTable :columns="columns" :rows="rows" :perPage="10">
         <template #col-actions="{ row }">
-          <Link :href="`/posyandu/wuspus-wafat/${row.id_wuspus_wafat}`">
+          <Link :href="`/posyandu/wuspus-kematian/${row.id_wuspus_wafat}`">
             <span class="bg-info p-3 rounded-circle text-white me-2" style="cursor:pointer;">
               <i class="icon-eye"></i>
             </span>
           </Link>
 
-          <Link :href="`/posyandu/wuspus-wafat/${row.id_wuspus_wafat}/edit`">
+          <Link :href="`/posyandu/wuspus-kematian/${row.id_wuspus_wafat}/edit`">
             <span class="bg-primary p-3 rounded-circle text-white me-2" style="cursor:pointer;">
               <i class="icon-pencil"></i>
             </span>
@@ -112,7 +112,7 @@ function confirmDelete(){
         </div>
       </div>
     </div>
-  </AdminLayout>
+
 </template>
 
 <style scoped>

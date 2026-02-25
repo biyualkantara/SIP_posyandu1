@@ -122,9 +122,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/kehadiran-kader/store-multiple', [KehadiranKaderController::class, 'storeMultiple']);
 
         // ======================
-        // WUSPUS
+        // WUSPUS BIODATA
         // ======================
-
         Route::get('/wuspus', [WuspusBiodataController::class, 'index']);
         Route::get('/wuspus/create', [WuspusBiodataController::class, 'create']);
         Route::post('/wuspus/store-multiple', [WuspusBiodataController::class, 'storeMultiple']);
@@ -133,17 +132,41 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/wuspus/{id}', [WuspusBiodataController::class, 'update']);
         Route::delete('/wuspus/{id}', [WuspusBiodataController::class, 'destroy']);
 
+
+        // ======================
+        // WUSPUS IMUNISASI
+        // ======================
         Route::get('/wuspus-imun', [WuspusImunisasiController::class, 'index']);
         Route::get('/wuspus-imun/create', [WuspusImunisasiController::class, 'create']);
         Route::post('/wuspus-imun/store-multiple', [WuspusImunisasiController::class, 'storeMultiple']);
+        Route::get('/wuspus-imun/{id}', [WuspusImunisasiController::class, 'show']);
+        Route::get('/wuspus-imun/{id}/edit', [WuspusImunisasiController::class, 'edit']);
+        Route::put('/wuspus-imun/{id}', [WuspusImunisasiController::class, 'update']);
+        Route::delete('/wuspus-imun/{id}', [WuspusImunisasiController::class, 'destroy']);
 
+
+        // ======================
+        // WUSPUS KONTRASEPSI
+        // ======================
         Route::get('/wuspus-kontrasepsi', [WuspusKontrasepsiController::class, 'index']);
         Route::get('/wuspus-kontrasepsi/create', [WuspusKontrasepsiController::class, 'create']);
         Route::post('/wuspus-kontrasepsi/store-multiple', [WuspusKontrasepsiController::class, 'storeMultiple']);
+        Route::get('/wuspus-kontrasepsi/{id}', [WuspusKontrasepsiController::class, 'show']);
+        Route::get('/wuspus-kontrasepsi/{id}/edit', [WuspusKontrasepsiController::class, 'edit']);
+        Route::put('/wuspus-kontrasepsi/{id}', [WuspusKontrasepsiController::class, 'update']);
+        Route::delete('/wuspus-kontrasepsi/{id}', [WuspusKontrasepsiController::class, 'destroy']);
 
+
+        // ======================
+        // WUSPUS KEMATIAN
+        // ======================
         Route::get('/wuspus-kematian', [WuspusKematianController::class, 'index']);
         Route::get('/wuspus-kematian/create', [WuspusKematianController::class, 'create']);
         Route::post('/wuspus-kematian/store-multiple', [WuspusKematianController::class, 'storeMultiple']);
+        Route::get('/wuspus-kematian/{id}', [WuspusKematianController::class, 'show']);
+        Route::get('/wuspus-kematian/{id}/edit', [WuspusKematianController::class, 'edit']);
+        Route::put('/wuspus-kematian/{id}', [WuspusKematianController::class, 'update']);
+        Route::delete('/wuspus-kematian/{id}', [WuspusKematianController::class, 'destroy']);
 
         // ======================
         // BAYI
