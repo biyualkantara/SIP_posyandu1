@@ -11,7 +11,7 @@ const props = defineProps({
     <div class="bg-white p-4 main-container">
       <div class="header-flex mb-3">
         <h2>Detail Kontrasepsi WUS/PUS</h2>
-        <Link href="/posyandu/wuspus-kb" class="btn btn-secondary">← Kembali</Link>
+        <Link href="/posyandu/wuspus-kontrasepsi" class="btn btn-secondary">← Kembali</Link>
       </div>
 
       <hr>
