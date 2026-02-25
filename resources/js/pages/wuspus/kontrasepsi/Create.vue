@@ -1,34 +1,26 @@
 <script setup>
-// PERBAIKAN: Import AdminLayout
 import AdminLayout from '@/layouts/AdminLayout.vue'
-import Table from '@/components/ui/Table.vue'
-import TableHead from '@/components/ui/TableHead.vue'
-import TableRow from '@/components/ui/TableRow.vue'
-import TableCol from '@/components/ui/TableCol.vue'
-
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import VueSelect from "vue3-select-component"
 
 const props = defineProps({
-  wuspus: Object, 
+  wuspus: Object,
   kecamatan: Array,
   kelurahan: Object,
   posyandu: Object
 })
 
-// State untuk filter wilayah
 const selectedKec = ref('')
 const selectedKel = ref('')
 const selectedPos = ref('')
 
-// Options untuk filter
-const kecamatanOptions = computed(() => {
-  return (props.kecamatan || []).map(k => ({
+const kecamatanOptions = computed(() => 
+  (props.kecamatan || []).map(k => ({
     label: k.nama_kec,
     value: k.id_kec
   }))
-})
+)
 
 const kelurahanOptions = computed(() => {
   if (!selectedKec.value) return []
@@ -46,7 +38,6 @@ const posyanduOptions = computed(() => {
   }))
 })
 
-// Options untuk WUS/PUS berdasarkan posyandu terpilih
 const wuspusOptions = computed(() => {
   if (!selectedPos.value) return []
   const wuspusList = props.wuspus[selectedPos.value] || []
@@ -56,13 +47,11 @@ const wuspusOptions = computed(() => {
   }))
 })
 
-// Reset kelurahan saat kecamatan berubah
 watch(selectedKec, () => {
   selectedKel.value = ''
   selectedPos.value = ''
 })
 
-// Reset posyandu saat kelurahan berubah
 watch(selectedKel, () => {
   selectedPos.value = ''
 })
@@ -81,372 +70,285 @@ const form = useForm({
   rows: [emptyRow()]
 })
 
-// Update form fields saat posyandu dipilih
-watch(selectedPos, (newVal) => {
-  form.posyandu_id = newVal
-})
-
-watch(selectedKel, (newVal) => {
-  form.kelurahan_id = newVal
-})
+watch(selectedPos, (val) => form.posyandu_id = val)
+watch(selectedKel, (val) => form.kelurahan_id = val)
 
 const showModal = ref(false)
 const modalType = ref('success')
 const modalMessage = ref('')
 
-function openError(msg) {
-  modalType.value = 'error'
+const openModal = (type, msg) => {
+  modalType.value = type
   modalMessage.value = msg
   showModal.value = true
 }
 
-function openSuccess(msg) {
-  modalType.value = 'success'
-  modalMessage.value = msg
-  showModal.value = true
+const addRow = () => form.rows.push(emptyRow())
+const deleteRow = (i) => {
+  if (form.rows.length > 1) form.rows.splice(i, 1)
 }
 
-function addRow() { 
-  form.rows.push(emptyRow()) 
-}
+const validateForm = () => {
+  if (!selectedKec.value) return openModal('error','Silakan pilih kecamatan'), false
+  if (!selectedKel.value) return openModal('error','Silakan pilih kelurahan'), false
+  if (!selectedPos.value) return openModal('error','Silakan pilih posyandu'), false
 
-function deleteRow(i) { 
-  if(form.rows.length > 1) form.rows.splice(i,1) 
-}
-
-function validateForm() {
-  if (!selectedKec.value) {
-    openError('Silakan pilih kecamatan terlebih dahulu')
-    return false
-  }
-  if (!selectedKel.value) {
-    openError('Silakan pilih kelurahan terlebih dahulu')
-    return false
-  }
-  if (!selectedPos.value) {
-    openError('Silakan pilih posyandu terlebih dahulu')
-    return false
-  }
-  
   for (let i = 0; i < form.rows.length; i++) {
-    const row = form.rows[i]
-    if (!row.id_wuspus || !row.jns_kontrasepsi || !row.tgl_ganti || !row.kontrasepsi_baru) {
-      openError(`Data ke-${i+1}: WUS/PUS, Jenis, Tanggal ganti, dan Kontrasepsi baru wajib diisi`)
+    const r = form.rows[i]
+    if (!r.id_wuspus || !r.jns_kontrasepsi || !r.tgl_ganti || !r.kontrasepsi_baru) {
+      openModal('error', `Data ke-${i+1}: Semua field wajib diisi`)
       return false
     }
   }
   return true
 }
 
-function submit() {
+const submit = () => {
   if (!validateForm()) return
 
   form.post('/posyandu/wuspus-kontrasepsi/store-multiple', {
     preserveScroll: true,
     onSuccess: () => {
-      openSuccess('Data kontrasepsi WUS/PUS berhasil disimpan')
+      openModal('success','Data berhasil disimpan')
       setTimeout(() => router.visit('/posyandu/wuspus-kontrasepsi'), 1500)
     },
-    onError: (errors) => {
-      console.error(errors)
-      openError('Gagal menyimpan data: ' + (errors.message || 'Unknown error'))
-    }
+    onError: () => openModal('error','Gagal menyimpan data')
   })
 }
 </script>
 
 <template>
-    <div class="container-fluid py-4">
-      <!-- Breadcrumb (Navigasi posisi halaman) -->
-      <div class="row mb-4">
-        <div class="col-12">
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none">Dashboard</a></li>
-              <li class="breadcrumb-item"><a href="/wuspus-kontrasepsi" class="text-decoration-none">Kontrasepsi WUS/PUS</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Tambah Data</li>
-            </ol>
-          </nav>
-        </div>
-      </div>
+<div class="page-wrapper">
 
-      <!-- Header dengan judul dan tombol kembali -->
-      <div class="row mb-4">
-        <div class="col-12">
-          <div class="d-flex justify-content-between align-items-center">
-            <h2 class="mb-0">
-              <i class="icon-plus-circle me-2 text-primary"></i>
-              Tambah Kontrasepsi WUS/PUS (Multi Data)
-            </h2>
-            <Link href="/posyandu/wuspus-kontrasepsi" class="btn btn-outline-secondary">
-              <i class="icon-arrow-left me-2"></i>
-              Kembali
-            </Link>
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <Link href="/dashboard">Dashboard</Link>
+    <span>/</span>
+    <Link href="/wuspus-kontrasepsi">Kontrasepsi WUS/PUS</Link>
+    <span>/</span>
+    <span>Tambah Data</span>
+  </div>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2>Tambah Kontrasepsi WUS/PUS</h2>
+      <p>Input multi data peserta</p>
+    </div>
+    <Link href="/posyandu/wuspus-kontrasepsi" class="btn btn-outline-secondary">
+      Kembali
+    </Link>
+  </div>
+
+  <!-- Card -->
+  <div class="main-card">
+    <div class="card-body">
+
+      <!-- Filter -->
+      <div class="filter-section">
+        <h6>Pilih Wilayah</h6>
+        <div class="grid-3">
+          <div>
+            <label>Kecamatan</label>
+            <VueSelect v-model="selectedKec" :options="kecamatanOptions"/>
+          </div>
+          <div>
+            <label>Kelurahan</label>
+            <VueSelect v-model="selectedKel" :options="kelurahanOptions" :disabled="!selectedKec"/>
+          </div>
+          <div>
+            <label>Posyandu</label>
+            <VueSelect v-model="selectedPos" :options="posyanduOptions" :disabled="!selectedKel"/>
           </div>
         </div>
       </div>
 
-      <!-- Main Content Card -->
-      <div class="row">
-        <div class="col-12">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <!-- Filter Wilayah -->
-              <div class="row g-3 mb-4 p-3 bg-light rounded">
-                <div class="col-md-4">
-                  <label class="form-label fw-bold">Kecamatan <span class="text-danger">*</span></label>
-                  <VueSelect
-                    v-model="selectedKec"
-                    :options="kecamatanOptions"
-                    placeholder="Pilih Kecamatan"
-                    :clearable="true"
-                    :searchable="true"
-                  />
-                </div>
+      <div v-if="!selectedPos" class="info-alert">
+        Pilih posyandu untuk menampilkan data WUS/PUS
+      </div>
 
-                <div class="col-md-4">
-                  <label class="form-label fw-bold">Kelurahan <span class="text-danger">*</span></label>
-                  <VueSelect
-                    v-model="selectedKel"
-                    :options="kelurahanOptions"
-                    placeholder="Pilih Kelurahan"
-                    :clearable="true"
-                    :searchable="true"
-                    :disabled="!selectedKec"
-                  />
-                </div>
+      <!-- Form -->
+      <form @submit.prevent="submit">
 
-                <div class="col-md-4">
-                  <label class="form-label fw-bold">Posyandu <span class="text-danger">*</span></label>
-                  <VueSelect
-                    v-model="selectedPos"
-                    :options="posyanduOptions"
-                    placeholder="Pilih Posyandu"
-                    :clearable="true"
-                    :searchable="true"
-                    :disabled="!selectedKel"
-                  />
-                </div>
-              </div>
+        <div class="form-header">
+          <h6>Form Data</h6>
+          <span class="count-badge">{{ form.rows.length }} Data</span>
+        </div>
 
-              <form @submit.prevent="submit">
-                <!-- Pesan jika belum pilih posyandu -->
-                <div v-if="!selectedPos" class="alert alert-warning">
-                  <i class="icon-info-circle me-2"></i>
-                  Silakan pilih Posyandu terlebih dahulu untuk menampilkan data WUS/PUS
-                </div>
+        <div v-for="(row,index) in form.rows" :key="index" class="data-card">
+          <div class="data-header">
+            <span class="data-badge">Data #{{ index + 1 }}</span>
+            <button type="button" class="btn btn-outline-danger btn-sm" @click="deleteRow(index)">
+              Hapus
+            </button>
+          </div>
 
-                <!-- Tabel Data Kontrasepsi -->
-                <div class="table-responsive">
-                  <Table class="table-bordered">
-                    <TableHead>
-                      <TableRow>
-                        <TableCol asHead width="80" class="text-center">No</TableCol>
-                        <TableCol asHead>Form Kontrasepsi WUS/PUS</TableCol>
-                        <TableCol asHead width="100" class="text-center">Aksi</TableCol>
-                      </TableRow>
-                    </TableHead>
-                    
-                    <tbody>
-                      <TableRow v-for="(row,i) in form.rows" :key="i">
-                        <!-- Nomor -->
-                        <TableCol class="text-center align-middle">
-                          <span class="badge bg-secondary">{{ i+1 }}</span>
-                        </TableCol>
-
-                        <!-- Form Fields -->
-                        <TableCol>
-                          <div class="row g-3">
-                            <!-- Pilih WUS/PUS -->
-                            <div class="col-lg-6">
-                              <label class="form-label fw-bold">
-                                Pilih WUS/PUS <span class="text-danger">*</span>
-                              </label>
-                              <VueSelect
-                                v-model="row.id_wuspus"
-                                :options="wuspusOptions"
-                                placeholder="Pilih WUS/PUS"
-                                :disabled="!selectedPos"
-                              />
-                            </div>
-
-                            <!-- Jenis Kontrasepsi -->
-                            <div class="col-lg-6">
-                              <label class="form-label fw-bold">
-                                Jenis Kontrasepsi <span class="text-danger">*</span>
-                              </label>
-                              <select class="form-select" v-model="row.jns_kontrasepsi">
-                                <option value="">Pilih Jenis Kontrasepsi</option>
-                                <option value="PIL">PIL</option>
-                                <option value="SUNTIK">SUNTIK</option>
-                                <option value="IUD">IUD</option>
-                                <option value="IMPLAN">IMPLAN</option>
-                                <option value="MOW">MOW</option>
-                                <option value="MOP">MOP</option>
-                                <option value="KONDOM">KONDOM</option>
-                                <option value="LAINNYA">Lainnya</option>
-                              </select>
-                            </div>
-
-                            <!-- Tanggal Ganti -->
-                            <div class="col-lg-4">
-                              <label class="form-label fw-bold">
-                                Tanggal Ganti <span class="text-danger">*</span>
-                              </label>
-                              <input type="date" class="form-control" v-model="row.tgl_ganti">
-                            </div>
-
-                            <!-- Kontrasepsi Baru -->
-                            <div class="col-lg-8">
-                              <label class="form-label fw-bold">
-                                Kontrasepsi Baru <span class="text-danger">*</span>
-                              </label>
-                              <input class="form-control" v-model="row.kontrasepsi_baru" placeholder="Contoh: SUNTIK 3 BULAN">
-                            </div>
-
-                            <!-- Keterangan -->
-                            <div class="col-12">
-                              <label class="form-label fw-bold">Keterangan</label>
-                              <textarea class="form-control" rows="2" v-model="row.ket" placeholder="Opsional"></textarea>
-                            </div>
-                          </div>
-                        </TableCol>
-
-                        <!-- Tombol Hapus -->
-                        <TableCol class="text-center align-middle">
-                          <button 
-                            type="button"
-                            class="btn btn-danger btn-sm rounded-circle"
-                            style="width: 38px; height: 38px;"
-                            @click="deleteRow(i)"
-                            :disabled="form.rows.length === 1"
-                          >
-                            <i class="icon-trash"></i>
-                          </button>
-                        </TableCol>
-                      </TableRow>
-                    </tbody>
-                  </Table>
-                </div>
-
-                <!-- Tombol Aksi -->
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                  <button 
-                    type="button" 
-                    class="btn btn-success"
-                    @click="addRow"
-                    :disabled="!selectedPos"
-                  >
-                    <i class="icon-plus me-2"></i>
-                    Tambah Data
-                  </button>
-                  
-                  <div>
-                    <span class="text-muted me-3">
-                      Total: {{ form.rows.length }} data
-                    </span>
-                    
-                    <button 
-                      type="submit" 
-                      class="btn btn-primary"
-                      :disabled="form.processing || !selectedPos"
-                    >
-                      <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>
-                      <i v-else class="icon-save me-2"></i>
-                      {{ form.processing ? 'Menyimpan...' : 'Simpan Data' }}
-                    </button>
-                  </div>
-                </div>
-              </form>
+          <div class="grid-2">
+            <div>
+              <label>WUS/PUS</label>
+              <VueSelect v-model="row.id_wuspus" :options="wuspusOptions"/>
+            </div>
+            <div>
+              <label>Jenis Kontrasepsi</label>
+              <select v-model="row.jns_kontrasepsi" class="form-control">
+                <option value="">Pilih</option>
+                <option>PIL</option>
+                <option>SUNTIK</option>
+                <option>IUD</option>
+                <option>IMPLAN</option>
+                <option>MOW</option>
+                <option>MOP</option>
+                <option>KONDOM</option>
+              </select>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- MODAL -->
-    <div v-if="showModal" class="modal-overlay" @click.self="showModal=false">
-      <div class="modal-card" :class="modalType">
-        <div class="modal-header" :class="modalType">
-          <h5 class="modal-title">
-            <i :class="modalType==='success'?'icon-check-circle':'icon-exclamation-triangle'" class="me-2"></i>
-            {{ modalType==='success'?'Berhasil':'Gagal' }}
-          </h5>
-          <button type="button" class="btn-close" @click="showModal=false"></button>
+          <div class="grid-2">
+            <div>
+              <label>Tanggal Ganti</label>
+              <input type="date" v-model="row.tgl_ganti" class="form-control"/>
+            </div>
+            <div>
+              <label>Kontrasepsi Baru</label>
+              <input v-model="row.kontrasepsi_baru" class="form-control"/>
+            </div>
+          </div>
+
+          <div>
+            <label>Keterangan</label>
+            <textarea v-model="row.ket" class="form-control"></textarea>
+          </div>
         </div>
-        <div class="modal-body">
-          <p class="mb-0">{{ modalMessage }}</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn w-100" :class="modalType==='success'?'btn-success':'btn-danger'" @click="showModal=false">
-            Tutup
+
+        <div class="form-footer">
+          <button type="button" class="btn btn-outline-success" @click="addRow">
+            Tambah Data
+          </button>
+          <button type="submit" class="btn btn-primary" :disabled="form.processing">
+            Simpan Data
           </button>
         </div>
-      </div>
+
+      </form>
+
     </div>
+  </div>
+
+</div>
 </template>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.35);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
+.page-wrapper {
+  max-width: 1100px;
+  margin: auto;
+  padding: 24px 16px 40px;
 }
 
-.modal-card {
-  width: 400px;
-  background: #fff;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+.breadcrumb {
+  display:flex;
+  gap:8px;
+  color:#6b7280;
+  margin-bottom:20px;
 }
 
-.modal-card.success {
-  border-top: 4px solid #28a745;
+.page-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
 }
 
-.modal-card.error {
-  border-top: 4px solid #dc3545;
+.main-card {
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.06);
+  background:white;
 }
 
-.modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid #dee2e6;
+.card-body {
+  padding:32px;
 }
 
-.modal-header.success {
-  background: #d4edda;
-  color: #155724;
+.filter-section {
+  background:#f8fafc;
+  border-radius:12px;
+  padding:24px;
+  margin-bottom:20px;
 }
 
-.modal-header.error {
-  background: #f8d7da;
-  color: #721c24;
+.grid-3 {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
 }
 
-.modal-body {
-  padding: 20px;
+.grid-2 {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-top:16px;
 }
 
-.modal-footer {
-  padding: 16px 20px;
-  border-top: 1px solid #dee2e6;
+.data-card {
+  border:1px solid #eef1f4;
+  border-radius:14px;
+  padding:20px;
+  margin-top:16px;
 }
 
-.btn-close {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  opacity: 0.5;
+.data-header {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:12px;
 }
 
-.btn-close:hover {
-  opacity: 1;
+.data-badge {
+  background:#eef4ff;
+  color:#2f6fed;
+  padding:4px 10px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+}
+
+.form-control {
+  height:44px;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  width:100%;
+  padding:0 10px;
+}
+
+textarea.form-control {
+  height:auto;
+  padding:10px;
+}
+
+.form-footer {
+  display:flex;
+  justify-content:space-between;
+  margin-top:24px;
+  padding-top:20px;
+  border-top:1px solid #f0f2f5;
+}
+
+.info-alert {
+  background:#fff8e6;
+  border:1px solid #ffe7a3;
+  padding:12px 16px;
+  border-radius:10px;
+  margin-bottom:20px;
+}
+
+.count-badge {
+  background:#eef1f4;
+  padding:4px 10px;
+  border-radius:8px;
+  font-size:13px;
+}
+
+@media(max-width:768px){
+  .grid-3 { grid-template-columns:1fr }
+  .grid-2 { grid-template-columns:1fr }
+  .form-footer { flex-direction:column; gap:12px }
 }
 </style>
