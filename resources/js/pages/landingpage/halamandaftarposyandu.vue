@@ -236,7 +236,7 @@ function closeModal() {
 /* Page + background */
 .esip-posyandu-page{
   position: relative;
-  min-height: 100vh;
+  min-height: 91vh;
   padding: 36px 0 70px;
   isolation: isolate;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -257,6 +257,7 @@ function closeModal() {
   width:min(1120px, 100%);
   margin:0 auto;
   padding:0 22px;
+  padding-top: 100px;
   display:grid;
   grid-template-columns: 1fr 230px;
   gap:22px;
