@@ -16,13 +16,29 @@ import logoeSIP from '../../images/eSIP.png'
 
 <style scoped>
 .footer-layout {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 20px;
+
+    /* Gunakan padding dengan unit rem agar proporsional terhadap ukuran font */
+    padding: 0.8rem 1.2rem;   /* contoh, sesuaikan */
+    
     border-top: 1px solid gainsboro;
     background: #fff;
-    height: 70px;
+
+    /* Hindari height tetap, gunakan min-height */
+    min-height: 70px;
+    
+    box-sizing: border-box;
+    
+    /* Agar konten tidak menempel ke tepi saat zoom sangat besar */
+    gap: 1rem;
+    flex-wrap: wrap;          /* jika layar sempit, item turun ke bawah */
 }
 
 .footer-left {

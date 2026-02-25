@@ -5,8 +5,18 @@
       <div class="posyandu-inner">
         <!-- KIRI -->
         <div class="panel-main">
-          <h3 class="panel-title">Daftar Posyandu</h3>
-
+          <div class="posyandu-header">
+            <h3 class="panel-title">Daftar Posyandu</h3>
+              <div class="pager">
+              <button class="btn-mini" type="button" :disabled="page === 1" @click="prevPage">
+                Previous
+              </button>
+              <div class="page-info">Page {{ page }} of {{ totalPages }}</div>
+              <button class="btn-mini" type="button" :disabled="page === totalPages" @click="nextPage">
+                Next
+              </button>
+            </div>
+          </div>
           <!-- FILTER -->
           <div class="filter-box">
             <div class="filter-grid">
@@ -81,7 +91,7 @@
           </div>
 
           <!-- PAGINATION -->
-          <div class="pager">
+          <!-- <div class="pager">
             <button class="btn-mini" type="button" :disabled="page === 1" @click="prevPage">
               Previous
             </button>
@@ -89,7 +99,7 @@
             <button class="btn-mini" type="button" :disabled="page === totalPages" @click="nextPage">
               Next
             </button>
-          </div>
+          </div> -->
         </div>
 
         <!-- KANAN -->
@@ -256,8 +266,9 @@ function closeModal() {
 .posyandu-inner{
   width:min(1120px, 100%);
   margin:0 auto;
-  padding:0 22px;
-  padding-top: 100px;
+  padding:0 20px;
+  padding-top: 50px;
+  padding-bottom: 5px;
   display:grid;
   grid-template-columns: 1fr 230px;
   gap:22px;
@@ -268,16 +279,23 @@ function closeModal() {
 .panel-main{
   background:#fff;
   border-radius:10px;
-  padding:18px 18px 14px;
+  padding:10px 10px 10px;
   box-shadow:0 8px 18px rgba(0,0,0,.12);
 }
-.panel-title{
-  margin:2px 0 12px;
-  font-size:16px;
-  font-weight:800;
-  color:#2d2d2d;
+.posyandu-header {
+  display: flex;
+  justify-content: space-between;  /* judul kiri, pager kanan */
+  align-items: center;              /* sejajar vertikal */
+  padding-bottom: 10px;              /* beri jarak bawah jika diperlukan */
 }
-
+/* Penyesuaian margin judul agar sejajar sempurna */
+.panel-title {
+  margin: 0;                         /* hilangkan margin default */
+  font-size: 16px;
+  font-weight: 800;
+  color: #2d2d2d;
+  line-height: 1.2;                  /* konsisten dengan tinggi tombol */
+}
 /* Filter */
 .filter-box{
   background:#f5f6f8;
@@ -364,7 +382,6 @@ function closeModal() {
   background:#f7f7f7;
   z-index:1;
   text-align:left;
-  padding:10px 12px;
   color:#555;
   border-bottom:1px solid #e9e9e9;
   font-weight:800;
@@ -394,13 +411,16 @@ function closeModal() {
   color:#777;
 }
 
-/* Pager */
-.pager{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:12px;
-  padding-top:12px;
+/* Pagination */
+.pager {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 0;                         
+}
+.pager button,
+.pager .page-info {
+  line-height: 1.2;                   
 }
 .btn-mini{
   height:30px;
