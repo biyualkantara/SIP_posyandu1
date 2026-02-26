@@ -133,12 +133,16 @@ Route::prefix('posyandu')->name('posyandu.')->group(function () {
             ->name('data-umum.destroy');
 
         // ======================
-        // KADER
+        // KEHADIRAN KADER
         // ======================
-
         Route::get('/kehadiran-kader', [KehadiranKaderController::class, 'index']);
         Route::get('/kehadiran-kader/create', [KehadiranKaderController::class, 'create']);
         Route::post('/kehadiran-kader/store-multiple', [KehadiranKaderController::class, 'storeMultiple']);
+
+        Route::get('/kehadiran-kader/{id}', [KehadiranKaderController::class, 'show']);
+        Route::get('/kehadiran-kader/{id}/edit', [KehadiranKaderController::class, 'edit']);
+        Route::put('/kehadiran-kader/{id}', [KehadiranKaderController::class, 'update']);
+        Route::delete('/kehadiran-kader/{id}', [KehadiranKaderController::class, 'destroy']);
 
         // ======================
         // WUSPUS BIODATA
