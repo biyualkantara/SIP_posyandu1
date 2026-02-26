@@ -206,6 +206,10 @@ Route::prefix('posyandu')->name('posyandu.')->group(function () {
         Route::get('/bayi-pnb', [BayiPenimbanganController::class, 'index']);
         Route::get('/bayi-pnb/create', [BayiPenimbanganController::class, 'create']);
         Route::post('/bayi-pnb/store-multiple', [BayiPenimbanganController::class, 'storeMultiple']);
+        Route::get('/bayi-pnb/{id}', [BayiPenimbanganController::class, 'show']);
+        Route::get('/bayi-pnb/{id}/edit', [BayiPenimbanganController::class, 'edit']);
+        Route::put('/bayi-pnb/{id}', [BayiPenimbanganController::class, 'update']);
+        Route::delete('/bayi-pnb/{id}', [BayiPenimbanganController::class, 'destroy']);
 
         Route::get('/bayi-imun', [BayiImunisasiController::class, 'index']);
         Route::get('/bayi-imun/create', [BayiImunisasiController::class, 'create']);
@@ -222,14 +226,26 @@ Route::prefix('posyandu')->name('posyandu.')->group(function () {
         Route::get('/bumil', [BumilBiodataController::class, 'index']);
         Route::get('/bumil/create', [BumilBiodataController::class, 'create']);
         Route::post('/bumil/store-multiple', [BumilBiodataController::class, 'storeMultiple']);
+        Route::get('/bumil/{id}', [BumilBiodataController::class, 'show']);
+        Route::get('/bumil/{id}/edit', [BumilBiodataController::class, 'edit']);
+        Route::put('/bumil/{id}', [BumilBiodataController::class, 'update']);
+        Route::delete('/bumil/{id}', [BumilBiodataController::class, 'destroy']);
 
         Route::get('/bumil-imun', [BumilImunisasiController::class, 'index']);
         Route::get('/bumil-imun/create', [BumilImunisasiController::class, 'create']);
         Route::post('/bumil-imun/store-multiple', [BumilImunisasiController::class, 'storeMultiple']);
+        Route::get('/bumil-imun/{id}', [BumilImunisasiController::class, 'show']);
+        Route::get('/bumil-imun/{id}/edit', [BumilImunisasiController::class, 'edit']);
+        Route::put('/bumil-imun/{id}', [BumilImunisasiController::class, 'update']);
+        Route::delete('/bumil-imun/{id}', [BumilImunisasiController::class, 'destroy']);
 
         Route::get('/bumil-pnb', [BumilPenimbanganController::class, 'index']);
         Route::get('/bumil-pnb/create', [BumilPenimbanganController::class, 'create']);
         Route::post('/bumil-pnb/store-multiple', [BumilPenimbanganController::class, 'storeMultiple']);
+        Route::get('/bumil-pnb/{id}', [BumilPenimbanganController::class, 'show']);
+        Route::get('/bumil-pnb/{id}/edit', [BumilPenimbanganController::class, 'edit']);
+        Route::put('/bumil-pnb/{id}', [BumilPenimbanganController::class, 'update']);
+        Route::delete('/bumil-pnb/{id}', [BumilPenimbanganController::class, 'destroy']);
 
     });
 
