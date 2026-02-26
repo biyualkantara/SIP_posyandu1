@@ -382,6 +382,7 @@ function closeModal() {
   background:#f7f7f7;
   z-index:1;
   text-align:left;
+  padding:10px 12px;
   color:#555;
   border-bottom:1px solid #e9e9e9;
   font-weight:800;
