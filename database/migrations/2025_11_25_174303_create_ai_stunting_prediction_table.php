@@ -22,7 +22,7 @@ return new class extends Migration
             $table->float('z_score')->nullable();
             $table->enum('status_gizi', ['Normal', 'Berisiko Stunting', 'Stunting'])->nullable()->default('Normal');
             $table->decimal('tingkat_risiko', 5)->nullable()->default(0);
-            $table->date('tanggal_prediksi')->nullable()->default('curdate()');
+            $table->date('tanggal_prediksi')->nullable();
             $table->text('rekomendasi')->nullable();
             $table->string('sumber_model', 100)->nullable();
             $table->timestamp('created_at')->nullable()->useCurrent();

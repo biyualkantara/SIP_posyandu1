@@ -24,31 +24,31 @@ class KehadiranKaderController extends Controller
             ->get()
             ->groupBy('id_kec');
 
-        $query = DB::table('kdrhdr as k') // :contentReference[oaicite:3]{index=3}
-            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'k.id_posyandu')
-            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
-            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
-            ->select([
-                'k.id_kdrhdr',
-                'k.id_posyandu',
-                DB::raw('k.`bulan/tahun` as bulan_tahun'),
-                'k.pkk',
-                'k.plkb',
-                'k.medis',
-                'd.nama_posyandu',
-                'kel.id_kel',
-                'kel.nama_kel',
-                'kec.id_kec',
-                'kec.nama_kec',
-            ])
-            ->orderByDesc(DB::raw('k.`bulan/tahun`'))
-            ->orderByDesc('k.id_kdrhdr');
+       $query = DB::table('kdrhdr as k')
+        ->select([
+            'k.id_kdrhdr',
+            'k.id_posyandu',
+            DB::raw('`k`.`bulan` as bulan_tahun'),
+            'k.pkk',
+            'k.plkb',
+            'k.medis',
+            'd.nama_posyandu',
+            'kel.id_kel',
+            'kel.nama_kel',
+            'kec.id_kec',
+            'kec.nama_kec'
+        ])
+        ->leftJoin('duspy as d','d.id_posyandu','=','k.id_posyandu')
+        ->leftJoin('klrhn as kel','kel.id_kel','=','d.id_kel')
+        ->leftJoin('kcmtn as kec','kec.id_kec','=','kel.id_kec')
+        ->orderByDesc(DB::raw('`k`.`bulan`'))
+        ->orderByDesc('k.id_kdrhdr');
 
         if ($kec !== '') $query->where('kec.id_kec', $kec);
         if ($kel !== '') $query->where('kel.id_kel', $kel);
 
         if ($bln !== '') {
-            $query->whereRaw('DATE_FORMAT(k.`bulan/tahun`, "%Y-%m") = ?', [$bln]);
+            $query->whereRaw('DATE_FORMAT(k.`bulan`, "%Y-%m") = ?', [$bln]);
         }
 
         if ($q !== '') {
