@@ -1,6 +1,6 @@
 <script setup>
-import { Link, useForm } from "@inertiajs/vue3";
 import AdminLayout from "@/layouts/AdminLayout.vue";
+import { Link, useForm } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
 
 const props = defineProps({
@@ -57,7 +57,6 @@ function pilihKelurahan(nama) {
 
 <template>
 <div class="page-container">
-
     <div class="header-flex">
         <h2>Edit Kehadiran Kader</h2>
         <Link href="/posyandu/kehadiran-kader" class="btn btn-light">← Kembali</Link>
@@ -131,9 +130,7 @@ function pilihKelurahan(nama) {
         <div class="form-footer">
             <button type="submit" class="btn btn-primary px-5">Simpan Perubahan</button>
         </div>
-
     </form>
-
 </div>
 </template>
 
