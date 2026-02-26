@@ -102,16 +102,35 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::prefix('posyandu')->group(function () {
+Route::prefix('posyandu')->name('posyandu.')->group(function () {
 
         // ======================
         // DATA UMUM
         // ======================
 
-        Route::get('/data-umum', [DuspyController::class, 'index']);
-        Route::get('/data-umum/create', [DuspyController::class, 'create']);
-        Route::post('/data-umum/store-multiple', [DuspyController::class, 'storeMultiple']);
-        Route::get('/data-umum/export-pdf', [DuspyController::class, 'exportPdf']);
+         Route::get('/data-umum', [DuspyController::class, 'index'])
+        ->name('data-umum.index');
+
+        Route::get('/data-umum/create', [DuspyController::class, 'create'])
+            ->name('data-umum.create');
+
+        Route::post('/data-umum/store-multiple', [DuspyController::class, 'storeMultiple'])
+            ->name('data-umum.storeMultiple');
+
+        Route::get('/data-umum/export-pdf', [DuspyController::class, 'exportPdf'])
+            ->name('data-umum.exportPdf');
+
+        Route::get('/data-umum/{id}', [DuspyController::class, 'show'])
+            ->name('data-umum.show');
+
+        Route::get('/data-umum/{id}/edit', [DuspyController::class, 'edit'])
+            ->name('data-umum.edit');
+
+        Route::put('/data-umum/{id}', [DuspyController::class, 'update'])
+            ->name('data-umum.update');
+
+        Route::delete('/data-umum/{id}', [DuspyController::class, 'destroy'])
+            ->name('data-umum.destroy');
 
         // ======================
         // KADER
