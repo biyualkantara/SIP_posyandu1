@@ -1,6 +1,7 @@
 <script setup>
 import { Link, router } from '@inertiajs/vue3'
 import DataTable from '@/components/ui/DataTable.vue'
+import AdminLayout from '@/layouts/AdminLayout.vue'
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
@@ -45,7 +46,7 @@ function applyFilter() {
     }, { preserveState: true, preserveScroll: true, replace: true })
 }
 
-// Blurkan kalau hapus
+// modal delete
 const modalOpen = ref(false)
 const selected = ref({})
 
@@ -64,9 +65,7 @@ function confirmDelete() {
         preserveScroll: true,
         onSuccess: () => {
             closeModal()
-
             router.reload({ only: ['data'] })
-
             window.dispatchEvent(new CustomEvent("toast", {
                 detail: { type: "success", message: "Data kehadiran kader berhasil dihapus!" }
             }))
@@ -81,13 +80,12 @@ function confirmDelete() {
 </script>
 
 <template>
-<AdminLayout>
     <div class="mt-3 p-4 bg-white" style="min-height: 100vh;">
         <h1>Data Kehadiran Kader</h1>
         <hr>
 
         <div class="d-flex justify-end mb-3">
-            <Link href="/posyandu/kehadiran-kader/create" class="btn btn-primary">
+            <Link href="/posyandu/kehadiran-kader/create" class="btn btn-primary" style="height:38px;">
                 + Tambah Kehadiran
             </Link>
         </div>
@@ -114,14 +112,23 @@ function confirmDelete() {
                     </option>
                 </select>
             </div>
+
+            <div class="col-lg-3">
+                <label>Bulan</label>
+                <input type="month" class="form-control" v-model="selectedBln" @change="applyFilter">
+            </div>
+
+            <div class="col-lg-3">
+                <label>Cari Posyandu</label>
+                <input type="text" class="form-control" v-model="searchText" @input="applyFilter">
+            </div>
         </div>
 
-        <!-- TABEL -->
         <DataTable :columns="columns" :rows="rows" :perPage="10">
             <template #col-actions="{ row }">
                 <Link :href="`/posyandu/kehadiran-kader/${row.id_kdrhdr}`">
                     <span class="bg-info p-3 mr-2 rounded-circle text-white" style="cursor:pointer;">
-                    <i class="icon-eye"></i>
+                        <i class="icon-eye"></i>
                     </span>
                 </Link>
 
@@ -168,8 +175,6 @@ function confirmDelete() {
             </div>
         </div>
     </div>
-
-</AdminLayout>
 </template>
 
 <style scoped>
