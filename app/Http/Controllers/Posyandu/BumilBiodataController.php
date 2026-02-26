@@ -141,27 +141,48 @@ class BumilBiodataController extends Controller
 
         $rows = $request->input('rows', []);
 
-        DB::beginTransaction();
-        try {
-            foreach ($rows as $r) {
-                DB::table('bumil')->insert([
-                    'id_wuspus' => (int)($r['id_wuspus']),
-                    'tgl_daftar' => $r['tgl_daftar'] ?? null,
-                    'umur_kehamilan' => $r['umur_kehamilan'] !== '' ? (int)$r['umur_kehamilan'] : null,
-                    'hamil_ke' => $r['hamil_ke'] !== '' ? (int)$r['hamil_ke'] : null,
-                    'pmt_pemulihan' => $r['pmt_pemulihan'] ?? null,
-                    'lila' => $r['lila'] !== '' ? (float)$r['lila'] : null,
-                    'ket' => $r['ket'] ?? null,
-                ]);
-            }
-            DB::commit();
+       DB::beginTransaction();
+
+try {
+
+    foreach ($rows as $index => $r) {
+
+        $idWuspus = (int) $r['id_wuspus'];
+
+        $sudahAda = DB::table('bumil')
+            ->where('id_wuspus', $idWuspus)
+            ->exists();
+
+        if ($sudahAda) {
+
+            DB::rollBack();
+
+            return back()->withErrors([
+                "rows.$index.id_wuspus" => "NIK sudah terdaftar, silakan pilih NIK lain"
+            ]);
+        }
+
+        DB::table('bumil')->insert([
+            'id_wuspus' => $idWuspus,
+            'tgl_daftar' => $r['tgl_daftar'] ?? null,
+            'umur_kehamilan' => $r['umur_kehamilan'] !== '' ? (int)$r['umur_kehamilan'] : null,
+            'hamil_ke' => $r['hamil_kehamilan'] ?? null,
+            'pmt_pemulihan' => $r['pmt_pemulihan'] ?? null,
+            'lila' => $r['lila'] !== '' ? (float)$r['lila'] : null,
+            'ket' => $r['ket'] ?? null,
+        ]);
+    }
+
+        DB::commit();
+
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
         }
 
-        return redirect('/posyandu/bumil')->with('success', 'Data bumil berhasil disimpan');
-    }
+        return redirect('/posyandu/bumil')
+            ->with('success', 'Data bumil berhasil disimpan');
+        }
 
     public function show($id)
     {

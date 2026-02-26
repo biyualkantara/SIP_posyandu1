@@ -50,7 +50,7 @@ function confirmDelete(){
         </span>
       </Link>
 
-      <Link :href="`/posyandu/wuspus-kontrasepsi/edit/${row.id_wkp}`">
+      <Link :href="`/posyandu/wuspus-kontrasepsi/${row.id_wkp}/edit`">
         <span class="bg-primary p-3 mr-2 rounded-circle text-white">
           <i class="icon-pencil"></i>
         </span>
@@ -61,6 +61,26 @@ function confirmDelete(){
       </span>
     </template>
   </DataTable>
+
+   <!-- MODAL DELETE -->
+    <div v-if="modalOpen" class="overlay-blur" @click.self="closeModal">
+      <div class="modal-card">
+        <h4 class="text-center">Hapus Data Kematian?</h4>
+        <hr>
+
+        <div class="text-center">
+          <p class="mb-1"><b>{{ selected.nama_wuspus }}</b></p>
+          <div class="text-muted">{{ selected.jns_kontrasepsi }}</div>
+          <div class="mt-2"><b>{{ selected.tgl_ganti }}</b></div>
+          <div class="mt-2">{{ selected.kontrasepsi_baru }}</div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+          <button class="btn btn-secondary me-2" @click="closeModal">Batal</button>
+          <button class="btn btn-danger" @click="confirmDelete">Hapus</button>
+        </div>
+      </div>
+    </div>
 
 </div>
 </template>

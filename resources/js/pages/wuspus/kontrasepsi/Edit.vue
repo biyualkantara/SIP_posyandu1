@@ -7,6 +7,7 @@ const props = defineProps({
 })
 
 const form = useForm({
+  id_wuspus: props.row.id_wuspus,
   jns_kontrasepsi: props.row.jns_kontrasepsi,
   tgl_ganti: props.row.tgl_ganti,
   kontrasepsi_baru: props.row.kontrasepsi_baru,
@@ -34,11 +35,11 @@ function submit(){
     return
   }
 
-  form.put(`/posyandu/wuspus-kb/${props.row.id_wkp}`,{
+  form.put(`/posyandu/wuspus-kontrasepsi/${props.row.id_wkp}`,{
     preserveScroll:true,
     onSuccess:()=>{
       openSuccess('Data kontrasepsi berhasil diperbarui')
-      setTimeout(()=>router.visit('/posyandu/wuspus-kb'),700)
+      setTimeout(()=>router.visit('/posyandu/wuspus-kontrasepsi'),700)
     },
     onError:()=>openError('Gagal memperbarui data')
   })
@@ -50,7 +51,7 @@ function submit(){
     <div class="bg-white p-4 main-container">
       <div class="header-flex mb-3">
         <h2>Edit Kontrasepsi WUS/PUS</h2>
-        <Link href="/posyandu/wuspus-kb" class="btn btn-secondary">← Kembali</Link>
+        <Link href="/posyandu/wuspus-kontrasepsi" class="btn btn-secondary">← Kembali</Link>
       </div>
 
       <hr>

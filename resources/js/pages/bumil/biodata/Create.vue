@@ -195,6 +195,12 @@ function submit() {
                   :options="wuspusOptions.map(w => ({ label: `${w.nik_wuspus} - ${w.nama_wuspus}`, value: w.id_wuspus }))"
                   :isDisabled="!form.posyandu_id"
                 />
+                <div 
+                v-if="$page.props.errors[`rows.${i}.id_wuspus`]" 
+                class="text-danger mt-1"
+              >
+                {{ $page.props.errors[`rows.${i}.id_wuspus`] }}
+              </div>
               </div>
 
               <div class="col-lg-6 mb-3">

@@ -181,6 +181,7 @@ class WuspusKontrasepsiController extends Controller
 
     public function update(Request $request,$id)
     {
+        
         $request->validate([
             'id_wuspus' => ['required','exists:wuspus,id_wuspus'],
             'jns_kontrasepsi' => ['required','string','max:120'],

@@ -122,6 +122,7 @@ function confirmDelete() {
           <span>{{ row.nik_wuspus }} - {{ row.nama_wuspus }}</span>
         </template>
 
+
         <template #col-actions="{ row }">
           <Link :href="`/posyandu/bumil/${row.id_bumil}`">
             <span class="bg-info p-3 mr-2 rounded-circle text-white" style="cursor:pointer;">
