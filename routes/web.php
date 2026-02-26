@@ -185,7 +185,7 @@ Route::prefix('posyandu')->name('posyandu.')->group(function () {
         // ======================
         Route::get('/wuspus-kematian', [WuspusKematianController::class, 'index']);
         Route::get('/wuspus-kematian/create', [WuspusKematianController::class, 'create']);
-        Route::post('/wuspus-kematian/store-multiple', [WuspusKematianController::class, 'storeMultiple']);
+        Route::post('/wuspus-kematian', [WuspusKematianController::class, 'store']);
         Route::get('/wuspus-kematian/{id}', [WuspusKematianController::class, 'show']);
         Route::get('/wuspus-kematian/{id}/edit', [WuspusKematianController::class, 'edit']);
         Route::put('/wuspus-kematian/{id}', [WuspusKematianController::class, 'update']);
