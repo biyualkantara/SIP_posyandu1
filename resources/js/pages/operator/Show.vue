@@ -13,14 +13,23 @@ const props = defineProps({ row: Object })
 
     <div class="detail-card">
       <p><b>Nama:</b> {{ row.nama }}</p>
+      <p><b>Email:</b> {{ row.email }}</p>
       <p><b>Username:</b> {{ row.username }}</p>
       <p><b>Role:</b> {{ row.role }}</p>
       <p><b>Posyandu:</b> {{ row.nama_posyandu || '-' }}</p>
+      <p><b>Kecamatan:</b> {{ row.nama_kec || '-' }}</p>
+      <p><b>Kelurahan:</b> {{ row.nama_kel || '-' }}</p>
+      <p><b>No HP:</b> {{ row.no_hp || '-' }}</p>
+      <p><b>Alamat:</b> {{ row.alamat || '-' }}</p>
     </div>
   </div>
 </AdminLayout>
 </template>
 
 <style scoped>
-.detail-card{border:1px solid #eee;padding:20px;border-radius:8px}
+.detail-card{
+  border:1px solid #eee;
+  padding:20px;
+  border-radius:8px
+}
 </style>

@@ -13,7 +13,7 @@ class OperatorController extends Controller
         $q = $request->get('q', '');
 
         $data = DB::table('operator as o')
-            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'o.id_posyandu')
+            ->leftJoin('duspy as d', 'o.id_posyandu', '=', 'd.id_posyandu')
             ->select([
                 'o.id_operator',
                 'o.nama',
@@ -23,10 +23,10 @@ class OperatorController extends Controller
                 'o.no_hp',
                 'd.nama_posyandu',
             ])
-            ->when($q, function ($x) use ($q) {
-                $x->where('o.nama', 'like', "%{$q}%")
-                  ->orWhere('o.username', 'like', "%{$q}%")
-                  ->orWhere('d.nama_posyandu', 'like', "%{$q}%");
+            ->when($q, function ($query) use ($q) {
+                $query->where('o.nama', 'like', "%{$q}%")
+                      ->orWhere('o.username', 'like', "%{$q}%")
+                      ->orWhere('d.nama_posyandu', 'like', "%{$q}%");
             })
             ->orderBy('o.nama')
             ->paginate(15)
@@ -34,21 +34,27 @@ class OperatorController extends Controller
 
         return Inertia::render('operator/Index', [
             'data' => $data,
-            'filter' => [
-                'q' => $q
-            ]
+            'filter' => ['q' => $q]
         ]);
     }
 
     public function create()
     {
-        $posyandu = DB::table('duspy')
-            ->select('id_posyandu', 'nama_posyandu')
-            ->orderBy('nama_posyandu')
-            ->get();
-
         return Inertia::render('operator/Create', [
-            'posyandu' => $posyandu
+            'posyandu' => DB::table('duspy')
+                ->select('id_posyandu', 'nama_posyandu')
+                ->orderBy('nama_posyandu')
+                ->get(),
+
+            'kecamatan' => DB::table('kcmtn')
+                ->select('id_kec', 'nama_kec')
+                ->orderBy('nama_kec')
+                ->get(),
+
+            'kelurahan' => DB::table('klrhn')
+                ->select('id_kel', 'nama_kel', 'id_kec')
+                ->orderBy('nama_kel')
+                ->get(),
         ]);
     }
 
@@ -62,6 +68,9 @@ class OperatorController extends Controller
             'id_posyandu' => 'nullable|integer|exists:duspy,id_posyandu',
             'email'       => 'nullable|email',
             'no_hp'       => 'nullable|string|max:30',
+            'alamat'      => 'nullable|string',
+            'kcmtn'       => 'nullable|integer|exists:kcmtn,id_kec',
+            'klrhn'       => 'nullable|integer|exists:klrhn,id_kel',
         ]);
 
         DB::table('operator')->insert([
@@ -72,28 +81,35 @@ class OperatorController extends Controller
             'id_posyandu' => $request->id_posyandu,
             'email'       => $request->email,
             'no_hp'       => $request->no_hp,
+            'alamat'      => $request->alamat,
+            'kcmtn'       => $request->kcmtn,
+            'klrhn'       => $request->klrhn,
         ]);
 
         return redirect('/operator')->with('success', 'Operator berhasil ditambahkan');
     }
 
     public function show($id)
-    {
-        $row = DB::table('operator as o')
-            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'o.id_posyandu')
-            ->select(
-                'o.*',
-                'd.nama_posyandu'
-            )
-            ->where('o.id_operator', $id)
-            ->first();
+        {
+            $row = DB::table('operator as o')
+                ->leftJoin('duspy as d', 'o.id_posyandu', '=', 'd.id_posyandu')
+                ->leftJoin('kcmtn as k', 'o.kcmtn', '=', 'k.id_kec')
+                ->leftJoin('klrhn as l', 'o.klrhn', '=', 'l.id_kel')
+                ->select(
+                    'o.*',
+                    'd.nama_posyandu',
+                    'k.nama_kec',
+                    'l.nama_kel'
+                )
+                ->where('o.id_operator', $id)
+                ->first();
 
-        abort_if(!$row, 404);
+            abort_if(!$row, 404);
 
-        return Inertia::render('operator/Show', [
-            'row' => $row
-        ]);
-    }
+            return Inertia::render('operator/Show', [
+                'row' => $row
+            ]);
+        }
 
     public function edit($id)
     {
@@ -103,14 +119,23 @@ class OperatorController extends Controller
 
         abort_if(!$row, 404);
 
-        $posyandu = DB::table('duspy')
-            ->select('id_posyandu', 'nama_posyandu')
-            ->orderBy('nama_posyandu')
-            ->get();
-
         return Inertia::render('operator/Edit', [
             'row' => $row,
-            'posyandu' => $posyandu
+
+            'posyandu' => DB::table('duspy')
+                ->select('id_posyandu', 'nama_posyandu')
+                ->orderBy('nama_posyandu')
+                ->get(),
+
+            'kecamatan' => DB::table('kcmtn')
+                ->select('id_kec', 'nama_kec')
+                ->orderBy('nama_kec')
+                ->get(),
+
+            'kelurahan' => DB::table('klrhn')
+                ->select('id_kel', 'nama_kel', 'id_kec')
+                ->orderBy('nama_kel')
+                ->get(),
         ]);
     }
 
@@ -123,18 +148,30 @@ class OperatorController extends Controller
             'id_posyandu' => 'nullable|integer|exists:duspy,id_posyandu',
             'email'       => 'nullable|email',
             'no_hp'       => 'nullable|string|max:30',
+            'alamat'      => 'nullable|string',
+            'kcmtn'       => 'nullable|integer|exists:kcmtn,id_kec',
+            'klrhn'       => 'nullable|integer|exists:klrhn,id_kel',
         ]);
+
+        $data = [
+            'nama'        => $request->nama,
+            'username'    => $request->username,
+            'role'        => $request->role,
+            'id_posyandu' => $request->id_posyandu,
+            'email'       => $request->email,
+            'no_hp'       => $request->no_hp,
+            'alamat'      => $request->alamat,
+            'kcmtn'       => $request->kcmtn,
+            'klrhn'       => $request->klrhn,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request->password);
+        }
 
         DB::table('operator')
             ->where('id_operator', $id)
-            ->update([
-                'nama'        => $request->nama,
-                'username'    => $request->username,
-                'role'        => $request->role,
-                'id_posyandu' => $request->id_posyandu,
-                'email'       => $request->email,
-                'no_hp'       => $request->no_hp,
-            ]);
+            ->update($data);
 
         return redirect('/operator')->with('success', 'Operator berhasil diperbarui');
     }
