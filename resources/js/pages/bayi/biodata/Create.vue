@@ -1,5 +1,5 @@
 <script setup>
-import AdminLayout from '@/layouts/AdminLayout.vue'
+import AdminLayout from '@/layouts/AdminLayout.vue' // Pastikan ini ada
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import VueSelect from "vue3-select-component"
@@ -175,7 +175,7 @@ function submit() {
 
 <template>
   <div class="page-wrapper">
-    <!-- Header -->
+    <!-- Header dengan tombol kembali -->
     <div class="page-header">
       <div>
         <h2 class="mb-1">Tambah Biodata Bayi</h2>
@@ -380,6 +380,12 @@ function submit() {
   font-size: 24px;
   font-weight: 600;
   color: #2c3e50;
+  margin: 0;
+}
+
+.page-header p {
+  color: #64748b;
+  margin: 4px 0 0 0;
 }
 
 .main-card {
@@ -457,6 +463,7 @@ function submit() {
   padding: 0 12px;
   font-size: 14px;
   transition: all 0.2s;
+  width: 100%;
 }
 
 .form-control:focus {
@@ -484,11 +491,16 @@ textarea.form-control {
   font-weight: 500;
   border-radius: 8px;
   transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-primary {
   background: #4299e1;
-  border: none;
+  color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -496,17 +508,30 @@ textarea.form-control {
   transform: translateY(-1px);
 }
 
+.btn-primary:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
 .btn-outline-success {
+  background: transparent;
   border: 1.5px solid #48bb78;
   color: #48bb78;
 }
 
-.btn-outline-success:hover {
+.btn-outline-success:hover:not(:disabled) {
   background: #48bb78;
   color: white;
 }
 
+.btn-outline-success:disabled {
+  border-color: #cbd5e0;
+  color: #cbd5e0;
+  cursor: not-allowed;
+}
+
 .btn-outline-danger {
+  background: transparent;
   border: 1.5px solid #f56565;
   color: #f56565;
 }
@@ -516,10 +541,33 @@ textarea.form-control {
   color: white;
 }
 
+.btn-outline-secondary {
+  background: transparent;
+  border: 1.5px solid #718096;
+  color: #718096;
+}
+
+.btn-outline-secondary:hover {
+  background: #718096;
+  color: white;
+}
+
 .badge {
-  padding: 6px 12px;
+  padding: 10px 12px;
   border-radius: 20px;
   font-weight: 500;
+  margin-left: 10px;
+}
+
+.alert {
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.alert-info {
+  background-color: #ebf8ff;
+  border: 1px solid #90cdf4;
+  color: #2c5282;
 }
 
 .modal-overlay {
@@ -563,6 +611,7 @@ textarea.form-control {
   
   .form-footer button {
     width: 100%;
+    justify-content: center;
   }
 }
 </style>
