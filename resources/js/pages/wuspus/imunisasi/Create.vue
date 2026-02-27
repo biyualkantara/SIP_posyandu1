@@ -33,215 +33,476 @@ const showModal = ref(false)
 const modalType = ref('success')
 const modalMessage = ref('')
 
+function openError(msg) {
+  modalType.value = 'error'
+  modalMessage.value = msg
+  showModal.value = true
+}
+
+function openSuccess(msg) {
+  modalType.value = 'success'
+  modalMessage.value = msg
+  showModal.value = true
+}
+
 // Options untuk select
-const kelurahanOptions = computed(() => form.kecamatan_id ? props.kelurahan?.[form.kecamatan_id] ?? [] : [])
-const posyanduOptions = computed(() => form.kelurahan_id ? props.posyandu?.[form.kelurahan_id] ?? [] : [])
-const wuspusOptions = computed(() => form.posyandu_id ? props.wuspus?.[form.posyandu_id] ?? [] : [])
+const kelurahanOptions = computed(() => {
+  if (!form.kecamatan_id) return []
+  return props.kelurahan?.[form.kecamatan_id] ?? []
+})
+
+const posyanduOptions = computed(() => {
+  if (!form.kelurahan_id) return []
+  return props.posyandu?.[form.kelurahan_id] ?? []
+})
+
+const wuspusOptions = computed(() => {
+  if (!form.posyandu_id) return []
+  return props.wuspus?.[form.posyandu_id] ?? []
+})
 
 // Watch reset saat ganti wilayah
 watch(() => form.kecamatan_id, () => {
   form.kelurahan_id = null
   form.posyandu_id = null
-  form.rows.forEach(r => r.id_wuspus = null)
+  form.rows = [emptyRow()]
 })
+
 watch(() => form.kelurahan_id, () => {
   form.posyandu_id = null
-  form.rows.forEach(r => r.id_wuspus = null)
-})
-watch(() => form.posyandu_id, () => {
-  form.rows.forEach(r => r.id_wuspus = null)
+  form.rows = [emptyRow()]
 })
 
-// Fungsi modal
-function openError(msg){ modalType.value='error'; modalMessage.value=msg; showModal.value=true }
-function openSuccess(msg){ modalType.value='success'; modalMessage.value=msg; showModal.value=true }
+watch(() => form.posyandu_id, () => {
+  form.rows = [emptyRow()]
+})
 
 // CRUD row
-function addRow(){ form.rows.push(emptyRow()) }
-function deleteRow(i){ if(form.rows.length>1) form.rows.splice(i,1) }
+function addRow() {
+  form.rows.push(emptyRow())
+}
+
+function deleteRow(i) {
+  if (form.rows.length > 1) {
+    form.rows.splice(i, 1)
+  }
+}
 
 // Submit
-function submit(){
-  if(!form.kelurahan_id) return openError('Kelurahan wajib dipilih')
-  if(!form.posyandu_id) return openError('Posyandu wajib dipilih')
+function submit() {
+  if (!form.kelurahan_id) return openError('Kelurahan wajib dipilih')
+  if (!form.posyandu_id) return openError('Posyandu wajib dipilih')
 
-  try{
-    form.rows.forEach((r,idx)=>{
-      if(!r.id_wuspus || !r.id_imun || !r.tgl_imun){
-        openError(`Data ke-${idx+1}: WUS/PUS, Imunisasi, dan Tanggal wajib diisi`)
+  try {
+    form.rows.forEach((r, idx) => {
+      if (!r.id_wuspus || !r.id_imun || !r.tgl_imun) {
+        openError(`Data ke-${idx + 1}: WUS/PUS, Imunisasi, dan Tanggal wajib diisi`)
         throw new Error('invalid')
       }
     })
-  }catch{ return }
+  } catch {
+    return
+  }
 
-  form.post('/posyandu/wuspus-imun/store-multiple',{
-    preserveScroll:true,
-    onSuccess:()=>{
+  form.post('/posyandu/wuspus-imun/store-multiple', {
+    preserveScroll: true,
+    onSuccess: () => {
       openSuccess('Data imunisasi WUS/PUS berhasil disimpan')
-      setTimeout(()=>router.visit('/posyandu/wuspus-imun'),700)
+      setTimeout(() => router.visit('/posyandu/wuspus-imun'), 700)
     },
-    onError:()=>openError('Gagal menyimpan data')
+    onError: () => openError('Gagal menyimpan data')
   })
 }
 </script>
 
 <template>
-  <div class="px-4 py-4">
-
-    <!-- Breadcrumb -->
-    <div class="d-flex align-items-center gap-2 mb-4 text-secondary">
-      <Link href="/dashboard" class="text-decoration-none text-secondary">Dashboard</Link>
-      <span>/</span>
-      <Link href="/wuspus-imun" class="text-decoration-none text-secondary">Imunisasi WUS/PUS</Link>
-      <span>/</span>
-      <span class="text-dark">Tambah Data</span>
-    </div>
-
+  <div class="page-wrapper">
     <!-- Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-      <div class="d-flex align-items-center gap-3">
-        <div class="bg-primary bg-opacity-10 p-3 rounded-3">
-          <i class="icon-plus-circle text-primary fs-2"></i>
-        </div>
-        <div>
-          <h2 class="fw-semibold mb-1">Tambah Imunisasi WUS/PUS</h2>
-          <p class="text-secondary mb-0">Multi Data</p>
-        </div>
+    <div class="page-header">
+      <div>
+        <h2 class="mb-1">Tambah Imunisasi WUS/PUS</h2>
+        <p class="text-muted">Input multi data imunisasi WUS/PUS</p>
       </div>
-      <Link href="/posyandu/wuspus-imun" class="btn btn-outline-secondary px-4 py-2">
-        <i class="icon-arrow-left me-2"></i>
-        Kembali
+      <Link href="/posyandu/wuspus-imun" class="btn btn-outline-secondary">
+        <i class="icon-arrow-left me-2"></i>Kembali
       </Link>
     </div>
 
-    <!-- Form Wilayah -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
-      <div class="row g-4">
-        <div class="col-md-4">
-          <label class="form-label fw-medium text-secondary mb-2">Kecamatan <span class="text-danger">*</span></label>
-          <VueSelect v-model="form.kecamatan_id"
-                     :options="(kecamatan||[]).map(k=>({label:k.nama_kec,value:k.id_kec}))"
-                     placeholder="Pilih Kecamatan"
-                     :clearable="true" />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-medium text-secondary mb-2">Kelurahan <span class="text-danger">*</span></label>
-          <VueSelect v-model="form.kelurahan_id"
-                     :options="kelurahanOptions.map(k=>({label:k.nama_kel,value:k.id_kel}))"
-                     placeholder="Pilih Kelurahan"
-                     :clearable="true"
-                     :disabled="!form.kecamatan_id" />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-medium text-secondary mb-2">Posyandu <span class="text-danger">*</span></label>
-          <VueSelect v-model="form.posyandu_id"
-                     :options="posyanduOptions.map(p=>({label:p.nama_posyandu,value:p.id_posyandu}))"
-                     placeholder="Pilih Posyandu"
-                     :clearable="true"
-                     :disabled="!form.kelurahan_id" />
-        </div>
-      </div>
-    </div>
-
-    <!-- Alert jika posyandu belum dipilih -->
-    <div v-if="!form.posyandu_id" class="alert alert-warning bg-warning bg-opacity-10 border-0 rounded-3 d-flex align-items-center gap-3 mb-4">
-      <i class="icon-info-circle fs-5 text-warning"></i>
-      <span>Silakan pilih Posyandu terlebih dahulu untuk menampilkan data WUS/PUS</span>
-    </div>
-
-    <!-- Form Rows -->
-    <form @submit.prevent="submit">
-      <div class="mb-4">
-        <div class="d-flex align-items-center gap-3 mb-3">
-          <h6 class="fw-semibold mb-0">Form Imunisasi WUS/PUS</h6>
-          <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
-            Total: {{ form.rows.length }} Data
-          </span>
-        </div>
-
-        <div v-for="(row,index) in form.rows" :key="index" class="card border rounded-3 mb-3">
-          <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="bg-primary bg-opacity-10 text-primary rounded-2 px-3 py-1 fw-medium">Data #{{ index+1 }}</span>
-              <button type="button" class="btn btn-outline-danger btn-sm rounded-3 px-3 py-2"
-                      @click="deleteRow(index)" :disabled="form.rows.length===1">
-                <i class="icon-trash me-2"></i> Hapus
-              </button>
+    <div class="main-card">
+      <div class="card-body">
+        <!-- FILTER -->
+        <div class="filter-box">
+          <h6 class="mb-3">Pilih Lokasi</h6>
+          <div class="grid-3">
+            <div class="field">
+              <label>Kecamatan <span class="text-danger">*</span></label>
+              <VueSelect
+                v-model="form.kecamatan_id"
+                :options="(kecamatan||[]).map(k => ({ label: k.nama_kec, value: k.id_kec }))"
+                placeholder="Pilih Kecamatan"
+              />
             </div>
 
-            <div class="row g-4">
-              <div class="col-lg-6">
-                <label class="form-label fw-medium">Pilih WUS/PUS <span class="text-danger">*</span></label>
-                <VueSelect v-model="row.id_wuspus"
-                           :options="wuspusOptions.map(w=>({label:`${w.nik_wuspus} - ${w.nama_wuspus}`,value:w.id_wuspus}))"
-                           placeholder="Pilih WUS/PUS"
-                           :disabled="!form.posyandu_id" />
-              </div>
+            <div class="field">
+              <label>Kelurahan <span class="text-danger">*</span></label>
+              <VueSelect
+                v-model="form.kelurahan_id"
+                :options="kelurahanOptions.map(k => ({ label: k.nama_kel, value: k.id_kel }))"
+                :isDisabled="!form.kecamatan_id"
+                placeholder="Pilih Kelurahan"
+              />
+            </div>
 
-              <div class="col-lg-6">
-                <label class="form-label fw-medium">Jenis Imunisasi <span class="text-danger">*</span></label>
-                <VueSelect v-model="row.id_imun"
-                           :options="imun.map(i=>({label:i.jns_imun,value:i.id_imun}))"
-                           placeholder="Pilih Imunisasi" />
-              </div>
-
-              <div class="col-lg-4">
-                <label class="form-label fw-medium">Tanggal Imunisasi <span class="text-danger">*</span></label>
-                <input type="date" class="form-control" v-model="row.tgl_imun" />
-              </div>
-
-              <div class="col-12">
-                <label class="form-label fw-medium">Keterangan</label>
-                <textarea class="form-control" rows="2" v-model="row.ket"></textarea>
-              </div>
+            <div class="field">
+              <label>Posyandu <span class="text-danger">*</span></label>
+              <VueSelect
+                v-model="form.posyandu_id"
+                :options="posyanduOptions.map(p => ({ label: p.nama_posyandu, value: p.id_posyandu }))"
+                :isDisabled="!form.kelurahan_id"
+                placeholder="Pilih Posyandu"
+              />
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Tombol Tambah & Simpan -->
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 pt-3 border-top">
-        <button type="button" class="btn btn-outline-success px-4 py-2 rounded-3 d-flex align-items-center gap-2" @click="addRow">
-          <i class="icon-plus"></i> Tambah Data
-        </button>
-        <button type="submit" class="btn btn-primary px-5 py-2 rounded-3 d-flex align-items-center gap-2">
-          <i class="icon-save"></i> Simpan Data
-        </button>
-      </div>
-    </form>
+        <form @submit.prevent="submit">
+          <!-- Data Imunisasi Rows -->
+          <div v-if="form.posyandu_id" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6>Data Imunisasi WUS/PUS</h6>
+              <div>
+                <span class="badge bg-info me-2">Total: {{ form.rows.length }} data</span>
+              </div>
+            </div>
 
-    <!-- Modal -->
-    <div v-if="showModal" class="overlay-blur" @click.self="showModal=false">
-      <div class="modal-card" :class="modalType==='success'?'border border-success':'border border-danger'">
-        <h3 class="text-xl font-semibold mb-3">{{ modalType==='success'?'Berhasil':'Gagal' }}</h3>
-        <p class="mb-0">{{ modalMessage }}</p>
-        <button class="btn w-100 mt-4" :class="modalType==='success'?'btn-success':'btn-danger'" @click="showModal=false">Tutup</button>
+            <div v-for="(row, i) in form.rows" :key="i" class="data-card">
+              <div class="data-header">
+                <div>
+                  <span class="badge bg-primary me-2">{{ i+1 }}</span>
+                  <strong>Data Imunisasi</strong>
+                </div>
+                <button 
+                  type="button" 
+                  class="btn btn-outline-danger btn-sm" 
+                  @click="deleteRow(i)"
+                  v-if="form.rows.length > 1"
+                >
+                  <i class="icon-trash me-1"></i>Hapus
+                </button>
+              </div>
+
+              <!-- Grid 2 kolom untuk data utama -->
+              <div class="grid-2">
+                <div class="field">
+                  <label>Pilih WUS/PUS <span class="text-danger">*</span></label>
+                  <VueSelect
+                    v-model="row.id_wuspus"
+                    :options="wuspusOptions.map(w => ({ 
+                      label: `${w.nik_wuspus} - ${w.nama_wuspus}`, 
+                      value: w.id_wuspus 
+                    }))"
+                    :isDisabled="!form.posyandu_id"
+                    placeholder="Pilih WUS/PUS"
+                  />
+                  <small v-if="wuspusOptions.length === 0" class="text-warning">
+                    Tidak ada data WUS/PUS untuk posyandu ini
+                  </small>
+                </div>
+
+                <div class="field">
+                  <label>Jenis Imunisasi <span class="text-danger">*</span></label>
+                  <VueSelect
+                    v-model="row.id_imun"
+                    :options="imun.map(i => ({ label: i.jns_imun, value: i.id_imun }))"
+                    placeholder="Pilih Jenis Imunisasi"
+                  />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label>Tanggal Imunisasi <span class="text-danger">*</span></label>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    v-model="row.tgl_imun"
+                  />
+                </div>
+
+                <div class="field">
+                  <label>Keterangan</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    v-model="row.ket"
+                    placeholder="Masukkan keterangan (opsional)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-footer">
+              <button 
+                type="button" 
+                class="btn btn-outline-success" 
+                @click="addRow"
+              >
+                <i class="icon-plus me-2"></i>Tambah Data
+              </button>
+              <button type="submit" class="btn btn-primary" :disabled="form.processing">
+                <i class="icon-check me-2"></i>
+                {{ form.processing ? 'Menyimpan...' : 'Simpan Semua Data' }}
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="alert alert-info mt-4">
+            <i class="icon-info-circle me-2"></i>
+            Silakan pilih kecamatan, kelurahan, dan posyandu terlebih dahulu
+          </div>
+        </form>
+
       </div>
     </div>
+  </div>
 
+  <!-- Modal Notifikasi -->
+  <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+    <div class="modal-card">
+      <div class="text-center">
+        <i 
+          class="icon" 
+          :class="{
+            'icon-check-circle text-success': modalType === 'success',
+            'icon-exclamation-circle text-danger': modalType === 'error'
+          }"
+          style="font-size: 48px;"
+        ></i>
+        <h4 class="mt-3">{{ modalType === 'success' ? 'Berhasil!' : 'Gagal!' }}</h4>
+        <p class="text-muted">{{ modalMessage }}</p>
+        <button class="btn btn-primary mt-3" @click="showModal = false">Tutup</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.form-control{height:44px;border-radius:10px;border:1px solid #e5e7eb;padding:0 10px;width:100%}
-textarea.form-control{height:auto;padding:10px}
-
-.overlay-blur{
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.35);
-  backdrop-filter: blur(6px);
-  display:flex; align-items:center; justify-content:center;
-  z-index:9999;
-}
-.modal-card{
-  width:420px;
-  background:#fff;
-  border-radius:14px;
-  padding:20px;
-  box-shadow:0 20px 60px rgba(0,0,0,.2);
+.page-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
 }
 
-@media(max-width:768px){
-  .row.g-4{gap:16px}
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.main-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.card-body {
+  padding: 28px;
+}
+
+.filter-box {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #eef2f6;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-weight: 500;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.data-card {
+  border: 1px solid #eef1f4;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+  background: white;
+  transition: all 0.2s;
+}
+
+.data-card:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.form-control {
+  height: 42px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  padding: 0 12px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.form-control:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+  outline: none;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 2px solid #f0f2f5;
+}
+
+.btn {
+  padding: 10px 20px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #4299e1;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #3182ce;
+  transform: translateY(-1px);
+}
+
+.btn-outline-success {
+  border: 1.5px solid #48bb78;
+  color: #48bb78;
+}
+
+.btn-outline-success:hover {
+  background: #48bb78;
+  color: white;
+}
+
+.btn-outline-danger {
+  border: 1.5px solid #f56565;
+  color: #f56565;
+}
+
+.btn-outline-danger:hover {
+  background: #f56565;
+  color: white;
+}
+
+.btn-outline-secondary {
+  border: 1.5px solid #718096;
+  color: #718096;
+}
+
+.btn-outline-secondary:hover {
+  background: #718096;
+  color: white;
+}
+
+.badge {
+  padding: 10px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-card {
+  background: white;
+  padding: 32px;
+  border-radius: 20px;
+  max-width: 400px;
+  width: 90%;
+}
+
+.alert {
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.alert-info {
+  background-color: #ebf8ff;
+  border: 1px solid #90cdf4;
+  color: #2c5282;
+}
+
+@media (max-width: 768px) {
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: start;
+  }
+  
+  .form-footer {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .form-footer button {
+    width: 100%;
+  }
 }
 </style>
