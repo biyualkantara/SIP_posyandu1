@@ -71,33 +71,41 @@ class BayiBiodataController extends Controller
             'posyandu'=>$posyandu,
             'filter'=>[
                 'kec'=>$kec,
-                'kel'=>$kel,
+                'kel'=>$kel,    
                 'pos'=>$pos,
                 'q'=>$q,
             ]
         ]);
     }
 
-    public function create()
+        public function create()
     {
-        $kecamatan = DB::table('kcmtn')->select('id_kec','nama_kec')->orderBy('nama_kec')->get();
-        $kelurahan = DB::table('klrhn')->select('id_kel','id_kec','nama_kel')->orderBy('nama_kel')->get()->groupBy('id_kec');
-        $posyandu  = DB::table('duspy')->select('id_posyandu','id_kel','nama_posyandu')->orderBy('nama_posyandu')->get()->groupBy('id_kel');
+        $kecamatan = DB::table('kcmtn')->select('id_kec','nama_kec')->get();
+        $kelurahan = DB::table('klrhn')->select('id_kel','id_kec','nama_kel')->get()->groupBy('id_kec');
+        $posyandu  = DB::table('duspy')->select('id_posyandu','id_kel','nama_posyandu')->get()->groupBy('id_kel');
 
+        // Ambil ID ibu yang sudah memiliki bayi
+        $usedWuspus = DB::table('bayi')
+            ->pluck('id_wuspus')
+            ->unique()
+            ->toArray();
+
+        // Ambil ibu yang BELUM memiliki bayi
         $wuspus = DB::table('wuspus')
-            ->select('id_wuspus','id_posyandu','nik_wuspus','nama_wuspus')
+            ->whereNotIn('id_wuspus', $usedWuspus) // Filter yang belum punya bayi
+            ->select('id_wuspus', 'nama_wuspus', 'nik_wuspus', 'id_posyandu')
             ->orderBy('nama_wuspus')
             ->get()
             ->groupBy('id_posyandu');
 
-        return Inertia::render('bayi/biodata/Create',[
-            'kecamatan'=>$kecamatan,
-            'kelurahan'=>$kelurahan,
-            'posyandu'=>$posyandu,
-            'wuspus'=>$wuspus,
+        return Inertia::render('bayi/biodata/Create', [
+            'kecamatan' => $kecamatan,
+            'kelurahan' => $kelurahan,
+            'posyandu'  => $posyandu,
+            'wuspus'    => $wuspus
         ]);
     }
-
+    
     public function storeMultiple(Request $request)
     {
         $request->validate([

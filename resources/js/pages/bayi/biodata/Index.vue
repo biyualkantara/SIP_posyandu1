@@ -1,4 +1,5 @@
 <script setup>
+import AdminLayout from '@/layouts/AdminLayout.vue'
 import { Link, router } from '@inertiajs/vue3'
 import DataTable from '@/components/ui/DataTable.vue'
 import VueSelect from "vue3-select-component"
@@ -98,11 +99,10 @@ function confirmDelete() {
 </script>
 
 <template>
-  <AdminLayout>
     <div class="mt-3 p-4 bg-white main-container">
       <div class="header-flex mb-3">
         <h1>Data Bayi - Biodata</h1>
-       <Link href="/posyandu/bayi/create" class="btn btn-primary">+ Tambah</Link>
+       <Link href="/posyandu/bayi/create" class="btn btn-primary">Tambah</Link>
       </div>
       <hr>
 
@@ -160,8 +160,6 @@ function confirmDelete() {
         </div>
       </div>
     </div>
-
-  </AdminLayout>
 </template>
 
 <style scoped>

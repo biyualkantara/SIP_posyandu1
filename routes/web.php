@@ -191,17 +191,17 @@ Route::prefix('posyandu')->name('posyandu.')->group(function () {
         Route::put('/wuspus-kematian/{id}', [WuspusKematianController::class, 'update']);
         Route::delete('/wuspus-kematian/{id}', [WuspusKematianController::class, 'destroy']);
 
-        // ======================
+       // ======================
         // BAYI
         // ======================
 
-        Route::get('/bayi', [BayiBiodataController::class, 'index']);
-        Route::get('/bayi/create', [BayiBiodataController::class, 'create']);
-        Route::post('/bayi/store-multiple', [BayiBiodataController::class, 'storeMultiple']);
-        Route::get('/bayi/{id}', [BayiBiodataController::class, 'show']);
-        Route::get('/bayi/{id}/edit', [BayiBiodataController::class, 'edit']);
-        Route::put('/bayi/{id}', [BayiBiodataController::class, 'update']);
-        Route::delete('/bayi/{id}', [BayiBiodataController::class, 'destroy']);
+        Route::get('/bayi', [BayiBiodataController::class, 'index'])->name('posyandu.bayi.index');
+        Route::get('/bayi/create', [BayiBiodataController::class, 'create'])->name('posyandu.bayi.create'); // Tambah nama route
+        Route::post('/bayi/store-multiple', [BayiBiodataController::class, 'storeMultiple'])->name('posyandu.bayi.store-multiple');
+        Route::get('/bayi/{id}', [BayiBiodataController::class, 'show'])->name('posyandu.bayi.show');
+        Route::get('/bayi/{id}/edit', [BayiBiodataController::class, 'edit'])->name('posyandu.bayi.edit');
+        Route::put('/bayi/{id}', [BayiBiodataController::class, 'update'])->name('posyandu.bayi.update');
+        Route::delete('/bayi/{id}', [BayiBiodataController::class, 'destroy'])->name('posyandu.bayi.destroy');
 
         Route::get('/bayi-pnb', [BayiPenimbanganController::class, 'index']);
         Route::get('/bayi-pnb/create', [BayiPenimbanganController::class, 'create']);
