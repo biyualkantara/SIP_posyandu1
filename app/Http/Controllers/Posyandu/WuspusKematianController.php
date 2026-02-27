@@ -61,6 +61,49 @@ class WuspusKematianController extends Controller
         ]);
     }
 
+    // CREATE
+        public function create()
+        {
+            $wuspus = Wuspus::where('status','Aktif')
+                ->select('id_wuspus','nik_wuspus','nama_wuspus')
+                ->orderBy('nama_wuspus')
+                ->get();
+
+            return Inertia::render('wuspus/kematian/Create', [
+                'wuspus' => $wuspus
+            ]);
+        }
+
+
+        // STORE
+        public function store(Request $request)
+        {
+            $request->validate([
+                'id_wuspus'  => ['required','exists:wuspus,id_wuspus'],
+                'tgl_wafat'  => ['required','date'],
+                'penyebab'   => ['nullable','string'],
+                'ket'        => ['nullable','string'],
+            ]);
+
+            DB::transaction(function () use ($request) {
+
+                // simpan data kematian
+                WuspusKematian::create([
+                    'id_wuspus' => $request->id_wuspus,
+                    'tgl_wafat' => $request->tgl_wafat,
+                    'penyebab'  => $request->penyebab,
+                    'ket'       => $request->ket,
+                ]);
+
+                // ubah status WUS/PUS
+                Wuspus::where('id_wuspus',$request->id_wuspus)
+                    ->update(['status' => 'Meninggal']);
+            });
+
+            return redirect('/posyandu/wuspus-kematian')
+                ->with('success','Data kematian berhasil disimpan');
+        }
+
         // SHOW
         public function show($id)
         {

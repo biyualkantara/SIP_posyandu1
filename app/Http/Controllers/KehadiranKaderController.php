@@ -117,7 +117,7 @@ class KehadiranKaderController extends Controller
                 $bulan = $r['bulan'] . '-01'; // simpan DATE awal bulan ke kolom `bulan/tahun`
                 DB::table('kdrhdr')->insert([
                     'id_posyandu' => $r['id_posyandu'],
-                    'bulan/tahun' => $bulan,
+                    'bulan' => $bulan,
                     'pkk' => (int)$r['pkk'],
                     'plkb' => (int)$r['plkb'],
                     'medis' => (int)$r['medis'],
