@@ -140,7 +140,7 @@ class KehadiranKaderController extends Controller
             ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
             ->select([
                 'k.id_kdrhdr',
-                DB::raw('k.`bulan/tahun` as bulan_tahun'),
+                DB::raw('k.`bulan` as bulan_tahun'),
                 'k.pkk', 'k.plkb', 'k.medis',
                 'd.id_posyandu', 'd.nama_posyandu',
                 'kel.nama_kel',
@@ -179,7 +179,7 @@ class KehadiranKaderController extends Controller
             ->select([
                 'k.id_kdrhdr',
                 'k.id_posyandu',
-                DB::raw('DATE_FORMAT(k.`bulan/tahun`, "%Y-%m") as bulan'),
+                DB::raw('DATE_FORMAT(k.`bulan`, "%Y-%m") as bulan'),
                 'k.pkk', 'k.plkb', 'k.medis',
                 'kel.id_kel',
                 'kel.nama_kel',
@@ -215,7 +215,7 @@ class KehadiranKaderController extends Controller
             ->where('id_kdrhdr', $id)
             ->update([
                 'id_posyandu' => $request->id_posyandu,
-                'bulan/tahun' => $bulan,
+                'bulan' => $bulan,
                 'pkk' => (int)$request->pkk,
                 'plkb' => (int)$request->plkb,
                 'medis' => (int)$request->medis,
