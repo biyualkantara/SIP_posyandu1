@@ -37,7 +37,16 @@ function confirmDelete(){
     preserveScroll: true,
     onSuccess: () => {
       closeModal()
-      router.reload({ only: ['data'] }) // reload data terbaru
+      router.reload({ only: ['data'] })
+      // Optional: tampilkan notifikasi sukses
+      window.dispatchEvent(new CustomEvent("toast", {
+        detail: { type: "success", message: "Data kematian berhasil dihapus!" }
+      }))
+    },
+    onError: (errors) => {
+      window.dispatchEvent(new CustomEvent("toast", {
+        detail: { type: "error", message: "Gagal menghapus data." }
+      }))
     }
   })
 }
@@ -54,13 +63,14 @@ function confirmDelete(){
 
   <DataTable :columns="columns" :rows="rows" :perPage="10">
     <template #col-actions="{ row }">
-      <Link :href="`/posyandu/wuspus-kematian/${row.id_wuspus}`">
+      <!-- Perbaikan: gunakan row.id (bukan id_wuspus) -->
+      <Link :href="`/posyandu/wuspus-kematian/${row.id}`">
         <span class="bg-info p-3 rounded-circle text-white me-2" style="cursor:pointer;">
           <i class="icon-eye"></i>
         </span>
       </Link>
 
-      <Link :href="`/posyandu/wuspus-kematian/${row.id_wuspus}/edit`">
+      <Link :href="`/posyandu/wuspus-kematian/${row.id}/edit`">
         <span class="bg-primary p-3 rounded-circle text-white me-2" style="cursor:pointer;">
           <i class="icon-pencil"></i>
         </span>

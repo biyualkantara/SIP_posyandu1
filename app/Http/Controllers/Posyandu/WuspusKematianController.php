@@ -104,32 +104,34 @@ class WuspusKematianController extends Controller
                 ->with('success','Data kematian berhasil disimpan');
         }
 
-        // SHOW
-        public function show($id)
-        {
-            $row = WuspusKematian::from('wuspus_kematians as wk')
-                ->join('wuspus as w', 'w.id_wuspus', '=', 'wk.id_wuspus')
-                ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
-                ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
-                ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
-                ->select([
-                    'wk.*',
-                    'w.nik_wuspus',
-                    'w.nama_wuspus',
-                    'w.status',
-                    'd.nama_posyandu',
-                    'kel.nama_kel',
-                    'kec.nama_kec'
-                ])
-                ->where('wk.id_wuspus', $id)
-                ->firstOrFail();
+         // SHOW - PERBAIKAN
+    public function show($id)
+    {
+    
+        $row = WuspusKematian::from('wuspus_kematians as wk')
+            ->join('wuspus as w', 'w.id_wuspus', '=', 'wk.id_wuspus')
+            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+            ->select([
+                'wk.*',
+                'w.nik_wuspus',
+                'w.nama_wuspus',
+                'w.status',
+                'd.nama_posyandu',
+                'kel.nama_kel',
+                'kec.nama_kec'
+            ])
+            ->where('wk.id', $id) // PERBAIKAN: where id (primary key tabel kematian)
+            ->firstOrFail();
 
-            return Inertia::render('wuspus/kematian/Show', ['row' => $row]);
-        }
+        return Inertia::render('wuspus/kematian/Show', ['row' => $row]);
+    }
 
-    // EDIT
+    // EDIT - PERBAIKAN
     public function edit($id)
     {
+        // Cari berdasarkan id tabel wuspus_kematians
         $row = WuspusKematian::from('wuspus_kematians as wk')
             ->join('wuspus as w','w.id_wuspus','=','wk.id_wuspus')
             ->leftJoin('duspy as d','d.id_posyandu','=','w.id_posyandu')
@@ -144,13 +146,13 @@ class WuspusKematianController extends Controller
                 'kel.nama_kel',
                 'kec.nama_kec'
             ])
-            ->where('wk.id_wuspus',$id)
+            ->where('wk.id', $id) // PERBAIKAN: where id (primary key tabel kematian)
             ->firstOrFail();
 
-        return Inertia::render('wuspus/kematian/Edit', ['row'=>$row]);
+        return Inertia::render('wuspus/kematian/Edit', ['row' => $row]);
     }
 
-    // UPDATE
+     // UPDATE - PERBAIKAN
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -158,25 +160,32 @@ class WuspusKematianController extends Controller
             'restore' => ['nullable','boolean'],
         ]);
 
+        // Cari data kematian berdasarkan id
+        $kematian = WuspusKematian::findOrFail($id);
+        $id_wuspus = $kematian->id_wuspus;
+
         // Update WUS/PUS status
         $status = $request->restore ? 'Aktif' : 'Meninggal';
-        Wuspus::where('id_wuspus', $id)->update(['status'=>$status]);
+        Wuspus::where('id_wuspus', $id_wuspus)->update(['status' => $status]);
 
         // Update keterangan di WuspusKematian
-        WuspusKematian::where('id_wuspus', $id)->update(['ket'=>$request->ket]);
+        $kematian->update(['ket' => $request->ket]);
 
-        return redirect()->back()->with('success','Data kematian WUS/PUS berhasil diperbarui');
+        return redirect()->back()->with('success', 'Data kematian WUS/PUS berhasil diperbarui');
     }
 
-    // DELETE
+    // DELETE - PERBAIKAN
     public function destroy($id)
     {
-        $data = WuspusKematian::where('id_wuspus',$id)->firstOrFail();
+        // Cari berdasarkan id tabel wuspus_kematians
+        $data = WuspusKematian::findOrFail($id);
+        
+        $id_wuspus = $data->id_wuspus;
         $data->delete();
 
-        // Optional: ubah status WUS/PUS jadi aktif lagi
-        Wuspus::where('id_wuspus',$id)->update(['status'=>'Aktif']);
+        // Ubah status WUS/PUS jadi aktif lagi
+        Wuspus::where('id_wuspus', $id_wuspus)->update(['status' => 'Aktif']);
 
-        return redirect()->back()->with('success','Data kematian berhasil dihapus');
+        return redirect()->back()->with('success', 'Data kematian berhasil dihapus');
     }
 }
