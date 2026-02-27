@@ -13,17 +13,28 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
+    use Notifiable;
+
+    protected $table = 'operator';          // nama tabel
+    protected $primaryKey = 'id_operator';  // primary key
+
+    public $timestamps = false;  
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'username',
         'email',
         'password',
+        'nama',
+        'alamat',
         'role',
-        'status',
+        'no_hp',
+        'id_posyandu',
+        'kcmtn',
+        'klrhn',
     ];
 
     protected $hidden = [
