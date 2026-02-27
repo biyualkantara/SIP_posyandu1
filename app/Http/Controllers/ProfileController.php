@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule; 
 use Inertia\Inertia;
 
 class ProfileController extends Controller
@@ -27,12 +28,17 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:150',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'nama' => 'required|string|max:150',
+            'email' => [
+            'required',
+            'email',
+            Rule::unique('operator', 'email')
+                ->ignore($user->id_operator, 'id_operator'),
+            ],
             'password' => 'nullable|min:6|confirmed',
         ]);
 
-        $user->name = $validated['name'];
+        $user->nama = $validated['nama'];
         $user->email = $validated['email'];
 
         if (!empty($validated['password'])) {
