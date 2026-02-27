@@ -3,16 +3,22 @@ import { Link, useForm, router } from '@inertiajs/vue3'
 
 const props = defineProps({
   row: Object,
-  posyandu: Array
+  posyandu: Array,
+  kecamatan: Array,
+  kelurahan: Array
 })
 
 const form = useForm({
   nama: props.row.nama,
   username: props.row.username,
+  password: '',
   role: props.row.role,
   id_posyandu: props.row.id_posyandu,
   email: props.row.email,
-  no_hp: props.row.no_hp
+  no_hp: props.row.no_hp,
+  alamat: props.row.alamat,
+  kcmtn: props.row.kcmtn,
+  klrhn: props.row.klrhn
 })
 
 function submit() {
@@ -31,23 +37,84 @@ function submit() {
     </div>
 
     <form @submit.prevent="submit">
-      <input class="form-control mb-3" v-model="form.nama">
-      <input class="form-control mb-3" v-model="form.username">
+      <div class="row">
 
-      <select class="form-control mb-3" v-model="form.role">
-        <option value="superadmin">Super Admin</option>
-        <option value="admin">Admin</option>
-        <option value="kader">Kader</option>
-      </select>
+        <div class="col-lg-6 mb-3">
+          <label>Nama</label>
+          <input class="form-control" v-model="form.nama">
+        </div>
 
-      <select class="form-control mb-3" v-model="form.id_posyandu">
-        <option value="">-- Posyandu --</option>
-        <option v-for="p in posyandu" :key="p.id_posyandu" :value="p.id_posyandu">
-          {{ p.nama_posyandu }}
-        </option>
-      </select>
+        <div class="col-lg-6 mb-3">
+          <label>Email</label>
+          <input class="form-control" v-model="form.email">
+        </div>
 
-      <button class="btn btn-primary">Update</button>
+        <div class="col-lg-6 mb-3">
+          <label>Username</label>
+          <input class="form-control" v-model="form.username">
+        </div>
+
+        <div class="col-lg-6 mb-3">
+          <label>Password (Kosongkan jika tidak diubah)</label>
+          <input type="password" class="form-control" v-model="form.password">
+        </div>
+
+        <div class="col-lg-6 mb-3">
+          <label>Role</label>
+          <select class="form-control" v-model="form.role">
+            <option value="superadmin">Super Admin</option>
+            <option value="admin">Admin</option>
+            <option value="kader">Kader</option>
+          </select>
+        </div>
+
+        <div class="col-lg-6 mb-3">
+          <label>Posyandu</label>
+          <select class="form-control" v-model="form.id_posyandu">
+            <option :value="null">-- Opsional --</option>
+            <option v-for="p in posyandu" :key="p.id_posyandu" :value="p.id_posyandu">
+              {{ p.nama_posyandu }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-lg-6 mb-3">
+          <label>Kecamatan</label>
+          <select class="form-control" v-model="form.kcmtn">
+            <option :value="null">-- Pilih Kecamatan --</option>
+            <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
+              {{ k.nama_kec }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-lg-6 mb-3">
+          <label>Kelurahan</label>
+          <select class="form-control" v-model="form.klrhn">
+            <option :value="null">-- Pilih Kelurahan --</option>
+            <option
+              v-for="l in kelurahan.filter(x => x.id_kec === form.kcmtn)"
+              :key="l.id_kel"
+              :value="l.id_kel"
+            >
+              {{ l.nama_kel }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-lg-6 mb-3">
+          <label>No HP</label>
+          <input class="form-control" v-model="form.no_hp">
+        </div>
+
+        <div class="col-lg-6 mb-3">
+          <label>Alamat</label>
+          <textarea class="form-control" v-model="form.alamat"></textarea>
+        </div>
+
+      </div>
+
+      <button class="btn btn-primary mt-3">Update</button>
     </form>
   </div>
 </AdminLayout>
