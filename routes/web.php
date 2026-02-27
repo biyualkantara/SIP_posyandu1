@@ -213,13 +213,14 @@ Route::prefix('posyandu')->name('posyandu.')->group(function () {
 
         Route::get('/bayi-imun', [BayiImunisasiController::class, 'index']);
         Route::get('/bayi-imun/create', [BayiImunisasiController::class, 'create']);
-        Route::post('/bayi-imun/store-multiple', [BayiImunisasiController::class, 'storeMultiple']);
+        Route::post('/bayi-imun', [BayiImunisasiController::class, 'store']); // Untuk single data
+        Route::post('/bayi-imun/store-multiple', [BayiImunisasiController::class, 'storeMultiple']); // Untuk multi data
+        Route::get('/bayi-imun/{id}', [BayiImunisasiController::class, 'show']);
+        Route::get('/bayi-imun/{id}/edit', [BayiImunisasiController::class, 'edit']);
+        Route::put('/bayi-imun/{id}', [BayiImunisasiController::class, 'update'])->name('bayi-imun.update');
+        Route::delete('/bayi-imun/{id}', [BayiImunisasiController::class, 'destroy']);
 
-        Route::get('/bayi-wafat', [BayiWafatController::class, 'index']);
-        Route::get('/bayi-wafat/create', [BayiWafatController::class, 'create']);
-        Route::post('/bayi-wafat/store-multiple', [BayiWafatController::class, 'storeMultiple']);
-
-        // ======================
+        // ======================   
         // BUMIL
         // ======================
 
