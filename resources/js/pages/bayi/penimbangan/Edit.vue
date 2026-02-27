@@ -38,12 +38,12 @@ const kelurahanFiltered = computed(() => {
 
 const posyanduFiltered = computed(() => {
   if (!form.id_kel) return []
-  return props.posyandu?.[form.id_kel] ?? []
+  return props.posyandu?.[Number(form.id_kel)] ?? []
 })
 
 const bayiFiltered = computed(() => {
   if (!form.id_posyandu) return []
-  return props.bayi?.[form.id_posyandu] ?? []
+  return props.bayi?.[Number(form.id_posyandu)] ?? []
 })
 
 function pilihKecamatan(nama) {
@@ -82,14 +82,9 @@ function pilihKelurahan(nama) {
 
     <form @submit.prevent="form.put(`/posyandu/bayi-pnb/${props.row.id_bayi_pnb}`)">
       <div class="row mb-4">
-        <div class="col-lg-4 mb-3">
+         <div class="col-lg-3 mb-3">
           <label>Kecamatan</label>
-          <input class="form-control" list="listKec"
-                 v-model="kecamatanNama"
-                 @input="pilihKecamatan(kecamatanNama)">
-          <datalist id="listKec">
-            <option v-for="k in kecamatan" :key="k.id_kec" :value="k.nama_kec"></option>
-          </datalist>
+          <input class="form-control" :value="row.nama_kec" disabled>
         </div>
 
         <div class="col-lg-4 mb-3">
@@ -103,7 +98,7 @@ function pilihKelurahan(nama) {
           </datalist>
         </div>
 
-        <div class="col-lg-4 mb-3">
+        <div class="col-lg-5 mb-3">
           <label>Posyandu</label>
           <select class="form-control" v-model="form.id_posyandu" :disabled="!form.id_kel">
             <option value="">-- Pilih --</option>
