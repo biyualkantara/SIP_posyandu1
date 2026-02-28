@@ -18,7 +18,7 @@ const props = defineProps({
 
     <div class="detail-card">
       <h4>{{ row.nama_bayi }}</h4>
-      <p><b>NIK:</b> {{ row.nik_bayi }}</p>
+      <!-- <p><b>NIK:</b> {{ row.nik_bayi }}</p> -->
 
       <hr>
 
