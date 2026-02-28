@@ -79,6 +79,7 @@ class BayiPenimbanganController extends Controller
 
     public function storeMultiple(Request $request)
     {
+
         $request->validate([
             'posyandu_id'=>'required',
             'rows'=>'required|array|min:1',
@@ -172,9 +173,13 @@ class BayiPenimbanganController extends Controller
         ->orderBy('nama_posyandu')
         ->get()
         ->groupBy('id_kel');
-
+    $bayi = DB::table('bayi as b')
+        ->leftJoin('wuspus as w','w.id_wuspus','=','b.id_wuspus')
+        ->select('b.id_bayi','b.nama_bayi','w.id_posyandu')
+        ->get()
+        ->groupBy('id_posyandu');   
     return Inertia::render('bayi/penimbangan/Edit', compact(
-        'row','kecamatan','kelurahan','posyandu'
+    'row','kecamatan','kelurahan','posyandu','bayi'
     ));
 }
 
