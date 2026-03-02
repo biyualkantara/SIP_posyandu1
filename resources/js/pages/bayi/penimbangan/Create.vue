@@ -1,9 +1,5 @@
 <script setup>
-import Table from '@/components/ui/Table.vue'
-import TableHead from '@/components/ui/TableHead.vue'
-import TableRow from '@/components/ui/TableRow.vue'
-import TableCol from '@/components/ui/TableCol.vue'
-
+import AdminLayout from '@/layouts/AdminLayout.vue'
 import { Link, useForm, router } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import VueSelect from "vue3-select-component"
@@ -17,10 +13,9 @@ const props = defineProps({
 
 const emptyRow = () => ({
   id_bayi: null,
-  bln: '',        // opsional (kalau ada)
   tgl_pnb: '',
   berat: '',
-  tb: '',         // kalau tabel kamu gak ada tb, hapus input ini
+  tb: '',
   hasil: '',
   ket: ''
 })
@@ -32,6 +27,13 @@ const form = useForm({
   rows: [emptyRow()]
 })
 
+// Untuk melacak ID bayi yang sudah dipilih di row lain
+const selectedBayiIds = computed(() => {
+  return form.rows
+    .map(row => row.id_bayi)
+    .filter(id => id !== null)
+})
+
 const showModal = ref(false)
 const modalType = ref('success')
 const modalMessage = ref('')
@@ -41,6 +43,7 @@ function openError(msg) {
   modalMessage.value = msg
   showModal.value = true
 }
+
 function openSuccess(msg) {
   modalType.value = 'success'
   modalMessage.value = msg
@@ -48,234 +51,563 @@ function openSuccess(msg) {
 }
 
 function addRow() {
+  // Cek apakah masih ada bayi yang tersedia
+  const availableBayiCount = bayiOptions.value.length - selectedBayiIds.value.length
+  
+  if (availableBayiCount <= 0) {
+    openError('Tidak ada lagi bayi yang tersedia untuk posyandu ini')
+    return
+  }
+  
   form.rows.push(emptyRow())
 }
+
 function deleteRow(i) {
-  if (form.rows.length > 1) form.rows.splice(i, 1)
+  if (form.rows.length > 1) {
+    form.rows.splice(i, 1)
+  }
 }
 
 const kelurahanOptions = computed(() => {
   if (!form.kecamatan_id) return []
   return props.kelurahan?.[form.kecamatan_id] ?? []
 })
+
 const posyanduOptions = computed(() => {
   if (!form.kelurahan_id) return []
   return props.posyandu?.[form.kelurahan_id] ?? []
 })
+
 const bayiOptions = computed(() => {
   if (!form.posyandu_id) return []
-  return props.bayi?.[form.posyandu_id] ?? []
+  
+  const options = props.bayi?.[form.posyandu_id] ?? []
+  
+  // Map ke format yang dibutuhkan VueSelect
+  return options.map(b => ({
+    label: b.nama_bayi,
+    value: b.id_bayi
+  }))
 })
+
+// Filter opsi bayi untuk row tertentu (tidak menampilkan bayi yang sudah dipilih di row lain)
+const getBayiOptionsForRow = (currentRowIndex) => {
+  if (!form.posyandu_id) return []
+  
+  const allOptions = bayiOptions.value
+  
+  // Filter out bayi yang sudah dipilih di row lain
+  return allOptions.filter(option => {
+    // Cek apakah bayi ini sudah dipilih di row lain
+    const isSelectedElsewhere = form.rows.some((row, index) => 
+      index !== currentRowIndex && row.id_bayi === option.value
+    )
+    
+    // Tampilkan jika belum dipilih di row lain
+    return !isSelectedElsewhere
+  })
+}
 
 watch(() => form.kecamatan_id, () => {
   form.kelurahan_id = null
   form.posyandu_id = null
-  form.rows.forEach(r => r.id_bayi = null)
+  form.rows = [emptyRow()]
 })
+
 watch(() => form.kelurahan_id, () => {
   form.posyandu_id = null
-  form.rows.forEach(r => r.id_bayi = null)
+  form.rows = [emptyRow()]
 })
+
 watch(() => form.posyandu_id, () => {
-  form.rows.forEach(r => r.id_bayi = null)
+  form.rows = [emptyRow()]
 })
 
 function submit() {
   if (!form.kelurahan_id) return openError('Kelurahan wajib dipilih')
   if (!form.posyandu_id) return openError('Posyandu wajib dipilih')
 
+  // Validasi duplikasi bayi
+  const bayiIds = form.rows.map(row => row.id_bayi).filter(id => id)
+  const uniqueBayiIds = [...new Set(bayiIds)]
+  
+  if (bayiIds.length !== uniqueBayiIds.length) {
+    return openError('Tidak boleh memilih bayi yang sama untuk data yang berbeda')
+  }
+
   try {
-    form.rows = form.rows.map((row, index) => {
+    form.rows = form.rows.map((row, idx) => {
       if (!row.id_bayi) {
-        openError(`Data ke-${index + 1}: Bayi wajib dipilih`)
-        throw new Error('invalid')
+        openError(`Data ke-${idx+1}: Bayi wajib dipilih`)
+        throw new Error()
       }
       if (!row.tgl_pnb) {
-        openError(`Data ke-${index + 1}: Tanggal penimbangan wajib diisi`)
-        throw new Error('invalid')
+        openError(`Data ke-${idx+1}: Tanggal penimbangan wajib diisi`)
+        throw new Error()
       }
-      return { ...row }
+      return row
     })
   } catch {
     return
   }
-
+  
   form.post('/posyandu/bayi-pnb/store-multiple', {
     preserveScroll: true,
     onSuccess: () => {
       openSuccess('Data penimbangan bayi berhasil disimpan')
       setTimeout(() => router.visit('/posyandu/bayi-pnb'), 700)
     },
-    onError: () => openError('Gagal menyimpan data')
+    onError: (errors) => {
+      console.error('Error:', errors)
+      openError('Gagal menyimpan data')
+    }
   })
 }
 </script>
 
 <template>
-<AdminLayout>
-<div class="bg-white p-4 main-container">
-  <div class="header-flex mb-3">
-    <h2>Tambah Data Penimbangan Bayi</h2>
-    <Link href="/posyandu/bayi-pnb" class="btn btn-secondary">← Kembali</Link>
-  </div>
-
-  <hr>
-
-  <form @submit.prevent="submit">
-    <!-- Kecamatan -->
-    <div class="row">
-      <div class="col-lg-6">
-        <div class="form-group">
-          <label>Kecamatan</label>
-          <VueSelect
-            v-model="form.kecamatan_id"
-            :options="kecamatan.map(item => ({ label: item.nama_kec, value: item.id_kec }))"
-            placeholder="Pilih Kecamatan"
-          />
-        </div>
+  <div class="page-wrapper">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h2 class="mb-1">Tambah Penimbangan Bayi</h2>
+        <p class="text-muted">Input multi data penimbangan bayi</p>
       </div>
+      <Link href="/posyandu/bayi-pnb" class="btn btn-outline-secondary">
+        <i class="icon-arrow-left me-2"></i>Kembali
+      </Link>
     </div>
 
-    <!-- Kelurahan -->
-    <div class="row mt-4">
-      <div class="col-lg-6">
-        <div class="form-group" :class="{'has-error': form.errors.kelurahan_id}">
-          <label>Kelurahan</label>
-          <VueSelect
-            v-model="form.kelurahan_id"
-            placeholder="Pilih Kelurahan"
-            :options="kelurahanOptions.map(item => ({ label: item.nama_kel, value: item.id_kel }))"
-            :isDisabled="!form.kecamatan_id"
-          />
-          <span class="help-block" v-if="form.errors.kelurahan_id">Kelurahan wajib diisi</span>
+    <div class="main-card">
+      <div class="card-body">
+        <!-- FILTER -->
+        <div class="filter-box">
+          <h6 class="mb-3">Pilih Lokasi</h6>
+          <div class="grid-3">
+            <div class="field">
+              <label>Kecamatan <span class="text-danger">*</span></label>
+              <VueSelect
+                v-model="form.kecamatan_id"
+                :options="(kecamatan||[]).map(k => ({ label: k.nama_kec, value: k.id_kec }))"
+                placeholder="Pilih Kecamatan"
+              />
+            </div>
+
+            <div class="field">
+              <label>Kelurahan <span class="text-danger">*</span></label>
+              <VueSelect
+                v-model="form.kelurahan_id"
+                :options="kelurahanOptions.map(k => ({ label: k.nama_kel, value: k.id_kel }))"
+                :isDisabled="!form.kecamatan_id"
+                placeholder="Pilih Kelurahan"
+              />
+            </div>
+
+            <div class="field">
+              <label>Posyandu <span class="text-danger">*</span></label>
+              <VueSelect
+                v-model="form.posyandu_id"
+                :options="posyanduOptions.map(p => ({ label: p.nama_posyandu, value: p.id_posyandu }))"
+                :isDisabled="!form.kelurahan_id"
+                placeholder="Pilih Posyandu"
+              />
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Posyandu -->
-    <div class="row mt-4">
-      <div class="col-lg-6">
-        <div class="form-group" :class="{'has-error': form.errors.posyandu_id}">
-          <label>Posyandu</label>
-          <VueSelect
-            v-model="form.posyandu_id"
-            placeholder="Pilih Posyandu"
-            :options="posyanduOptions.map(p => ({ label: p.nama_posyandu, value: p.id_posyandu }))"
-            :isDisabled="!form.kelurahan_id"
-          />
-          <span class="help-block" v-if="form.errors.posyandu_id">Posyandu wajib diisi</span>
-        </div>
-      </div>
-    </div>
-
-    <Table class="mt-4">
-      <TableHead>
-        <TableRow>
-          <TableCol asHead>Form Penimbangan</TableCol>
-          <TableCol asHead width="120">Aksi</TableCol>
-        </TableRow>
-      </TableHead>
-
-      <tbody>
-        <TableRow v-for="(row,i) in form.rows" :key="i">
-          <TableCol>
-            <h4>Data ke-{{ i+1 }}</h4>
-
-            <div class="row">
-              <div class="col-lg-6 mb-3">
-                <label>Pilih Bayi</label>
-                <VueSelect
-                  v-model="row.id_bayi"
-                  placeholder="Pilih Bayi"
-                  :options="bayiOptions.map(b => ({ label: `${b.nama_bayi}`, value: b.id_bayi }))"
-                  :isDisabled="!form.posyandu_id"
-                />
-              </div>
-
-              <div class="col-lg-6 mb-3">
-                <label>Tanggal Penimbangan</label>
-                <input type="date" class="form-control" v-model="row.tgl_pnb">
-              </div>
-
-              <div class="col-lg-4 mb-3">
-                <label>Berat (kg)</label>
-                <input type="number" step="0.01" class="form-control" v-model="row.berat">
-              </div>
-
-              <div class="col-lg-4 mb-3">
-                <label>Tinggi (cm) (opsional)</label>
-                <input type="number" step="0.1" class="form-control" v-model="row.tb">
-              </div>
-
-              <div class="col-lg-4 mb-3">
-                <label>Hasil</label>
-                <input class="form-control" maxlength="100" v-model="row.hasil">
-              </div>
-
-              <div class="col-lg-12 mb-3">
-                <label>Keterangan</label>
-                <textarea class="form-control" rows="2" v-model="row.ket"></textarea>
+        <form @submit.prevent="submit">
+          <!-- Data Penimbangan Rows -->
+          <div v-if="form.posyandu_id" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6>Data Penimbangan</h6>
+              <div>
+                <span class="badge bg-info me-2">Total: {{ form.rows.length }} data</span>
+                <span class="badge bg-success">Bayi tersedia: {{ bayiOptions.length - selectedBayiIds.length }}</span>
               </div>
             </div>
-          </TableCol>
 
-          <TableCol class="text-center">
-            <span class="bg-primary p-3 d-inline-flex justify-content-center"
-                  style="border-radius:1000px;cursor:pointer"
-                  @click="deleteRow(i)">
-              <i class="icon-trash"></i>
-            </span>
-          </TableCol>
-        </TableRow>
-      </tbody>
-    </Table>
+            <div v-for="(row, i) in form.rows" :key="i" class="data-card">
+              <div class="data-header">
+                <div>
+                  <span class="badge bg-primary me-2">{{ i+1 }}</span>
+                  <strong>Data Penimbangan</strong>
+                </div>
+                <button 
+                  type="button" 
+                  class="btn btn-outline-danger btn-sm" 
+                  @click="deleteRow(i)"
+                  v-if="form.rows.length > 1"
+                >
+                  <i class="icon-trash me-1"></i>Hapus
+                </button>
+              </div>
 
-    <button type="button" class="btn btn-success mt-4" @click="addRow">Tambah Data +</button>
-    <button type="submit" class="btn btn-primary mt-4 ms-3" style="margin-left: 1050px;">Simpan Data</button>
-  </form>
-</div>
+              <div class="grid-2">
+                <div class="field">
+                  <label>Pilih Bayi <span class="text-danger">*</span></label>
+                  <VueSelect
+                    v-model="row.id_bayi"
+                    :options="getBayiOptionsForRow(i)"
+                    placeholder="Pilih bayi"
+                    :isDisabled="!form.posyandu_id"
+                    :key="`${form.posyandu_id}-${i}`"
+                  />
+                  <small v-if="getBayiOptionsForRow(i).length === 0" class="text-warning">
+                    Tidak ada bayi tersedia untuk row ini
+                  </small>
+                </div>
 
-<!-- MODAL -->
-<div v-if="showModal" class="overlay-blur" @click.self="showModal=false">
-  <div class="modal-card"
-       :class="modalType === 'success' ? 'border border-success' : 'border border-danger'">
-    <h3 class="text-xl font-semibold mb-3">
-      {{ modalType === 'success' ? 'Berhasil' : 'Gagal' }}
-    </h3>
-    <p>{{ modalMessage }}</p>
-    <button class="btn w-100 mt-4" :class="modalType === 'success' ? 'btn-success' : 'btn-danger'"
-            @click="showModal=false">
-      Tutup
-    </button>
+                <div class="field">
+                  <label>Tanggal Penimbangan <span class="text-danger">*</span></label>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    v-model="row.tgl_pnb"
+                  >
+                </div>
+              </div>
+
+              <div class="grid-3">
+                <div class="field">
+                  <label>Berat (kg)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    class="form-control" 
+                    v-model="row.berat"
+                    placeholder="Contoh: 5.5"
+                  >
+                </div>
+
+                <div class="field">
+                  <label>Tinggi (cm)</label>
+                  <input 
+                    type="number" 
+                    step="0.1"
+                    class="form-control" 
+                    v-model="row.tb"
+                    placeholder="Contoh: 60.5"
+                  >
+                </div>
+
+                <div class="field">
+                  <label>Hasil</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    v-model="row.hasil"
+                    placeholder="Masukkan hasil"
+                  >
+                </div>
+              </div>
+
+              <div class="field mt-3">
+                <label>Keterangan</label>
+                <textarea 
+                  class="form-control" 
+                  rows="2" 
+                  v-model="row.ket"
+                  placeholder="Masukkan keterangan tambahan (opsional)"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="form-footer">
+              <button 
+                type="button" 
+                class="btn btn-outline-success" 
+                @click="addRow"
+                :disabled="bayiOptions.length - selectedBayiIds.length <= 0"
+              >
+                <i class="icon-plus me-2"></i>Tambah Data
+              </button>
+              <button type="submit" class="btn btn-primary" :disabled="form.processing">
+                <i class="icon-check me-2"></i>
+                {{ form.processing ? 'Menyimpan...' : 'Simpan Semua Data' }}
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="alert alert-info mt-4">
+            <i class="icon-info-circle me-2"></i>
+            Silakan pilih kecamatan, kelurahan, dan posyandu terlebih dahulu
+          </div>
+        </form>
+
+      </div>
+    </div>
   </div>
-</div>
 
-</AdminLayout>
+  <!-- Modal Notifikasi -->
+  <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+    <div class="modal-card">
+      <div class="text-center">
+        <i 
+          class="icon" 
+          :class="{
+            'icon-check-circle text-success': modalType === 'success',
+            'icon-exclamation-circle text-danger': modalType === 'error'
+          }"
+          style="font-size: 48px;"
+        ></i>
+        <h4 class="mt-3">{{ modalType === 'success' ? 'Berhasil!' : 'Gagal!' }}</h4>
+        <p class="text-muted">{{ modalMessage }}</p>
+        <button class="btn btn-primary mt-3" @click="showModal = false">Tutup</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.overlay-blur{
+.page-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.page-header p {
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.main-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.card-body {
+  padding: 28px;
+}
+
+.filter-box {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #eef2f6;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-weight: 500;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.data-card {
+  border: 1px solid #eef1f4;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+  background: white;
+  transition: all 0.2s;
+}
+
+.data-card:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.form-control {
+  height: 42px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  padding: 0 12px;
+  font-size: 14px;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.form-control:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+  outline: none;
+}
+
+textarea.form-control {
+  height: auto;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 2px solid #f0f2f5;
+}
+
+.btn {
+  padding: 10px 20px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: #4299e1;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #3182ce;
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.btn-outline-success {
+  background: transparent;
+  border: 1.5px solid #48bb78;
+  color: #48bb78;
+}
+
+.btn-outline-success:hover:not(:disabled) {
+  background: #48bb78;
+  color: white;
+}
+
+.btn-outline-success:disabled {
+  border-color: #cbd5e0;
+  color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.btn-outline-danger {
+  background: transparent;
+  border: 1.5px solid #f56565;
+  color: #f56565;
+}
+
+.btn-outline-danger:hover {
+  background: #f56565;
+  color: white;
+}
+
+.btn-outline-secondary {
+  background: transparent;
+  border: 1.5px solid #718096;
+  color: #718096;
+}
+
+.btn-outline-secondary:hover {
+  background: #718096;
+  color: white;
+}
+
+.badge {
+  padding: 10px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.alert {
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.alert-info {
+  background-color: #ebf8ff;
+  border: 1px solid #90cdf4;
+  color: #2c5282;
+}
+
+.modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.35);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 9999;
 }
-.modal-card{
-  width: 420px;
-  background: #fff;
-  border-radius: 14px;
-  padding: 18px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+
+.modal-card {
+  background: white;
+  padding: 32px;
+  border-radius: 20px;
+  max-width: 400px;
+  width: 90%;
 }
-.header-flex{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+
+@media (max-width: 768px) {
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: start;
+  }
+  
+  .form-footer {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .form-footer button {
+    width: 100%;
+    justify-content: center;
+  }
 }
-.main-container{min-height:100vh}
 </style>

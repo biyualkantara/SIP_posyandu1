@@ -13,8 +13,6 @@ const props = defineProps({
   imun: Array
 })
 
-console.log('Row data:', props.row) // Debug: lihat data yang diterima
-
 const form = useForm({
   id_imun: props.row?.id_imun ?? null,
   tgl_imun: props.row?.tgl_imun ?? '',
@@ -42,7 +40,9 @@ const displayData = {
   kecamatan: props.row?.nama_kec || '-',
   kelurahan: props.row?.nama_kel || '-',
   posyandu: props.row?.nama_posyandu || '-',
-  bayi: props.row?.nama_bayi || '-'
+  bayi: props.row?.nama_bayi || '-',
+  nama_ibu: props.row?.nama_wuspus || '-',
+  nik_ibu: props.row?.nik_wuspus || '-'
 }
 
 function submitForm() {
@@ -55,169 +55,145 @@ function submitForm() {
     return
   }
 
-  // Debug: lihat data yang dikirim
-  console.log('Submitting form:', {
-    id: props.row.id_bayi_imun,
-    data: form.data()
-  })
-
   form.put(`/posyandu/bayi-imun/${props.row.id_bayi_imun}`, {
     preserveScroll: true,
-    onSuccess: (page) => {
-      console.log('Success:', page)
+    onSuccess: () => {
       openSuccess('Data imunisasi bayi berhasil diperbarui')
       setTimeout(() => {
         window.location.href = '/posyandu/bayi-imun'
       }, 1000)
     },
     onError: (errors) => {
-      console.error('Error details:', errors)
-      
-      // Tampilkan pesan error lebih detail
-      if (typeof errors === 'object') {
-        const errorMessages = Object.values(errors).flat().join(', ')
-        openError(errorMessages || 'Gagal menyimpan data')
-      } else {
-        openError(errors || 'Gagal menyimpan data')
-      }
-    },
-    onFinish: () => {
-      console.log('Request finished')
+      console.error('Error:', errors)
+      openError('Gagal menyimpan data')
     }
   })
 }
 </script>
 
 <template>
-    <div class="page-wrapper">
-      <!-- Header -->
-      <div class="page-header">
-        <div>
-          <h2 class="mb-1">Edit Imunisasi Bayi</h2>
-          <p class="text-muted">Edit data imunisasi bayi</p>
-        </div>
-        <Link href="/posyandu/bayi-imun" class="btn btn-outline-secondary">
-          <i class="icon-arrow-left me-2"></i>Kembali
-        </Link>
+  <div class="page-wrapper">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h2 class="mb-1">Edit Imunisasi Bayi</h2>
+        <p class="text-muted">Edit data imunisasi bayi</p>
       </div>
-
-      <div class="main-card">
-        <div class="card-body">
-          <form @submit.prevent="submitForm">
-            <!-- Read Only Info -->
-            <div class="filter-box">
-              <h6 class="mb-3">Informasi Lokasi & Bayi</h6>
-              <div class="grid-3">
-                <div class="field">
-                  <label>Kecamatan</label>
-                  <div class="readonly-field">{{ displayData.kecamatan }}</div>
-                </div>
-
-                <div class="field">
-                  <label>Kelurahan</label>
-                  <div class="readonly-field">{{ displayData.kelurahan }}</div>
-                </div>
-
-                <div class="field">
-                  <label>Posyandu</label>
-                  <div class="readonly-field">{{ displayData.posyandu }}</div>
-                </div>
-              </div>
-
-              <div class="grid-2 mt-3">
-                <div class="field">
-                  <label>Nama Bayi</label>
-                  <div class="readonly-field">{{ displayData.bayi }}</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Form Data yang bisa diedit -->
-            <div class="data-card mt-4">
-              <div class="data-header">
-                <div>
-                  <span class="badge bg-primary me-2">1</span>
-                  <strong>Edit Data Imunisasi</strong>
-                </div>
-              </div>
-
-              <div class="grid-2">
-                <div class="field">
-                  <label>Jenis Imunisasi <span class="text-danger">*</span></label>
-                  <VueSelect
-                    v-model="form.id_imun"
-                    :options="imun.map(i => ({ label: i.jns_imun, value: i.id_imun }))"
-                    placeholder="Pilih Jenis Imunisasi"
-                  />
-                  <span v-if="form.errors.id_imun" class="error-text">{{ form.errors.id_imun }}</span>
-                </div>
-
-                <div class="field">
-                  <label>Tanggal Imunisasi <span class="text-danger">*</span></label>
-                  <input 
-                    type="date" 
-                    class="form-control" 
-                    :class="{ 'is-invalid': form.errors.tgl_imun }"
-                    v-model="form.tgl_imun"
-                  />
-                  <span v-if="form.errors.tgl_imun" class="error-text">{{ form.errors.tgl_imun }}</span>
-                </div>
-              </div>
-
-              <div class="grid-2 mt-3">
-                <div class="field">
-                  <label>Keterangan</label>
-                  <input 
-                    type="text" 
-                    class="form-control"
-                    v-model="form.ket"
-                    placeholder="Masukkan keterangan"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div v-if="form.errors.message" class="alert alert-danger mt-3">
-              {{ form.errors.message }}
-            </div>
-
-            <div class="form-footer">
-              <Link href="/posyandu/bayi-imun" class="btn btn-outline-secondary">
-                <i class="icon-close me-2"></i>Batal
-              </Link>
-              <button type="submit" class="btn btn-primary" :disabled="form.processing">
-                <i class="icon-check me-2"></i>
-                {{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+      <Link href="/posyandu/bayi-imun" class="btn btn-outline-secondary">
+        <i class="icon-arrow-left me-2"></i>Kembali
+      </Link>
     </div>
 
-    <!-- Modal Notifikasi -->
-    <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
-      <div class="modal-card">
-        <div class="text-center">
-          <i 
-            class="icon" 
-            :class="{
-              'icon-check-circle text-success': modalType === 'success',
-              'icon-exclamation-circle text-danger': modalType === 'error'
-            }"
-            style="font-size: 48px;"
-          ></i>
-          <h4 class="mt-3">{{ modalType === 'success' ? 'Berhasil!' : 'Gagal!' }}</h4>
-          <p class="text-muted">{{ modalMessage }}</p>
-          <button class="btn btn-primary mt-3" @click="showModal = false">Tutup</button>
-        </div>
+    <div class="main-card">
+      <div class="card-body">
+        <form @submit.prevent="submitForm">
+          <!-- Read Only Info -->
+          <div class="filter-box">
+            <h6 class="mb-3">Informasi Bayi & Ibu</h6>
+            <div class="grid-3">
+              <div class="field">
+                <label>Kecamatan</label>
+                <div class="readonly-field">{{ displayData.kecamatan }}</div>
+              </div>
+              <div class="field">
+                <label>Kelurahan</label>
+                <div class="readonly-field">{{ displayData.kelurahan }}</div>
+              </div>
+              <div class="field">
+                <label>Posyandu</label>
+                <div class="readonly-field">{{ displayData.posyandu }}</div>
+              </div>
+            </div>
+
+            <div class="grid-2 mt-3">
+              <div class="field">
+                <label>Nama Bayi</label>
+                <div class="readonly-field">{{ displayData.bayi }}</div>
+              </div>
+              <div class="field">
+                <label>Nama Ibu (WUS/PUS)</label>
+                <div class="readonly-field">{{ displayData.nama_ibu }} - {{ displayData.nik_ibu }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Data yang bisa diedit -->
+          <div class="data-card mt-4">
+            <div class="data-header">
+              <div>
+                <span class="badge bg-primary me-2">1</span>
+                <strong>Edit Data Imunisasi</strong>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label>Jenis Imunisasi <span class="text-danger">*</span></label>
+                <VueSelect
+                  v-model="form.id_imun"
+                  :options="imun.map(i => ({ label: i.jns_imun, value: i.id_imun }))"
+                  placeholder="Pilih Jenis Imunisasi"
+                />
+              </div>
+
+              <div class="field">
+                <label>Tanggal Imunisasi <span class="text-danger">*</span></label>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  v-model="form.tgl_imun"
+                />
+              </div>
+            </div>
+
+            <div class="field mt-3">
+              <label>Keterangan</label>
+              <textarea 
+                class="form-control" 
+                rows="2" 
+                v-model="form.ket"
+                placeholder="Masukkan keterangan"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <Link href="/posyandu/bayi-imun" class="btn btn-outline-secondary">
+              <i class="icon-close me-2"></i>Batal
+            </Link>
+            <button type="submit" class="btn btn-primary" :disabled="form.processing">
+              <i class="icon-check me-2"></i>
+              {{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
+  </div>
+
+  <!-- Modal Notifikasi -->
+  <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+    <div class="modal-card">
+      <div class="text-center">
+        <i 
+          class="icon" 
+          :class="{
+            'icon-check-circle text-success': modalType === 'success',
+            'icon-exclamation-circle text-danger': modalType === 'error'
+          }"
+          style="font-size: 48px;"
+        ></i>
+        <h4 class="mt-3">{{ modalType === 'success' ? 'Berhasil!' : 'Gagal!' }}</h4>
+        <p class="text-muted">{{ modalMessage }}</p>
+        <button class="btn btn-primary mt-3" @click="showModal = false">Tutup</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
 .page-wrapper {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 24px 16px 40px;
 }
@@ -233,6 +209,12 @@ function submitForm() {
   font-size: 24px;
   font-weight: 600;
   color: #2c3e50;
+  margin: 0;
+}
+
+.page-header p {
+  color: #64748b;
+  margin: 4px 0 0 0;
 }
 
 .main-card {
@@ -330,25 +312,10 @@ function submitForm() {
   outline: none;
 }
 
-.form-control.is-invalid {
-  border-color: #f56565;
-}
-
-.error-text {
-  color: #f56565;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-.alert {
-  padding: 12px 16px;
-  border-radius: 8px;
-}
-
-.alert-danger {
-  background-color: #fed7d7;
-  border: 1px solid #fc8181;
-  color: #c53030;
+textarea.form-control {
+  height: auto;
+  padding: 10px 12px;
+  resize: vertical;
 }
 
 .form-footer {
@@ -367,6 +334,9 @@ function submitForm() {
   transition: all 0.2s;
   cursor: pointer;
   border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-primary {
@@ -441,6 +411,7 @@ function submitForm() {
   
   .form-footer .btn {
     width: 100%;
+    justify-content: center;
   }
 }
 </style>
