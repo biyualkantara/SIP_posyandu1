@@ -15,7 +15,9 @@ const kelurahanNama = ref(props.row?.nama_kel || "")
 
 const form = useForm({
   // data utama penimbangan
-  id_bayi: props.row.id_bayi,
+    id_bayi: props.row.p_id_bayi 
+    ? String(props.row.p_id_bayi) 
+    : null,
   bln: props.row?.bln ?? '',
   tgl_pnb: props.row.tgl_pnb ?? '',
   berat: props.row.berat ?? '',
@@ -43,7 +45,7 @@ const posyanduFiltered = computed(() => {
 
 const bayiFiltered = computed(() => {
   if (!form.id_posyandu) return []
-  return props.bayi?.[Number(form.id_posyandu)] ?? []
+  return props.bayi?.[String(form.id_posyandu)] ?? []
 })
 
 function pilihKecamatan(nama) {
@@ -111,7 +113,7 @@ function pilihKelurahan(nama) {
 
       <div class="row">
         <div class="col-lg-6 mb-3">
-          <label>Pilih Bayi</label>
+         <label>Pilih Bayi</label>
           <select class="form-control" v-model="form.id_bayi" :disabled="!form.id_posyandu">
             <option value="">-- Pilih --</option>
             <option v-for="b in bayiFiltered" :key="b.id_bayi" :value="b.id_bayi">

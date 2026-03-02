@@ -220,6 +220,15 @@ Route::prefix('posyandu')->name('posyandu.')->group(function () {
         Route::put('/bayi-imun/{id}', [BayiImunisasiController::class, 'update'])->name('bayi-imun.update');
         Route::delete('/bayi-imun/{id}', [BayiImunisasiController::class, 'destroy']);
 
+    
+        Route::get('/bayi-wafat', [BayiWafatController::class, 'index']);
+        Route::get('/bayi-wafat/create', [BayiWafatController::class, 'create']);
+        Route::post('/bayi-wafat/store-multiple', [BayiWafatController::class, 'storeMultiple']);
+        Route::get('/bayi-wafat/{id}', [BayiWafatController::class, 'show']);
+        Route::get('/bayi-wafat/{id}/edit', [BayiWafatController::class, 'edit']);
+        Route::put('/bayi-wafat/{id}', [BayiWafatController::class, 'update']);
+        Route::delete('/bayi-wafat/{id}', [BayiWafatController::class, 'destroy']);
+
         // ======================   
         // BUMIL
         // ======================
