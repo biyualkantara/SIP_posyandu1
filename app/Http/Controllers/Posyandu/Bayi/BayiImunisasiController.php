@@ -150,79 +150,84 @@ class BayiImunisasiController extends Controller
         }
     }
 
-    public function show($id)
-    {
-        $row = DB::table('bayi_imun as bi')
-            ->join('bayi as b', 'b.id_bayi', '=', 'bi.id_bayi')
-            ->join('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
-            ->join('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
-            ->join('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
-            ->join('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
-            ->join('imunisasi as i', 'i.id_imun', '=', 'bi.id_imun')
-            ->where('bi.id_bayi_imun', $id)
-            ->select(
-                'bi.*',
-                'b.nama_bayi',
-                'i.jns_imun',
-                'd.nama_posyandu',
-                'kel.nama_kel',
-                'kec.nama_kec'
-            )
-            ->first();
+   public function show($id)
+{
+    $row = DB::table('bayi_imun as bi')
+        ->join('bayi as b', 'b.id_bayi', '=', 'bi.id_bayi')
+        ->join('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')  // Join ke wuspus
+        ->join('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+        ->join('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+        ->join('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+        ->join('imunisasi as i', 'i.id_imun', '=', 'bi.id_imun')
+        ->where('bi.id_bayi_imun', $id)
+        ->select(
+            'bi.*',
+            'b.nama_bayi',
+            'w.nik_wuspus',      // Tambah NIK ibu
+            'w.nama_wuspus',      // Tambah nama ibu
+            'i.jns_imun',
+            'd.nama_posyandu',
+            'kel.nama_kel',
+            'kec.nama_kec'
+        )
+        ->first();
 
-        abort_if(!$row, 404);
+    abort_if(!$row, 404);
 
-        return Inertia::render('bayi/imunisasi/Show', compact('row'));
-    }
+    return Inertia::render('bayi/imunisasi/Show', compact('row'));
+}
 
     public function edit($id)
-    {
-        // Ambil data imunisasi beserta relasinya
-        $row = DB::table('bayi_imun as bi')
-            ->join('bayi as b', 'b.id_bayi', '=', 'bi.id_bayi')
-            ->join('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
-            ->join('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
-            ->join('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
-            ->join('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
-            ->where('bi.id_bayi_imun', $id)
-            ->select(
-                'bi.*',
-                'b.id_bayi',
-                'b.nama_bayi',
-                'w.id_posyandu',
-                'd.nama_posyandu',
-                'kel.id_kel',
-                'kel.nama_kel',
-                'kec.id_kec',
-                'kec.nama_kec'
-            )
-            ->first();
-        
-        abort_if(!$row, 404);
+{
+    // Ambil data imunisasi beserta relasinya
+    $row = DB::table('bayi_imun as bi')
+        ->join('bayi as b', 'b.id_bayi', '=', 'bi.id_bayi')
+        ->join('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')  // Join ke wuspus
+        ->join('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+        ->join('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+        ->join('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+        ->where('bi.id_bayi_imun', $id)
+        ->select(
+            'bi.*',
+            'b.id_bayi',
+            'b.nama_bayi',
+            'w.id_wuspus',        // Tambah ID ibu
+            'w.nama_wuspus',      // Tambah nama ibu
+            'w.nik_wuspus',        // Tambah NIK ibu
+            'w.id_posyandu',
+            'd.nama_posyandu',
+            'kel.id_kel',
+            'kel.nama_kel',
+            'kec.id_kec',
+            'kec.nama_kec'
+        )
+        ->first();
+    
+    abort_if(!$row, 404);
 
-        // Data untuk select box
-        $kecamatan = DB::table('kcmtn')->select('id_kec', 'nama_kec')->orderBy('nama_kec')->get();
-        $kelurahan = DB::table('klrhn')->select('id_kel', 'id_kec', 'nama_kel')->orderBy('nama_kel')->get()->groupBy('id_kec');
-        $posyandu  = DB::table('duspy')->select('id_posyandu', 'id_kel', 'nama_posyandu')->orderBy('nama_posyandu')->get()->groupBy('id_kel');
+    // Data untuk select box
+    $kecamatan = DB::table('kcmtn')->select('id_kec', 'nama_kec')->orderBy('nama_kec')->get();
+    $kelurahan = DB::table('klrhn')->select('id_kel', 'id_kec', 'nama_kel')->orderBy('nama_kel')->get()->groupBy('id_kec');
+    $posyandu  = DB::table('duspy')->select('id_posyandu', 'id_kel', 'nama_posyandu')->orderBy('nama_posyandu')->get()->groupBy('id_kel');
 
-        $bayi = DB::table('bayi as b')
-            ->join('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
-            ->select('b.id_bayi', 'b.nama_bayi', 'w.id_posyandu')
-            ->orderBy('b.nama_bayi')
-            ->get()
-            ->groupBy('id_posyandu');
+    $bayi = DB::table('bayi as b')
+        ->join('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
+        ->select('b.id_bayi', 'b.nama_bayi', 'w.id_posyandu')
+        ->orderBy('b.nama_bayi')
+        ->get()
+        ->groupBy('id_posyandu');
 
-        $imun = DB::table('imunisasi')->select('id_imun', 'jns_imun')->orderBy('jns_imun')->get();
+    $imun = DB::table('imunisasi')->select('id_imun', 'jns_imun')->orderBy('jns_imun')->get();
 
-        return Inertia::render('bayi/imunisasi/Edit', [
-            'row' => $row, // Sekarang row punya nama_kec, nama_kel, nama_posyandu, nama_bayi
-            'kecamatan' => $kecamatan,
-            'kelurahan' => $kelurahan,
-            'posyandu' => $posyandu,
-            'bayi' => $bayi,
-            'imun' => $imun
-        ]);
-    }
+    return Inertia::render('bayi/imunisasi/Edit', [
+        'row' => $row,
+        'kecamatan' => $kecamatan,
+        'kelurahan' => $kelurahan,
+        'posyandu' => $posyandu,
+        'bayi' => $bayi,
+        'imun' => $imun
+    ]);
+}
 
     public function update(Request $request, $id)
     {

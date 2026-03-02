@@ -162,77 +162,79 @@ class BayiWafatController extends Controller
         return redirect('/posyandu/bayi-wafat')->with('success', 'Data kematian bayi berhasil disimpan');
     }
 
-    public function show($id)
-    {
-        $row = DB::table('bayi_wafat as bw')
-            ->leftJoin('bayi as b', 'b.id_bayi', '=', 'bw.id_bayi')
-            ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
-            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
-            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
-            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
-            ->where('bw.id_wafat', $id)
-            ->select([
-                'bw.*',
-                'b.nama_bayi',
-                'd.nama_posyandu',
-                'kel.nama_kel',
-                'kec.nama_kec',
-            ])
-            ->first();
+   public function show($id)
+{
+    $row = DB::table('bayi_wafat as bw')
+        ->leftJoin('bayi as b', 'b.id_bayi', '=', 'bw.id_bayi')
+        ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
+        ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+        ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+        ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+        ->where('bw.id_wafat', $id)
+        ->select([
+            'bw.*',
+            'b.nama_bayi',
+            'w.nik_wuspus',      // Tambah NIK ibu
+            'w.nama_wuspus',      // Tambah nama ibu
+            'd.nama_posyandu',
+            'kel.nama_kel',
+            'kec.nama_kec',
+        ])
+        ->first();
 
-        abort_if(!$row, 404);
+    abort_if(!$row, 404);
 
-        return Inertia::render('bayi/wafat/Show', ['row' => $row]);
-    }
+    return Inertia::render('bayi/wafat/Show', ['row' => $row]);
+}
 
-    public function edit($id)
-    {
-        $row = DB::table('bayi_wafat as bw')
-            ->leftJoin('bayi as b', 'b.id_bayi', '=', 'bw.id_bayi')
-            ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
-            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
-            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
-            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
-            ->select([
-                'bw.*',
-                'b.nama_bayi',
+public function edit($id)
+{
+    $row = DB::table('bayi_wafat as bw')
+        ->leftJoin('bayi as b', 'b.id_bayi', '=', 'bw.id_bayi')
+        ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
+        ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+        ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+        ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+        ->select([
+            'bw.*',
+            'b.nama_bayi',
+            'w.nik_wuspus',      // Tambah NIK ibu
+            'w.nama_wuspus',      // Tambah nama ibu
+            'w.id_posyandu',
+            'd.id_kel',
+            'kel.id_kec',
+            'kec.nama_kec',
+            'kel.nama_kel',
+            'd.nama_posyandu',
+        ])
+        ->where('bw.id_wafat', $id)
+        ->first();
 
-                'w.id_posyandu',
-                'd.id_kel',
-                'kel.id_kec',
+    abort_if(!$row, 404);
 
-                'kec.nama_kec',
-                'kel.nama_kel',
-                'd.nama_posyandu',
-            ])
-            ->where('bw.id_wafat', $id)
-            ->first();
+    $kecamatan = DB::table('kcmtn')->select('id_kec', 'nama_kec')->orderBy('nama_kec')->get();
+    $kelurahan = DB::table('klrhn')->select('id_kel', 'id_kec', 'nama_kel')->orderBy('nama_kel')->get()->groupBy('id_kec');
+    $posyandu  = DB::table('duspy')->select('id_posyandu', 'id_kel', 'nama_posyandu')->orderBy('nama_posyandu')->get()->groupBy('id_kel');
 
-        abort_if(!$row, 404);
+    $bayi = DB::table('bayi as b')
+        ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
+        ->select([
+            'b.id_bayi',
+            'b.nama_bayi',
+            'w.id_posyandu',
+        ])
+        ->orderBy('b.nama_bayi')
+        ->get()
+        ->groupBy('id_posyandu');
 
-        $kecamatan = DB::table('kcmtn')->select('id_kec', 'nama_kec')->orderBy('nama_kec')->get();
-        $kelurahan = DB::table('klrhn')->select('id_kel', 'id_kec', 'nama_kel')->orderBy('nama_kel')->get()->groupBy('id_kec');
-        $posyandu  = DB::table('duspy')->select('id_posyandu', 'id_kel', 'nama_posyandu')->orderBy('nama_posyandu')->get()->groupBy('id_kel');
-
-        $bayi = DB::table('bayi as b')
-            ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
-            ->select([
-                'b.id_bayi',
-                'b.nama_bayi',
-                'w.id_posyandu',
-            ])
-            ->orderBy('b.nama_bayi')
-            ->get()
-            ->groupBy('id_posyandu');
-
-        return Inertia::render('bayi/wafat/Edit', [
-            'row' => $row,
-            'kecamatan' => $kecamatan,
-            'kelurahan' => $kelurahan,
-            'posyandu'  => $posyandu,
-            'bayi'      => $bayi,
-        ]);
-    }
+    return Inertia::render('bayi/wafat/Edit', [
+        'row' => $row,
+        'kecamatan' => $kecamatan,
+        'kelurahan' => $kelurahan,
+        'posyandu'  => $posyandu,
+        'bayi'      => $bayi,
+    ]);
+}
 
     public function update(Request $request, $id)
     {
