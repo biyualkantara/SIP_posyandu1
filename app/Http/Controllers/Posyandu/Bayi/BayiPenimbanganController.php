@@ -131,31 +131,38 @@ class BayiPenimbanganController extends Controller
     }
 
     public function show($id)
-    {
-        
-        $row = DB::table('bayi_pnb as p')
-            ->leftJoin('bayi as b','b.id_bayi','=','p.id_bayi')
-            ->leftJoin('wuspus as w','w.id_wuspus','=','b.id_wuspus')
-            ->leftJoin('duspy as d','d.id_posyandu','=','w.id_posyandu')
-            ->leftJoin('klrhn as kel','kel.id_kel','=','d.id_kel')
-            ->leftJoin('kcmtn as kec','kec.id_kec','=','kel.id_kec')
-            ->where('p.id_bayi_pnb',$id)
-            ->select('p.*','b.nama_bayi','d.nama_posyandu','kel.nama_kel','kec.nama_kec')
-            ->first();
+{
+    $row = DB::table('bayi_pnb as p')
+        ->leftJoin('bayi as b', 'b.id_bayi', '=', 'p.id_bayi')
+        ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
+        ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+        ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+        ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+        ->where('p.id_bayi_pnb', $id)
+        ->select(
+            'p.*', 
+            'b.nama_bayi', 
+            'w.nik_wuspus',     
+            'w.nama_wuspus',     
+            'd.nama_posyandu',
+            'kel.nama_kel',
+            'kec.nama_kec'
+        )
+        ->first();
 
-        abort_if(!$row,404);
+    abort_if(!$row, 404);
 
-        return Inertia::render('bayi/penimbangan/Show',['row'=>$row]);
-    }
+    return Inertia::render('bayi/penimbangan/Show', ['row' => $row]);
+}
 
    public function edit($id)
 {
     $row = DB::table('bayi_pnb as p')
-        ->leftJoin('bayi as b','b.id_bayi','=','p.id_bayi')
-        ->leftJoin('wuspus as w','w.id_wuspus','=','b.id_wuspus')
-        ->leftJoin('duspy as d','d.id_posyandu','=','w.id_posyandu')
-        ->leftJoin('klrhn as kel','kel.id_kel','=','d.id_kel')
-        ->leftJoin('kcmtn as kec','kec.id_kec','=','kel.id_kec')
+        ->leftJoin('bayi as b', 'b.id_bayi', '=', 'p.id_bayi')
+        ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')  // Tambahkan join ke wuspus
+        ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+        ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+        ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
         ->select([
             'p.id_bayi_pnb',
             'p.id_bayi as p_id_bayi',
@@ -166,6 +173,8 @@ class BayiPenimbanganController extends Controller
             'p.ket',
 
             'b.nama_bayi',
+            'w.nama_wuspus',      // Tambahkan nama ibu
+            'w.nik_wuspus',        // Tambahkan NIK ibu
 
             'd.id_posyandu',
             'd.nama_posyandu',
@@ -179,7 +188,7 @@ class BayiPenimbanganController extends Controller
         ->where('p.id_bayi_pnb', $id)
         ->first();
 
-    abort_if(!$row,404);
+    abort_if(!$row, 404);
 
     $kecamatan = DB::table('kcmtn')
         ->select('id_kec','nama_kec')
@@ -192,18 +201,20 @@ class BayiPenimbanganController extends Controller
         ->get()
         ->groupBy('id_kec');
 
-    $posyandu  = DB::table('duspy')
+    $posyandu = DB::table('duspy')
         ->select('id_posyandu','id_kel','nama_posyandu')
         ->orderBy('nama_posyandu')
         ->get()
         ->groupBy('id_kel');
+        
     $bayi = DB::table('bayi as b')
-        ->leftJoin('wuspus as w','w.id_wuspus','=','b.id_wuspus')
-        ->select('b.id_bayi','b.nama_bayi','w.id_posyandu')
+        ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
+        ->select('b.id_bayi', 'b.nama_bayi', 'w.id_posyandu')
         ->get()
-        ->groupBy('id_posyandu');   
+        ->groupBy('id_posyandu');
+        
     return Inertia::render('bayi/penimbangan/Edit', compact(
-    'row','kecamatan','kelurahan','posyandu','bayi'
+        'row', 'kecamatan', 'kelurahan', 'posyandu', 'bayi'
     ));
 }
 
