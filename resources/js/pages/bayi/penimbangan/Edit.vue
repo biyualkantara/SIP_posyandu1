@@ -87,6 +87,74 @@ function submitForm() {
       </Link>
     </div>
 
+
+    <hr>
+
+    <form @submit.prevent="form.put(`/posyandu/bayi-pnb/${props.row.id_bayi_pnb}`)">
+      <div class="row mb-4">
+         <div class="col-lg-3 mb-3">
+          <label>Kecamatan</label>
+          <input class="form-control" :value="row.nama_kec" readonly="">
+        </div>
+
+        <div class="col-lg-4 mb-3">
+          <label>Kelurahan</label>
+          <input class="form-control" list="listKel"
+                 :disabled="!selectedKecId"
+                 v-model="kelurahanNama"
+                 @input="pilihKelurahan(kelurahanNama)" readonly>
+          <datalist id="listKel">
+            <option v-for="k in kelurahanFiltered" :key="k.id_kel" :value="k.nama_kel"></option>
+          </datalist>
+        </div>
+
+        <div class="col-lg-5 mb-3">
+          <label>Posyandu</label>
+          <input
+            type="text"
+            class="form-control"
+            :value="props.row.nama_posyandu"
+            readonly
+          />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-6 mb-3">
+         <label>Pilih Bayi</label>
+          <select class="form-control" v-model="form.id_bayi" :disabled="!form.id_posyandu">
+            <option value="" disabled>-- Pilih --</option>
+            <option v-for="b in bayiFiltered" :key="b.id_bayi" :value="b.id_bayi">
+              {{ b.nama_bayi }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-lg-6 mb-3">
+          <label>Tanggal Penimbangan</label>
+          <input type="date" class="form-control" v-model="form.tgl_pnb">
+        </div>
+
+        <div class="col-lg-4 mb-3">
+          <label>Berat (kg)</label>
+          <input type="number" step="0.01" class="form-control" v-model="form.berat">
+        </div>
+
+        <div class="col-lg-4 mb-3">
+          <label>Tinggi (cm) (opsional)</label>
+          <input type="number" step="0.1" class="form-control" v-model="form.tb">
+        </div>
+
+        <div class="col-lg-4 mb-3">
+          <label>Hasil</label>
+          <input class="form-control" maxlength="100" v-model="form.hasil">
+        </div>
+
+        <div class="col-lg-12 mb-3">
+          <label>Keterangan</label>
+          <textarea class="form-control" rows="3" v-model="form.ket"></textarea>
+        </div>
+
     <div class="main-card">
       <div class="card-body">
         <form @submit.prevent="submitForm">
@@ -194,6 +262,7 @@ function submitForm() {
             </button>
           </div>
         </form>
+
       </div>
     </div>
   </div>

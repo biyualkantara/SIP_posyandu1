@@ -81,13 +81,13 @@ function confirmDelete() {
 
 <template>
     <div class="mt-3 p-4 bg-white" style="min-height: 100vh;">
-        <h1>Data Kehadiran Kader</h1>
-        <hr>
-
-        <div class="d-flex justify-end mb-3">
-            <Link href="/posyandu/kehadiran-kader/create" class="btn btn-primary" style="height:38px;">
-                + Tambah Kehadiran
-            </Link>
+         <div class="header-flex mb-3">
+            <h1 class="mb-0">Data Kehadiran Kader</h1>
+            <div>
+                <Link href="/posyandu/kehadiran-kader/create" class="btn btn-primary">
+                    + Tambah Kehadiran
+                </Link>
+            </div>
         </div>
 
         <hr />
@@ -195,5 +195,11 @@ function confirmDelete() {
     border-radius: 14px;
     padding: 18px;
     box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 </style>

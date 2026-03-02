@@ -60,9 +60,17 @@ class BumilBiodataController extends Controller
             ])
             ->orderByDesc('b.id_bumil');
 
-        if ($kec !== '') $query->where('kec.id_kec', $kec);
-        if ($kel !== '') $query->where('kel.id_kel', $kel);
-        if ($pos !== '') $query->where('d.id_posyandu', $pos);
+                if (!empty($kec)) {
+                $query->where('kec.id_kec', $kec);
+                }
+
+                if (!empty($kel)) {
+                    $query->where('kel.id_kel', $kel);
+                }
+
+                if (!empty($pos)) {
+                    $query->where('d.id_posyandu', $pos);
+                }
 
         if ($q !== '') {
             $query->where(function ($x) use ($q) {

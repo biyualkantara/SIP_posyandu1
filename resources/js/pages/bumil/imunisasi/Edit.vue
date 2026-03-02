@@ -81,7 +81,7 @@ function pilihKelurahan(nama) {
       <div class="row mb-4">
         <div class="col-lg-4 mb-3">
           <label>Kecamatan</label>
-          <input class="form-control" list="listKec" v-model="kecamatanNama" @input="pilihKecamatan(kecamatanNama)">
+          <input class="form-control" list="listKec" v-model="kecamatanNama" @input="pilihKecamatan(kecamatanNama)" readonly>
           <datalist id="listKec">
             <option v-for="k in kecamatan" :key="k.id_kec" :value="k.nama_kec"/>
           </datalist>
@@ -90,7 +90,7 @@ function pilihKelurahan(nama) {
         <div class="col-lg-4 mb-3">
           <label>Kelurahan</label>
           <input class="form-control" list="listKel" :disabled="!selectedKecId"
-                 v-model="kelurahanNama" @input="pilihKelurahan(kelurahanNama)">
+                 v-model="kelurahanNama" @input="pilihKelurahan(kelurahanNama)" readonly>
           <datalist id="listKel">
             <option v-for="k in kelurahanFiltered" :key="k.id_kel" :value="k.nama_kel"/>
           </datalist>
@@ -98,12 +98,12 @@ function pilihKelurahan(nama) {
 
         <div class="col-lg-4 mb-3">
           <label>Posyandu</label>
-          <select class="form-control" v-model="form.id_posyandu" :disabled="!form.id_kel">
-            <option value="">-- Pilih --</option>
-            <option v-for="p in posyanduFiltered" :key="p.id_posyandu" :value="p.id_posyandu">
-              {{ p.nama_posyandu }}
-            </option>
-          </select>
+          <input
+            type="text"
+            class="form-control"
+            :value="props.row.nama_posyandu"
+            readonly
+          />
         </div>
       </div>
 
@@ -111,7 +111,7 @@ function pilihKelurahan(nama) {
         <div class="col-lg-6 mb-3">
           <label>WUS/PUS</label>
           <select class="form-control" v-model="form.id_wuspus" :disabled="!form.id_posyandu">
-            <option value="">-- Pilih --</option>
+            <option value="" disabled>-- Pilih --</option>
             <option v-for="w in wuspusFiltered" :key="w.id_wuspus" :value="w.id_wuspus">
               {{ w.nik_wuspus }} - {{ w.nama_wuspus }}
             </option>
