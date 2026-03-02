@@ -13,7 +13,6 @@ class BayiPnb extends Model
         'id_bayi',
         'tgl_pnb',
         'berat',
-        'tb',
         'hasil',
         'pmt',
         'keterangan',
