@@ -83,22 +83,23 @@ function confirmDelete() {
 <template>
 <AdminLayout>
     <div class="mt-3 p-4 bg-white" style="min-height: 100vh;">
-        <h1>Data Umum Posyandu</h1>
-        <hr>
-
-        <div class="d-flex justify-end mb-3">
-            <Link href="/posyandu/data-umum/create" class="btn btn-primary">
-                + Tambah Posyandu
-            </Link>
+        <div class="header-flex mb-3">
+            <h1 class="mb-0">Data Umum Posyandu</h1>
+            <div>
+                <Link href="/posyandu/data-umum/create" class="btn btn-primary">
+                    + Tambah Posyandu
+                </Link>
+            </div>
+        </div>
            <!-- <button
             @click="downloadPdf"
             class="px-4 py-2 bg-red-600 text-white rounded"
             >
             Export PDF
             </button>-->
-        </div>
+      
 
-        <hr />
+        <hr>
 
         <div class="row mb-3">
             <div class="col-lg-3">
@@ -191,5 +192,11 @@ function confirmDelete() {
     border-radius: 14px;
     padding: 18px;
     box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 </style>

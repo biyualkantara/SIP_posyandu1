@@ -18,8 +18,11 @@ const props = defineProps({
 
       <div class="detail-card">
         <h4 class="mb-2">{{ row.nama_wuspus }}</h4>
-        <div class="text-muted">{{ row.nama_posyandu }}</div>
 
+        <hr>
+        <p><b>Posyandu:</b> {{ row.nama_posyandu || '-' }}</p>
+        <p><b>Kelurahan:</b> {{ row.nama_kel || '-' }}</p>
+        <p><b>Kecamatan:</b> {{ row.nama_kec || '-' }}</p>
         <hr>
 
         <p><b>Bulan Hamil:</b> {{ row.bln_hamil ?? '-' }}</p>

@@ -44,17 +44,22 @@ class KehadiranKaderController extends Controller
         ->orderByDesc(DB::raw('`k`.`bulan`'))
         ->orderByDesc('k.id_kdrhdr');
 
-        if ($kec !== '') $query->where('kec.id_kec', $kec);
-        if ($kel !== '') $query->where('kel.id_kel', $kel);
-
-        if ($bln !== '') {
-            $query->whereRaw('DATE_FORMAT(k.`bulan`, "%Y-%m") = ?', [$bln]);
+       if (!empty($kec)) {
+            $query->where('kec.id_kec', $kec);
         }
 
-        if ($q !== '') {
+        if (!empty($kel)) {
+            $query->where('kel.id_kel', $kel);
+        }
+
+        if (!empty($q)) {
             $query->where(function ($qq) use ($q) {
                 $qq->where('d.nama_posyandu', 'like', "%{$q}%");
             });
+        }
+
+        if (!empty($bln)) {
+            $query->whereRaw('DATE_FORMAT(k.bulan, "%Y-%m") = ?', [$bln]);
         }
 
         $data = $query->paginate(10)->withQueryString();

@@ -41,7 +41,7 @@ function confirmDelete(){
       + Tambah
     </Link>
   </div>
-
+  <hr>
   <DataTable :columns="columns" :rows="rows" :perPage="10">
     <template #col-actions="{ row }">
       <Link :href="`/posyandu/wuspus-kontrasepsi/${row.id_wkp}`">

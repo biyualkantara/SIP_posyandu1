@@ -42,14 +42,38 @@ class BayiPenimbanganController extends Controller
             ])
             ->orderByDesc('p.id_bayi_pnb');
 
-        if ($kec !== '') $query->where('kec.id_kec',$kec);
-        if ($kel !== '') $query->where('kel.id_kel',$kel);
-        if ($pos !== '') $query->where('d.id_posyandu',$pos);
+                if (!empty($kec)) {
+                     $query->where('kec.id_kec', $kec);
+                }
+
+                if (!empty($kel)) {
+                    $query->where('kel.id_kel', $kel);
+                }
+
+                if (!empty($pos)) {
+                    $query->where('d.id_posyandu', $pos);
+                }
         if ($q !== '') {
             $query->where('b.nama_bayi','like',"%{$q}%");
         }
 
         $data = $query->paginate(20)->withQueryString();
+        $kecamatan = DB::table('kcmtn')
+            ->select('id_kec','nama_kec')
+            ->orderBy('nama_kec')
+            ->get();
+
+        $kelurahan = DB::table('klrhn')
+            ->select('id_kel','id_kec','nama_kel')
+            ->orderBy('nama_kel')
+            ->get()
+            ->groupBy('id_kec');
+
+        $posyandu  = DB::table('duspy')
+            ->select('id_posyandu','id_kel','nama_posyandu')
+            ->orderBy('nama_posyandu')
+            ->get()
+            ->groupBy('id_kel');
 
         return Inertia::render('bayi/penimbangan/Index', [
             'data'=>$data,

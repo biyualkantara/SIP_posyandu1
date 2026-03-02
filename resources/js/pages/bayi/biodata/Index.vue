@@ -36,10 +36,16 @@ const kecamatanOptions = computed(() =>
 )
 
 const kelurahanOptions = computed(() => {
-  const key = String(selectedKec.value || '')
-  const arr = props.kelurahan?.[key]
-  if (!Array.isArray(arr)) return []
-  return arr.map(k => ({ label: k.nama_kel, value: String(k.id_kel) }))
+  if (!selectedKec.value) return []
+
+  const key = String(selectedKec.value)
+
+  if (!props.kelurahan || !props.kelurahan[key]) return []
+
+  return props.kelurahan[key].map(k => ({
+    label: k.nama_kel,
+    value: String(k.id_kel)
+  }))
 })
 
 const posyanduOptions = computed(() => {
@@ -102,9 +108,34 @@ function confirmDelete() {
     <div class="mt-3 p-4 bg-white main-container">
       <div class="header-flex mb-3">
         <h1>Data Bayi - Biodata</h1>
-       <Link href="/posyandu/bayi/create" class="btn btn-primary">Tambah</Link>
+       <Link href="/posyandu/bayi/create" class="btn btn-primary">+ Tambah</Link>
       </div>
       <hr>
+
+      <!-- FILTER -->
+      <div class="row mb-3">
+        <div class="col-lg-3 mb-2">
+          <label>Kecamatan</label>
+          <select class="form-control" v-model="selectedKec" @change="applyFilter">
+            <option value="">-- Semua --</option>
+            <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">{{ k.nama_kec }}</option>
+          </select>
+        </div>
+
+        <div class="col-lg-3 mb-2">
+          <label>Kelurahan</label>
+          <!-- <select class="form-control" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+            <option value="">-- Semua --</option>
+            <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">{{ k.nama_kel }}</option>
+          </select> -->
+          <select class="form-control" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+            <option value="">-- Semua --</option>
+            <option v-for="k in kelurahanOptions" :key="k.value" :value="k.value">
+              {{ k.label }}
+            </option>
+        </select>
+        </div>
+      </div>
 
       <DataTable :columns="columns" :rows="rows" :perPage="10">
         <template #col-nama_wuspus="{ row }">

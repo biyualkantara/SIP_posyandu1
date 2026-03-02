@@ -31,7 +31,18 @@ const kelurahanList = computed(() => {
   if (!selectedKec.value) return []
   return props.kelurahan?.[selectedKec.value] ?? []
 })
+const kelurahanOptions = computed(() => {
+  if (!selectedKec.value) return []
 
+  const key = String(selectedKec.value)
+
+  if (!props.kelurahan || !props.kelurahan[key]) return []
+
+  return props.kelurahan[key].map(k => ({
+    label: k.nama_kel,
+    value: String(k.id_kel)
+  }))
+})
 const posyanduList = computed(() => {
   if (!selectedKel.value) return []
   return props.posyandu?.[selectedKel.value] ?? []
@@ -93,8 +104,28 @@ function confirmDelete() {
       <Link href="/posyandu/bayi-pnb/create" class="btn btn-primary">+ Tambah</Link>
     </div>
 
+
     <hr>
-    <hr>
+    <!-- FILTER -->
+      <div class="row mb-3">
+        <div class="col-lg-3 mb-2">
+          <label>Kecamatan</label>
+          <select class="form-control" v-model="selectedKec" @change="applyFilter">
+            <option value="">-- Semua --</option>
+            <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">{{ k.nama_kec }}</option>
+          </select>
+        </div>
+
+        <div class="col-lg-3 mb-2">
+          <label>Kelurahan</label>
+          <select class="form-control" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+            <option value="">-- Semua --</option>
+            <option v-for="k in kelurahanOptions" :key="k.value" :value="k.value">
+              {{ k.label }}
+            </option>
+        </select>
+        </div>
+      </div>
 
     <!-- TABEL -->
     <DataTable :columns="columns" :rows="rows" :perPage="10">

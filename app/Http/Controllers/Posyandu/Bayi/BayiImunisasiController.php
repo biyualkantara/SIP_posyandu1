@@ -54,6 +54,7 @@ class BayiImunisasiController extends Controller
                 'kec.id_kec',
                 'kec.nama_kec'
             )
+            
             ->when($kec, fn ($x) => $x->where('kec.id_kec', $kec))
             ->when($kel, fn ($x) => $x->where('kel.id_kel', $kel))
             ->when($pos, fn ($x) => $x->where('d.id_posyandu', $pos))
@@ -64,7 +65,35 @@ class BayiImunisasiController extends Controller
             })
             ->orderByDesc('bi.id_bayi_imun');
 
+                 if (!empty($kec)) {
+                     $query->where('kec.id_kec', $kec);
+                }
+
+                if (!empty($kel)) {
+                    $query->where('kel.id_kel', $kel);
+                }
+
+                if (!empty($pos)) {
+                    $query->where('d.id_posyandu', $pos);
+                }
+
         $data = $query->paginate(10)->withQueryString();
+        $kecamatan = DB::table('kcmtn')
+            ->select('id_kec','nama_kec')
+            ->orderBy('nama_kec')
+            ->get();
+
+        $kelurahan = DB::table('klrhn')
+            ->select('id_kel','id_kec','nama_kel')
+            ->orderBy('nama_kel')
+            ->get()
+            ->groupBy('id_kec');
+
+        $posyandu  = DB::table('duspy')
+            ->select('id_posyandu','id_kel','nama_posyandu')
+            ->orderBy('nama_posyandu')
+            ->get()
+            ->groupBy('id_kel');
 
         return Inertia::render('bayi/imunisasi/Index', [
             'data' => $data,
