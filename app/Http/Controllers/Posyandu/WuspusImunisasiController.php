@@ -202,7 +202,29 @@ class WuspusImunisasiController extends Controller
 
     public function edit($id)
     {
-        $row = WuspusImunisasi::findOrFail($id);
+        // Ambil data imunisasi beserta relasi lokasi (untuk read-only display)
+        $row = DB::table('wuspus_imun as wi')
+            ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'wi.id_wuspus')
+            ->leftJoin('imunisasi as i', 'i.id_imun', '=', 'wi.id_imun')
+            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+            ->where('wi.id_wuspus_imun', $id)
+            ->select([
+                'wi.*',
+                'w.nik_wuspus',
+                'w.nama_wuspus',
+                'i.jns_imun',
+                'd.nama_posyandu',
+                'kel.nama_kel',
+                'kec.nama_kec',
+                'd.id_posyandu',
+                'kel.id_kel',
+                'kec.id_kec',
+            ])
+            ->first();
+
+        abort_if(!$row, 404);
 
         $wuspus = DB::table('wuspus')
             ->select('id_wuspus', 'nik_wuspus', 'nama_wuspus')
@@ -215,7 +237,7 @@ class WuspusImunisasiController extends Controller
             ->get();
 
         return Inertia::render('wuspus/imunisasi/Edit', [
-            'row' => $row,
+            'row' => $row, // Sekarang row punya nama_kec, nama_kel, nama_posyandu
             'wuspus' => $wuspus,
             'imun' => $imun,
         ]);

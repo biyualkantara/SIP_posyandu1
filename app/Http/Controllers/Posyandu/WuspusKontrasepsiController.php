@@ -166,16 +166,36 @@ class WuspusKontrasepsiController extends Controller
 
     public function edit($id)
     {
-        $row = WuspusKontrasepsi::where('id_wkp',$id)->firstOrFail();
+        // Ambil data kontrasepsi beserta relasi lokasi (untuk read-only display)
+        $row = DB::table('wuspus_kontrasepsi as kb')
+            ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'kb.id_wuspus')
+            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+            ->leftJoin('klrhn as kelx', 'kelx.id_kel', '=', 'd.id_kel')
+            ->leftJoin('kcmtn as kecx', 'kecx.id_kec', '=', 'kelx.id_kec')
+            ->where('kb.id_wkp', $id)
+            ->select([
+                'kb.*',
+                'w.nik_wuspus',
+                'w.nama_wuspus',
+                'd.nama_posyandu',
+                'kelx.nama_kel',
+                'kecx.nama_kec',
+                'd.id_posyandu',
+                'kelx.id_kel',
+                'kecx.id_kec',
+            ])
+            ->first();
+
+        abort_if(!$row, 404);
 
         $wuspus = DB::table('wuspus')
-            ->select('id_wuspus','nik_wuspus','nama_wuspus')
+            ->select('id_wuspus', 'nik_wuspus', 'nama_wuspus')
             ->orderBy('nama_wuspus')
             ->get();
 
-        return Inertia::render('wuspus/kontrasepsi/Edit',[
-            'row'=>$row,
-            'wuspus'=>$wuspus,
+        return Inertia::render('wuspus/kontrasepsi/Edit', [
+            'row' => $row, // Sekarang row punya nama_kec, nama_kel, nama_posyandu
+            'wuspus' => $wuspus,
         ]);
     }
 
