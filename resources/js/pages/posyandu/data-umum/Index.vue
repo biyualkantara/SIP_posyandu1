@@ -301,7 +301,7 @@ const formatValue = (value) => {
                     class="btn-create"
                     @click="handleLinkClick"
                 >
-                    <i class="icon-plus"></i>
+                    <span>+</span>
                     <span>Tambah Posyandu</span>
                 </Link>
             </div>
@@ -366,12 +366,12 @@ const formatValue = (value) => {
             <!-- Tampilkan pesan jika tidak ada data -->
             <div v-if="rows.length === 0" class="empty-state">
                 <div class="empty-icon">
-                    <i class="icon-database"></i>
+                    <span>📊</span>
                 </div>
                 <h3 class="empty-title">Belum Ada Data</h3>
                 <p class="empty-description">Data posyandu belum tersedia. Silakan tambah data baru.</p>
                 <Link href="/posyandu/data-umum/create" class="btn-create empty-btn" @click="handleLinkClick">
-                    <i class="icon-plus"></i>
+                    <span>+</span>
                     <span>Tambah Data Pertama</span>
                 </Link>
             </div>
@@ -910,6 +910,7 @@ const formatValue = (value) => {
     align-items: center;
     justify-content: center;
     margin: 0 auto 24px;
+    font-size: 40px;
 }
 
 .empty-icon i {
