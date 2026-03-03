@@ -1,4 +1,5 @@
 <script setup>
+import AdminLayout from '@/layouts/AdminLayout.vue'
 import { Link } from '@inertiajs/vue3'
 
 const props = defineProps({
@@ -7,39 +8,191 @@ const props = defineProps({
 </script>
 
 <template>
-  <AdminLayout>
+
     <div class="bg-white p-4 main-container">
       <div class="header-flex mb-3">
-        <h2>Detail Penimbangan Bumil</h2>
+        <h2>Detail Penimbangan Ibu Hamil</h2>
         <Link href="/posyandu/bumil-pnb" class="btn btn-secondary">← Kembali</Link>
       </div>
 
       <hr>
 
       <div class="detail-card">
-        <h4 class="mb-2">{{ row.nama_wuspus }}</h4>
 
-        <hr>
-        <p><b>Posyandu:</b> {{ row.nama_posyandu || '-' }}</p>
-        <p><b>Kelurahan:</b> {{ row.nama_kel || '-' }}</p>
-        <p><b>Kecamatan:</b> {{ row.nama_kec || '-' }}</p>
-        <hr>
+        <!-- Identitas -->
+        <div class="detail-section">
+          <h4 class="section-title">Identitas Ibu</h4>
+          <div class="detail-grid">
 
-        <p><b>Bulan Hamil:</b> {{ row.bln_hamil ?? '-' }}</p>
-        <p><b>Tanggal PNB:</b> {{ row.tgl_pnb }}</p>
-        <p><b>Berat:</b> {{ row.berat ?? '-' }}</p>
-        <p><b>Hasil:</b> {{ row.hasil ?? '-' }}</p>
+            <div class="detail-item">
+              <span class="detail-label">Nama</span>
+              <span class="detail-value">
+                {{ row.nama_wuspus || '-' }}
+              </span>
+            </div>
 
-        <hr>
+            <div class="detail-item">
+              <span class="detail-label">Posyandu</span>
+              <span class="detail-value">{{ row.nama_posyandu || '-' }}</span>
+            </div>
 
-        <p class="mb-0"><b>Keterangan:</b><br> {{ row.ket ?? '-' }}</p>
+            <div class="detail-item">
+              <span class="detail-label">Kelurahan</span>
+              <span class="detail-value">{{ row.nama_kel || '-' }}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Kecamatan</span>
+              <span class="detail-value">{{ row.nama_kec || '-' }}</span>
+            </div>
+
+          </div>
+        </div>
+
+        <hr class="separator">
+
+        <!-- Data Penimbangan -->
+        <div class="detail-section">
+          <h4 class="section-title">Data Penimbangan</h4>
+          <div class="detail-grid">
+
+            <div class="detail-item">
+              <span class="detail-label">Bulan Hamil</span>
+              <span class="detail-value">
+                {{ row.bln_hamil ?? '-' }}
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Tanggal Penimbangan</span>
+              <span class="detail-value">
+                {{ row.tgl_pnb || '-' }}
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Berat Badan</span>
+              <span class="detail-value">
+                {{ row.berat ?? '-' }}
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Hasil</span>
+              <span class="detail-value">
+                {{ row.hasil ?? '-' }}
+              </span>
+            </div>
+
+          </div>
+        </div>
+
+        <hr class="separator">
+
+        <!-- Keterangan -->
+        <div class="detail-section">
+          <h4 class="section-title">Keterangan</h4>
+          <div class="detail-grid">
+            <div class="detail-label">Keterangan</div>
+            <div class="detail-item full-width">
+              <span class="detail-value">
+                {{ row.ket ?? '-' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
-  </AdminLayout>
+
 </template>
 
 <style scoped>
-.main-container{min-height:100vh}
-.header-flex{display:flex;justify-content:space-between;align-items:center}
-.detail-card{border:1px solid #eaeaea;border-radius:10px;padding:18px;background:#fafafa}
+.main-container {
+  min-height: 100vh;
+}
+
+.header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-card {
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 24px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.detail-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f2f5;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px 24px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.detail-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.detail-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1e293b;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #eef1f4;
+}
+
+.separator {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid #eef1f4;
+}
+
+@media (max-width: 768px) {
+  .detail-card {
+    padding: 16px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .header-flex {
+    flex-direction: column;
+    gap: 12px;
+    align-items: start;
+  }
+}
 </style>
