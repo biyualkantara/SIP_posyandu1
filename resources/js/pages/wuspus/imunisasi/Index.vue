@@ -447,7 +447,7 @@ const formatValue = (value) => {
               @click="handleLinkClick"
             >
               <span :class="getButtonClass('show')" title="Lihat Detail">
-                <span>👁️</span>
+                <i class="icon-eye"></i>
               </span>
             </Link>
 
@@ -456,7 +456,7 @@ const formatValue = (value) => {
               @click="handleLinkClick"
             >
               <span :class="getButtonClass('edit')" title="Edit Data">
-                <span>✏️</span>
+                <i class="icon-pencil"></i>
               </span>
             </Link>
 
@@ -465,7 +465,7 @@ const formatValue = (value) => {
               title="Hapus Data"
               @click="askDelete(row)"
             >
-              <span>🗑️</span>
+              <i class="icon-trash"></i>
             </span>
           </div>
         </template>
