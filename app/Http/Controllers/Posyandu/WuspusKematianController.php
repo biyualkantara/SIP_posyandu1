@@ -62,17 +62,28 @@ class WuspusKematianController extends Controller
     }
 
     // CREATE
-        public function create()
-        {
-            $wuspus = Wuspus::where('status','Aktif')
-                ->select('id_wuspus','nik_wuspus','nama_wuspus')
-                ->orderBy('nama_wuspus')
-                ->get();
+       public function create()
+    {
+        $wuspus = DB::table('wuspus as w')
+            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+            ->where('w.status', 'Aktif')
+            ->select(
+                'w.id_wuspus',
+                'w.nik_wuspus',
+                'w.nama_wuspus',
+                'd.nama_posyandu',
+                'kel.nama_kel',
+                'kec.nama_kec'
+            )
+            ->orderBy('w.nama_wuspus')
+            ->get();
 
-            return Inertia::render('wuspus/kematian/Create', [
-                'wuspus' => $wuspus
-            ]);
-        }
+        return Inertia::render('wuspus/kematian/Create', [
+            'wuspus' => $wuspus
+        ]);
+    }
 
 
         // STORE
@@ -133,10 +144,10 @@ class WuspusKematianController extends Controller
     {
         // Cari berdasarkan id tabel wuspus_kematians
         $row = WuspusKematian::from('wuspus_kematians as wk')
-            ->join('wuspus as w','w.id_wuspus','=','wk.id_wuspus')
-            ->leftJoin('duspy as d','d.id_posyandu','=','w.id_posyandu')
-            ->leftJoin('klrhn as kel','kel.id_kel','=','d.id_kel')
-            ->leftJoin('kcmtn as kec','kec.id_kec','=','kel.id_kec')
+            ->join('wuspus as w', 'w.id_wuspus', '=', 'wk.id_wuspus')
+            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
             ->select([
                 'wk.*',
                 'w.nik_wuspus',
@@ -144,9 +155,12 @@ class WuspusKematianController extends Controller
                 'w.status',
                 'd.nama_posyandu',
                 'kel.nama_kel',
-                'kec.nama_kec'
+                'kec.nama_kec',
+                'd.id_posyandu',
+                'kel.id_kel',
+                'kec.id_kec',
             ])
-            ->where('wk.id', $id) // PERBAIKAN: where id (primary key tabel kematian)
+            ->where('wk.id', $id)
             ->firstOrFail();
 
         return Inertia::render('wuspus/kematian/Edit', ['row' => $row]);
