@@ -332,8 +332,8 @@ const getHasilClass = (hasil) => {
                     class="btn-create"
                     @click="handleLinkClick"
                 >
-                    <i class="icon-plus"></i>
-                    <span>Tambah Penimbangan</span>
+                    
+                    <span>+ Tambah Penimbangan</span>
                 </Link>
             </div>
         </div>

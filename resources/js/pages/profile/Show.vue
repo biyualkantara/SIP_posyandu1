@@ -1,9 +1,14 @@
 <script setup>
-import { Link } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 
 const props = defineProps({
   user: Object
 })
+
+// Fungsi untuk kembali ke halaman sebelumnya
+const goBack = () => {
+  router.visit('/posyandu/data-umum')
+}
 </script>
 
 <template>
@@ -12,9 +17,17 @@ const props = defineProps({
       <!-- Header Section -->
       <div class="profile-header">
         <div class="header-content">
-          <div class="header-title">
-            <h1>Profil Saya</h1>
-            <p>Informasi detail akun Anda</p>
+          <div class="header-left">
+            <button @click="goBack" class="btn-back">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              <span>Kembali</span>
+            </button>
+            <div class="header-title">
+              <h1>Profil Saya</h1>
+              <p>Informasi detail akun Anda</p>
+            </div>
           </div>
           <Link href="/profile/edit" class="btn-edit">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -135,6 +148,12 @@ export default {
   gap: 1rem;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .header-title h1 {
   font-size: 1.875rem;
   font-weight: 600;
@@ -146,6 +165,34 @@ export default {
   color: #64748b;
   font-size: 0.95rem;
   margin: 0;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: white;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+  transform: translateX(-2px);
+}
+
+.btn-back svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
 }
 
 .btn-edit {
@@ -255,6 +302,18 @@ export default {
     padding: 1rem;
   }
 
+  .header-left {
+    width: 100%;
+  }
+
+  .btn-back {
+    flex-shrink: 0;
+  }
+
+  .header-title h1 {
+    font-size: 1.5rem;
+  }
+
   .info-grid {
     grid-template-columns: 1fr;
   }
@@ -273,6 +332,24 @@ export default {
   }
 
   .btn-edit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .btn-back {
     width: 100%;
     justify-content: center;
   }

@@ -297,10 +297,9 @@ const formatDate = (date) => {
                 <Link 
                     href="/posyandu/bumil/create" 
                     class="btn-create"
-                    @click="handleLinkClick"
-                >
-                    <i class="icon-plus"></i>
-                    <span>Tambah Bumil</span>
+                    @click="handleLinkClick">
+                    
+                    <span>+ Tambah Bumil</span>
                 </Link>
             </div>
         </div>

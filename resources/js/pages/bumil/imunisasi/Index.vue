@@ -297,8 +297,8 @@ const formatDate = (date) => {
                     class="btn-create"
                     @click="handleLinkClick"
                 >
-                    <i class="icon-plus"></i>
-                    <span>Tambah Imunisasi</span>
+                    
+                    <span> + Tambah Imunisasi</span>
                 </Link>
             </div>
         </div>
