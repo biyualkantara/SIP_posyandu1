@@ -26,14 +26,16 @@ import AppFooterImpl from '@/layouts/AppFooterImpl.vue'
 
 <style scoped>
 .admin-layout {
-    min-height: 100vh;
+    height: 100vh;          
     display: flex;
     flex-direction: column;
+    overflow: hidden;       
 }
 
 .admin-body {
     flex: 1;
     display: flex;
+    overflow: hidden;       
 }
 
 .admin-content {
@@ -41,10 +43,12 @@ import AppFooterImpl from '@/layouts/AppFooterImpl.vue'
     display: flex;
     flex-direction: column;
     background: #f5f5f5;
+    overflow: hidden;       
 }
 
 .content-area {
     flex: 1;
     padding: 20px;
+    overflow-y: auto;       
 }
 </style>
