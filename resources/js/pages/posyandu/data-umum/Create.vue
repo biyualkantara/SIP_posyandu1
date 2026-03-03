@@ -231,7 +231,7 @@ function submit() {
 </script>
 
 <template>
-  <div class="page-wrapper">
+  <div class="data-container">
     <!-- Toast Notification -->
     <Transition name="slide-fade">
       <div v-if="toast.show" class="toast-notification" :class="toast.type">
@@ -251,218 +251,233 @@ function submit() {
       </div>
     </Transition>
 
-    <!-- Header -->
-    <div class="page-header">
-      <div>
-        <h2 class="mb-1">Tambah Data Umum Posyandu</h2>
-        <p class="text-muted">Input multi data posyandu</p>
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="header-left">
+        <h1 class="page-title">Tambah Data Umum Posyandu</h1>
+        <p class="page-subtitle">Input multi data posyandu</p>
       </div>
-      <Link href="/posyandu/data-umum" class="btn btn-outline-secondary">
-        <i class="icon-arrow-left me-2"></i>Kembali
-      </Link>
+      <div class="header-right">
+        <Link href="/posyandu/data-umum" class="btn-back">
+          <span>←</span>
+          <span>Kembali</span>
+        </Link>
+      </div>
     </div>
 
+    <!-- Main Card -->
     <div class="main-card">
       <div class="card-body">
-        <!-- FILTER -->
-        <div class="filter-box">
-          <h6 class="mb-3">Pilih Lokasi</h6>
-          <div class="grid-2">
-            <div class="field">
-              <label>Kecamatan <span class="text-danger">*</span></label>
-              <VueSelect
-                v-model="form.kecamatan_id"
-                :options="(kecamatan||[]).map(k => ({ label: k.nama_kec, value: k.id_kec }))"
-                placeholder="Pilih Kecamatan"
-              />
+        <!-- FILTER SECTION -->
+        <div class="filter-section">
+          <h6 class="filter-section-title">Pilih Lokasi</h6>
+          <div class="filter-grid">
+            <div class="filter-item">
+              <label class="filter-label">Kecamatan <span class="text-danger">*</span></label>
+              <div class="select-wrapper">
+                <VueSelect
+                  v-model="form.kecamatan_id"
+                  :options="(kecamatan||[]).map(k => ({ label: k.nama_kec, value: k.id_kec }))"
+                  placeholder="Pilih Kecamatan"
+                  class="vue-select-custom"
+                />
+              </div>
             </div>
 
-            <div class="field">
-              <label>Kelurahan <span class="text-danger">*</span></label>
-              <VueSelect
-                v-model="form.kelurahan_id"
-                :options="kelurahanOptions.map(k => ({ label: k.nama_kel, value: k.id_kel }))"
-                :isDisabled="!form.kecamatan_id"
-                placeholder="Pilih Kelurahan"
-              />
+            <div class="filter-item">
+              <label class="filter-label">Kelurahan <span class="text-danger">*</span></label>
+              <div class="select-wrapper">
+                <VueSelect
+                  v-model="form.kelurahan_id"
+                  :options="kelurahanOptions.map(k => ({ label: k.nama_kel, value: k.id_kel }))"
+                  :isDisabled="!form.kecamatan_id"
+                  placeholder="Pilih Kelurahan"
+                  class="vue-select-custom"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         <form @submit.prevent="submit">
           <!-- Data Posyandu Rows -->
-          <div v-if="form.kelurahan_id" class="mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h6>Data Posyandu</h6>
-              <div>
-                <span class="badge bg-info me-2">Total: {{ form.rows.length }} data</span>
+          <div v-if="form.kelurahan_id" class="data-rows-section">
+            <div class="section-header">
+              <h6 class="section-title">Data Posyandu</h6>
+              <div class="section-badge">
+                <span class="badge-total">Total: {{ form.rows.length }} data</span>
               </div>
             </div>
 
             <div v-for="(row, i) in form.rows" :key="i" class="data-card">
-              <div class="data-header">
-                <div>
-                  <span class="badge bg-primary me-2">{{ i+1 }}</span>
+              <div class="data-card-header">
+                <div class="card-title">
+                  <span class="card-number">{{ i+1 }}</span>
                   <strong>Data Posyandu</strong>
                 </div>
                 <button 
                   type="button" 
-                  class="btn btn-outline-danger btn-sm" 
+                  class="btn-delete-row" 
                   @click="deleteRow(i)"
                   v-if="form.rows.length > 1"
                 >
-                  <i class="icon-trash me-1"></i>Hapus
+                  <i class="icon-trash"></i>
+                  <span>Hapus</span>
                 </button>
               </div>
 
               <!-- Grid 2 kolom untuk data utama -->
-              <div class="grid-2">
-                <div class="field">
+              <div class="form-grid-2">
+                <div class="form-field">
                   <label>Nama Posyandu <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.nama_posyandu"
                     placeholder="Masukkan nama posyandu"
-                    :class="{ 'is-invalid': !row.nama_posyandu && showModal }"
+                    :class="{ 'input-error': !row.nama_posyandu && showModal }"
                   >
                 </div>
-                <div class="field">
+                <div class="form-field">
                   <label>Strata <span class="text-danger">*</span></label>
                   <VueSelect 
                     v-model="row.strata_psy" 
                     :options="STRATA_OPTIONS"
                     placeholder="Pilih strata"
+                    class="vue-select-custom"
                   />
                 </div>
               </div>
 
-              <div class="grid-2">
-                <div class="field">
+              <div class="form-grid-2">
+                <div class="form-field">
                   <label>Alamat <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.alamat_posyandu"
                     placeholder="Masukkan alamat"
                   >
                 </div>
-                <div class="field">
+                <div class="form-field">
                   <label>PJ Umum <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.pj_umum"
                     placeholder="Nama penanggung jawab umum"
                   >
                 </div>
               </div>
 
-              <div class="grid-2">
-                <div class="field">
+              <div class="form-grid-2">
+                <div class="form-field">
                   <label>PJ Operasional <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.pj_operasional"
                     placeholder="Nama penanggung jawab operasional"
                   >
                 </div>
-                <div class="field">
+                <div class="form-field">
                   <label>Ketua Pelaksana <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.ketuplak"
                     placeholder="Nama ketua pelaksana"
                   >
                 </div>
               </div>
 
-              <div class="grid-2">
-                <div class="field">
+              <div class="form-grid-2">
+                <div class="form-field">
                   <label>Sekretaris <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.sekretaris"
                     placeholder="Nama sekretaris"
                   >
                 </div>
-                <div class="field">
+                <div class="form-field">
                   <label>Integrasi PAUD <span class="text-danger">*</span></label>
                   <VueSelect 
                     v-model="row.int_paud" 
                     :options="YESNO_OPTIONS"
                     placeholder="Pilih Ya/Tidak"
+                    class="vue-select-custom"
                   />
                 </div>
               </div>
 
-              <div class="grid-3">
-                <div class="field">
+              <div class="form-grid-3">
+                <div class="form-field">
                   <label>Integrasi BKD <span class="text-danger">*</span></label>
                   <VueSelect 
                     v-model="row.int_bkd" 
                     :options="YESNO_OPTIONS"
                     placeholder="Pilih Ya/Tidak"
+                    class="vue-select-custom"
                   />
                 </div>
-                <div class="field">
+                <div class="form-field">
                   <label>Integrasi Terpadu <span class="text-danger">*</span></label>
                   <VueSelect 
                     v-model="row.int_terpadu" 
                     :options="YESNO_OPTIONS"
                     placeholder="Pilih Ya/Tidak"
+                    class="vue-select-custom"
                   />
                 </div>
-                <div class="field">
+                <div class="form-field">
                   <label>Kader Aktif <span class="text-danger">*</span></label>
                   <input 
                     type="number" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.kader_aktif"
                     placeholder="Jumlah"
                   >
                 </div>
               </div>
 
-              <div class="grid-3">
-                <div class="field">
+              <div class="form-grid-3">
+                <div class="form-field">
                   <label>Kader Tidak Aktif <span class="text-danger">*</span></label>
                   <input 
                     type="number" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.kader_taktif"
                     placeholder="Jumlah"
                   >
                 </div>
-                <div class="field">
+                <div class="form-field">
                   <label>Petugas KB <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.ptgs_kb"
                     placeholder="Nama petugas KB"
                   >
                 </div>
-                <div class="field">
+                <div class="form-field">
                   <label>Petugas Medis <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.ptgs_medis"
                     placeholder="Nama petugas medis"
                   >
                 </div>
               </div>
 
-              <div class="grid-2 mt-2">
-                <div class="field">
+              <div class="form-grid-2 mt-2">
+                <div class="form-field">
                   <label>Petugas Bidan <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-input" 
                     v-model="row.ptgs_bidan"
                     placeholder="Nama petugas bidan"
                   >
@@ -470,86 +485,139 @@ function submit() {
               </div>
             </div>
 
-            <div class="form-footer">
-              <button 
-                type="button" 
-                class="btn btn-outline-success" 
-                @click="addRow"
-              >
-                <i class="icon-plus me-2"></i>Tambah Data
+            <div class="form-actions">
+              <button type="button" class="btn-add-row" @click="addRow">
+                <span>+</span>
+                <span>Tambah Data</span>
               </button>
-              <button type="submit" class="btn btn-primary" :disabled="form.processing">
-                <i class="icon-check me-2"></i>
-                {{ form.processing ? 'Menyimpan...' : 'Simpan Semua Data' }}
+              <button type="submit" class="btn-save" :disabled="form.processing">
+                <i class="icon-check"></i>
+                <span>{{ form.processing ? 'Menyimpan...' : 'Simpan Semua Data' }}</span>
               </button>
             </div>
           </div>
 
-          <div v-else class="alert alert-info mt-4">
-            <i class="icon-info-circle me-2"></i>
-            Silakan pilih kecamatan dan kelurahan terlebih dahulu
+          <div v-else class="alert-empty">
+            <i class="icon-info-circle"></i>
+            <span>Silakan pilih kecamatan dan kelurahan terlebih dahulu</span>
           </div>
         </form>
 
       </div>
     </div>
-  </div>
 
-  <!-- Modal Notifikasi -->
-  <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
-    <div class="modal-card">
-      <div class="text-center">
-        <i 
-          class="icon" 
-          :class="{
-            'icon-check-circle text-success': modalType === 'success',
-            'icon-exclamation-circle text-danger': modalType === 'error'
-          }"
-          style="font-size: 48px;"
-        ></i>
-        <h4 class="mt-3">{{ modalTitle }}</h4>
-        <p class="text-muted">{{ modalMessage }}</p>
-        
-        <!-- Tampilkan detail error jika ada -->
-        <div v-if="validationErrors.length > 0" class="error-details mt-3">
-          <div v-for="(error, idx) in validationErrors" :key="idx" class="error-item">
-            <strong>Baris {{ error.row }}:</strong>
-            <ul>
-              <li v-for="(err, errIdx) in error.errors" :key="errIdx">{{ err }}</li>
-            </ul>
+    <!-- Modal Notifikasi -->
+    <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+      <div class="modal-card">
+        <div class="text-center">
+          <i 
+            class="icon" 
+            :class="{
+              'icon-check-circle text-success': modalType === 'success',
+              'icon-exclamation-circle text-danger': modalType === 'error'
+            }"
+            style="font-size: 48px;"
+          ></i>
+          <h4 class="modal-title-text">{{ modalTitle }}</h4>
+          <p class="modal-message">{{ modalMessage }}</p>
+          
+          <!-- Tampilkan detail error jika ada -->
+          <div v-if="validationErrors.length > 0" class="error-details">
+            <div v-for="(error, idx) in validationErrors" :key="idx" class="error-item">
+              <strong>Baris {{ error.row }}:</strong>
+              <ul>
+                <li v-for="(err, errIdx) in error.errors" :key="errIdx">{{ err }}</li>
+              </ul>
+            </div>
           </div>
+          
+          <button class="btn-modal-close" @click="showModal = false">Tutup</button>
         </div>
-        
-        <button class="btn btn-primary mt-3" @click="showModal = false">Tutup</button>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.page-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 16px 40px;
+/* Container Utama */
+.data-container {
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.page-header {
+/* Header Section */
+.header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  background: white;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.page-header h2 {
+.header-left {
+  flex: 1;
+}
+
+.page-title {
   font-size: 24px;
-  font-weight: 600;
-  color: #2c3e50;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
 }
 
+.page-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  gap: 12px;
+}
+
+/* Button Back */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 20px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-back i {
+  font-size: 16px;
+}
+
+.btn-back:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  transform: translateY(-2px);
+}
+
+.btn-back:active {
+  background: #cbd5e1;
+  transform: translateY(0);
+}
+
+/* Main Card */
 .main-card {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
   overflow: hidden;
 }
 
@@ -557,222 +625,484 @@ function submit() {
   padding: 28px;
 }
 
-.filter-box {
+/* Filter Section */
+.filter-section {
   background: #f8fafc;
   padding: 24px;
-  border-radius: 12px;
+  border-radius: 16px;
   margin-bottom: 24px;
-  border: 1px solid #eef2f6;
+  border: 1px solid #e2e8f0;
 }
 
-.field {
+.filter-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.filter-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.field label {
-  font-weight: 500;
+.filter-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.select-wrapper {
+  width: 100%;
+}
+
+/* Vue Select Custom */
+.vue-select-custom :deep(.vs__dropdown-toggle) {
+  height: 42px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 0 12px;
+  transition: all 0.2s;
+}
+
+.vue-select-custom :deep(.vs__dropdown-toggle:hover) {
+  border-color: #94a3b8;
+  background: white;
+}
+
+.vue-select-custom :deep(.vs__dropdown-toggle:focus-within) {
+  border-color: #1e293b;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+}
+
+.vue-select-custom :deep(.vs__selected) {
+  color: #1e293b;
   font-size: 14px;
-  color: #4a5568;
 }
 
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
+.vue-select-custom :deep(.vs__search) {
+  color: #1e293b;
+  font-size: 14px;
 }
 
-.grid-3 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
+.vue-select-custom :deep(.vs__search::placeholder) {
+  color: #94a3b8;
 }
 
+.vue-select-custom :deep(.vs__open-indicator) {
+  fill: #64748b;
+}
+
+/* Data Rows Section */
+.data-rows-section {
+  margin-top: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.badge-total {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #e2e8f0;
+  color: #1e293b;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Data Card */
 .data-card {
-  border: 1px solid #eef1f4;
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
   background: white;
   transition: all 0.2s;
 }
 
 .data-card:hover {
-  border-color: #cbd5e0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.data-header {
+.data-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #eef1f4;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f1f5f9;
 }
 
-.form-control {
-  height: 42px;
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #1e293b;
+  color: white;
   border-radius: 8px;
-  border: 1.5px solid #e5e7eb;
-  padding: 0 12px;
   font-size: 14px;
+  font-weight: 600;
+}
+
+/* Delete Row Button */
+.btn-delete-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
-.form-control:focus {
-  border-color: #4299e1;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+.btn-delete-row i {
+  font-size: 14px;
+}
+
+.btn-delete-row:hover {
+  background: #fecaca;
+  transform: translateY(-1px);
+}
+
+.btn-delete-row:active {
+  background: #fca5a5;
+  transform: translateY(0);
+}
+
+/* Form Grid */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-weight: 500;
+  font-size: 13px;
+  color: #475569;
+}
+
+/* Form Input */
+.form-input {
+  height: 42px;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  padding: 0 12px;
+  font-size: 14px;
+  transition: all 0.2s;
+  background: #f8fafc;
+  width: 100%;
+}
+
+.form-input:hover {
+  border-color: #94a3b8;
+  background: white;
+}
+
+.form-input:focus {
+  border-color: #1e293b;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
   outline: none;
 }
 
-.form-control.is-invalid {
-  border-color: #f56565;
+.form-input::placeholder {
+  color: #94a3b8;
 }
 
-.form-footer {
+.input-error {
+  border-color: #ef4444;
+}
+
+.input-error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Form Actions */
+.form-actions {
   display: flex;
   justify-content: space-between;
   margin-top: 28px;
   padding-top: 24px;
-  border-top: 2px solid #f0f2f5;
+  border-top: 2px solid #f1f5f9;
 }
 
-.btn {
-  padding: 10px 20px;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.2s;
-  cursor: pointer;
+.btn-add-row {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-.btn-primary {
-  background: #4299e1;
+  padding: 10px 24px;
+  background: #f1f5f9;
+  color: #475569;
   border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-add-row i {
+  font-size: 16px;
+}
+
+.btn-add-row:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  transform: translateY(-2px);
+}
+
+.btn-add-row:active {
+  background: #cbd5e1;
+  transform: translateY(0);
+}
+
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 28px;
+  background: #1e293b;
   color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(30, 41, 59, 0.1);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: #3182ce;
-  transform: translateY(-1px);
+.btn-save i {
+  font-size: 16px;
 }
 
-.btn-primary:disabled {
-  background: #a0aec0;
+.btn-save:hover:not(:disabled) {
+  background: #0f172a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(30, 41, 59, 0.2);
+}
+
+.btn-save:active:not(:disabled) {
+  background: #1e293b;
+  transform: translateY(0);
+}
+
+.btn-save:disabled {
+  background: #94a3b8;
   cursor: not-allowed;
 }
 
-.btn-outline-success {
-  border: 1.5px solid #48bb78;
-  color: #48bb78;
-  background: transparent;
+/* Alert Empty */
+.alert-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #475569;
+  font-size: 14px;
 }
 
-.btn-outline-success:hover {
-  background: #48bb78;
-  color: white;
+.alert-empty i {
+  font-size: 18px;
+  color: #3b82f6;
 }
 
-.btn-outline-danger {
-  border: 1.5px solid #f56565;
-  color: #f56565;
-  background: transparent;
+/* Text Danger */
+.text-danger {
+  color: #ef4444;
 }
 
-.btn-outline-danger:hover {
-  background: #f56565;
-  color: white;
-}
-
-.btn-outline-secondary {
-  border: 1.5px solid #718096;
-  color: #718096;
-  background: transparent;
-}
-
-.btn-outline-secondary:hover {
-  background: #718096;
-  color: white;
-}
-
-.badge {
-  padding: 10px 12px;
-  border-radius: 20px;
-  font-weight: 500;
-  font-size: 13px;
-  margin-left: 10px; 
-}
-
+/* Modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  animation: fadeIn 0.2s ease;
 }
 
 .modal-card {
+  width: 420px;
   background: white;
-  padding: 32px;
   border-radius: 20px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-title-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 16px 0 8px 0;
+}
+
+.modal-message {
+  color: #64748b;
+  margin: 0 0 16px 0;
+}
+
+.btn-modal-close {
+  padding: 10px 28px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 16px;
+}
+
+.btn-modal-close:hover {
+  background: #0f172a;
+  transform: translateY(-2px);
+}
+
+/* Error Details */
+.error-details {
+  text-align: left;
+  background: #fef2f2;
+  border-radius: 12px;
+  padding: 16px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
-.alert {
-  padding: 16px;
-  border-radius: 8px;
+.error-item {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #fecaca;
 }
 
-.alert-info {
-  background-color: #ebf8ff;
-  border: 1px solid #90cdf4;
-  color: #2c5282;
+.error-item:last-child {
+  border-bottom: none;
+}
+
+.error-item strong {
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.error-item ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.error-item li {
+  color: #b91c1c;
+  font-size: 13px;
+  margin: 4px 0;
 }
 
 /* Toast Notification */
 .toast-notification {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 24px;
+  right: 24px;
   z-index: 10000;
-  min-width: 300px;
+  min-width: 320px;
   max-width: 400px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
   overflow: hidden;
-  animation: slideIn 0.3s ease;
+  animation: slideInRight 0.3s ease;
+  border-left: 4px solid;
 }
 
 .toast-notification.success {
-  border-left: 4px solid #48bb78;
+  border-left-color: #10b981;
 }
 
 .toast-notification.error {
-  border-left: 4px solid #f56565;
+  border-left-color: #ef4444;
 }
 
 .toast-notification.info {
-  border-left: 4px solid #4299e1;
+  border-left-color: #3b82f6;
 }
 
 .toast-notification.warning {
-  border-left: 4px solid #ed8936;
+  border-left-color: #f59e0b;
 }
 
 .toast-content {
@@ -787,25 +1117,26 @@ function submit() {
 }
 
 .toast-notification.success i {
-  color: #48bb78;
+  color: #10b981;
 }
 
 .toast-notification.error i {
-  color: #f56565;
+  color: #ef4444;
 }
 
 .toast-notification.info i {
-  color: #4299e1;
+  color: #3b82f6;
 }
 
 .toast-notification.warning i {
-  color: #ed8936;
+  color: #f59e0b;
 }
 
 .toast-message {
   flex: 1;
   font-size: 14px;
-  color: #2d3748;
+  color: #1e293b;
+  font-weight: 500;
 }
 
 .toast-close {
@@ -813,30 +1144,28 @@ function submit() {
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: #a0aec0;
+  color: #94a3b8;
   padding: 0 4px;
+  line-height: 1;
 }
 
 .toast-close:hover {
-  color: #4a5568;
+  color: #475569;
 }
 
 /* Animations */
-.slide-fade-enter-active {
-  transition: all 0.3s ease;
-}
-
+.slide-fade-enter-active,
 .slide-fade-leave-active {
-  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+  transition: all 0.3s ease;
 }
 
 .slide-fade-enter-from,
 .slide-fade-leave-to {
-  transform: translateX(20px);
+  transform: translateX(30px);
   opacity: 0;
 }
 
-@keyframes slideIn {
+@keyframes slideInRight {
   from {
     transform: translateX(100%);
     opacity: 0;
@@ -847,67 +1176,66 @@ function submit() {
   }
 }
 
-.error-details {
-  text-align: left;
-  background: #fef5f5;
-  border-radius: 8px;
-  padding: 12px;
-  max-height: 300px;
-  overflow-y: auto;
+/* Icons */
+.icon {
+  display: inline-block;
 }
 
-.error-item {
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #fed7d7;
-}
-
-.error-item:last-child {
-  border-bottom: none;
-}
-
-.error-item strong {
-  color: #c53030;
-  font-size: 14px;
-}
-
-.error-item ul {
-  margin: 4px 0 0 0;
-  padding-left: 20px;
-}
-
-.error-item li {
-  color: #742a2a;
-  font-size: 13px;
-  margin: 2px 0;
+/* Responsive */
+@media (max-width: 1024px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
-  .grid-2,
-  .grid-3 {
-    grid-template-columns: 1fr;
+  .data-container {
+    padding: 16px;
   }
   
-  .page-header {
+  .header-section {
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     align-items: start;
+    padding: 16px;
   }
   
-  .form-footer {
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .form-footer button {
+  .header-right {
     width: 100%;
   }
   
+  .btn-back {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .form-grid-2,
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .btn-add-row,
+  .btn-save {
+    width: 100%;
+    justify-content: center;
+  }
+  
   .toast-notification {
-    top: 10px;
-    right: 10px;
-    left: 10px;
+    top: 16px;
+    right: 16px;
+    left: 16px;
     max-width: none;
+  }
+  
+  .modal-card {
+    width: 90%;
+    margin: 0 16px;
+    padding: 24px;
   }
 }
 </style>
