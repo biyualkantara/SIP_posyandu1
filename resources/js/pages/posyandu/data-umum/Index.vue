@@ -157,14 +157,14 @@ function confirmDelete() {
 
     <div v-if="modalOpen" class="overlay-blur" @click.self="closeModal">
         <div class="modal-card">
-            <h3 class="w-100 text-center">Hapus Data Posyandu?</h3>
+            <h3 class="modal-title">Hapus Data Posyandu?</h3>
             <hr>
             <div class="text-center">
-                <i class="icon-bin" style="font-size:55px;color:#bbb"></i>
-                <p class="mt-3">Anda akan menghapus data:</p>
+                <i class="icon-bin" style="font-size:55px;color:#f44336"></i>
+                <h6 class="mt-3">Anda akan menghapus data:</h6>
                 <b>{{ selected.nama_posyandu }}</b>
             </div>
-            <div class="d-flex justify-content-center mt-4">
+            <div class="btn-area">
                 <button class="btn btn-light px-4" @click="closeModal">Batal</button>
                 <button class="btn btn-danger px-4 ms-2" @click="confirmDelete">Hapus</button>
             </div>
@@ -175,23 +175,105 @@ function confirmDelete() {
 </template>
 
 <style scoped>
-.overlay-blur{
+/* Overlay */
+.overlay-blur {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.35);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 9999;
 }
-.modal-card{
+
+/* Modal */
+.modal-card {
     width: 420px;
-    background: #fff;
-    border-radius: 14px;
-    padding: 18px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 28px 24px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.18);
+    text-align: center;
+    animation: fadeScale 0.2s ease;
+}
+
+/* Title */
+.modal-card h3 {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+/* Garis */
+.modal-card hr {
+    border: none;
+    height: 1px;
+    background: #eee;
+    margin: 15px 0 20px 0;
+}
+
+/* Icon */
+.icon-bin {
+    font-size: 55px;
+    color: #f44336;
+    display: inline-block;
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+/* Nama Posyandu */
+.modal-card b {
+    display: block;
+    font-size: 17px;
+    margin-top: 5px;
+    color: #222;
+}
+
+/* Tombol */
+.modal-card .btn {
+    border-radius: 8px;
+    padding: 8px 22px;
+    transition: 0.2s ease;
+}
+
+.modal-card .btn-light {
+    background: #f1f1f1;
+    border: none;
+}
+
+.modal-card .btn-light:hover {
+    background: #e0e0e0;
+}
+
+.modal-card .btn-danger {
+    background: #f44336;
+    border: none;
+}
+
+.modal-card .btn-danger:hover {
+    background: #d32f2f;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(244, 67, 54, 0.3);
+}
+.btn-area {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+/* Animasi */
+@keyframes fadeScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 .header-flex {
     display: flex;
