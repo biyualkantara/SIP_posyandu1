@@ -46,29 +46,78 @@ const form = useForm({
   rows: [emptyRow()]
 })
 
+// State untuk notifikasi
 const showModal = ref(false)
 const modalType = ref('success')
 const modalMessage = ref('')
+const modalTitle = ref('')
+const validationErrors = ref([])
 
-function openError(msg) {
+// Notifikasi toast
+const toast = ref({
+  show: false,
+  type: 'success',
+  message: '',
+  timeout: null
+})
+
+function showToast(type, message, duration = 3000) {
+  // Clear existing timeout
+  if (toast.value.timeout) {
+    clearTimeout(toast.value.timeout)
+  }
+  
+  toast.value.show = true
+  toast.value.type = type
+  toast.value.message = message
+  
+  // Auto hide after duration
+  toast.value.timeout = setTimeout(() => {
+    toast.value.show = false
+    toast.value.timeout = null
+  }, duration)
+}
+
+function hideToast() {
+  toast.value.show = false
+  if (toast.value.timeout) {
+    clearTimeout(toast.value.timeout)
+    toast.value.timeout = null
+  }
+}
+
+function openError(msg, errors = []) {
   modalType.value = 'error'
+  modalTitle.value = 'Gagal!'
   modalMessage.value = msg
+  validationErrors.value = errors
   showModal.value = true
+  
+  // Juga tampilkan toast error
+  showToast('error', msg, 4000)
 }
 
 function openSuccess(msg) {
   modalType.value = 'success'
+  modalTitle.value = 'Berhasil!'
   modalMessage.value = msg
+  validationErrors.value = []
   showModal.value = true
+  
+  // Juga tampilkan toast success
+  showToast('success', msg, 3000)
 }
 
 function addRow() {
   form.rows.push(emptyRow())
+  showToast('info', `Baris data ke-${form.rows.length} ditambahkan`, 2000)
 }
 
 function deleteRow(i) {
   if (form.rows.length > 1) {
+    const deletedRow = i + 1
     form.rows.splice(i, 1)
+    showToast('warning', `Baris data ke-${deletedRow} dihapus`, 2000)
   }
 }
 
@@ -86,55 +135,96 @@ watch(() => form.kelurahan_id, () => {
   form.rows = [emptyRow()]
 })
 
+function validateRow(row, index) {
+  const errors = []
+  
+  if (!row.nama_posyandu) errors.push('Nama Posyandu harus diisi')
+  if (!row.strata_psy) errors.push('Strata harus dipilih')
+  if (!row.alamat_posyandu) errors.push('Alamat harus diisi')
+  if (!row.pj_umum) errors.push('PJ Umum harus diisi')
+  if (!row.pj_operasional) errors.push('PJ Operasional harus diisi')
+  if (!row.ketuplak) errors.push('Ketua Pelaksana harus diisi')
+  if (!row.sekretaris) errors.push('Sekretaris harus diisi')
+  if (row.int_paud === null || row.int_paud === '') errors.push('Integrasi PAUD harus dipilih')
+  if (row.int_bkd === null || row.int_bkd === '') errors.push('Integrasi BKD harus dipilih')
+  if (row.int_terpadu === null || row.int_terpadu === '') errors.push('Integrasi Terpadu harus dipilih')
+  if (row.kader_aktif === "" || row.kader_aktif === null) errors.push('Kader Aktif harus diisi')
+  if (row.kader_taktif === "" || row.kader_taktif === null) errors.push('Kader Tidak Aktif harus diisi')
+  if (!row.ptgs_kb) errors.push('Petugas KB harus diisi')
+  if (!row.ptgs_medis) errors.push('Petugas Medis harus diisi')
+  if (!row.ptgs_bidan) errors.push('Petugas Bidan harus diisi')
+  
+  return errors
+}
+
 function submit() {
   if (!form.kelurahan_id) {
     openError('Kelurahan wajib dipilih')
     return
   }
 
-  try {
-    form.rows = form.rows.map((row, index) => {
-      const invalid =
-        !row.nama_posyandu ||
-        !row.strata_psy ||
-        !row.alamat_posyandu ||
-        !row.pj_umum ||
-        !row.pj_operasional ||
-        !row.ketuplak ||
-        !row.sekretaris ||
-        row.int_paud === null ||
-        row.int_bkd === null ||
-        row.int_terpadu === null ||
-        row.kader_aktif === "" ||
-        row.kader_taktif === "" ||
-        !row.ptgs_kb ||
-        !row.ptgs_medis ||
-        !row.ptgs_bidan
+  // Validasi semua baris
+  const allErrors = []
+  let hasError = false
 
-      if (invalid) {
-        openError(`Data ke-${index + 1} masih ada kolom kosong`)
-        throw new Error('invalid')
-      }
+  form.rows.forEach((row, index) => {
+    const rowErrors = validateRow(row, index)
+    if (rowErrors.length > 0) {
+      hasError = true
+      allErrors.push({
+        row: index + 1,
+        errors: rowErrors
+      })
+    }
+  })
 
-      return {
-        ...row,
-        id_kel: form.kelurahan_id
-      }
+  if (hasError) {
+    // Format pesan error untuk ditampilkan
+    let errorMessage = 'Data masih ada yang kosong:\n'
+    allErrors.forEach(item => {
+      errorMessage += `\nBaris ${item.row}:\n`
+      item.errors.forEach(err => {
+        errorMessage += `  • ${err}\n`
+      })
     })
-  } catch {
+    
+    openError('Data tidak lengkap', allErrors)
     return
   }
+
+  // Set id_kel untuk setiap row
+  form.rows = form.rows.map(row => ({
+    ...row,
+    id_kel: form.kelurahan_id
+  }))
+
+  // Tampilkan loading toast
+  showToast('info', 'Menyimpan data...', 0) // 0 = tidak auto hide
 
   form.post('/posyandu/data-umum/store-multiple', {
     preserveScroll: true,
     onSuccess: () => {
-      openSuccess('Data posyandu berhasil disimpan')
+      // Hide loading toast
+      hideToast()
+      openSuccess(`${form.rows.length} data posyandu berhasil disimpan`)
       setTimeout(() => {
         router.visit('/posyandu/data-umum')
-      }, 700)
+      }, 1500)
     },
-    onError: () => {
-      openError('Gagal menyimpan data')
+    onError: (errors) => {
+      // Hide loading toast
+      hideToast()
+      console.error('Error:', errors)
+      
+      // Format error dari server
+      let errorMsg = 'Gagal menyimpan data'
+      if (errors.message) {
+        errorMsg = errors.message
+      } else if (typeof errors === 'object') {
+        errorMsg = Object.values(errors).join(', ')
+      }
+      
+      openError(errorMsg)
     }
   })
 }
@@ -142,6 +232,25 @@ function submit() {
 
 <template>
   <div class="page-wrapper">
+    <!-- Toast Notification -->
+    <Transition name="slide-fade">
+      <div v-if="toast.show" class="toast-notification" :class="toast.type">
+        <div class="toast-content">
+          <i 
+            class="icon" 
+            :class="{
+              'icon-check-circle': toast.type === 'success',
+              'icon-exclamation-circle': toast.type === 'error',
+              'icon-info-circle': toast.type === 'info',
+              'icon-exclamation-triangle': toast.type === 'warning'
+            }"
+          ></i>
+          <span class="toast-message">{{ toast.message }}</span>
+          <button class="toast-close" @click="hideToast">×</button>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Header -->
     <div class="page-header">
       <div>
@@ -215,6 +324,7 @@ function submit() {
                     class="form-control" 
                     v-model="row.nama_posyandu"
                     placeholder="Masukkan nama posyandu"
+                    :class="{ 'is-invalid': !row.nama_posyandu && showModal }"
                   >
                 </div>
                 <div class="field">
@@ -397,8 +507,19 @@ function submit() {
           }"
           style="font-size: 48px;"
         ></i>
-        <h4 class="mt-3">{{ modalType === 'success' ? 'Berhasil!' : 'Gagal!' }}</h4>
+        <h4 class="mt-3">{{ modalTitle }}</h4>
         <p class="text-muted">{{ modalMessage }}</p>
+        
+        <!-- Tampilkan detail error jika ada -->
+        <div v-if="validationErrors.length > 0" class="error-details mt-3">
+          <div v-for="(error, idx) in validationErrors" :key="idx" class="error-item">
+            <strong>Baris {{ error.row }}:</strong>
+            <ul>
+              <li v-for="(err, errIdx) in error.errors" :key="errIdx">{{ err }}</li>
+            </ul>
+          </div>
+        </div>
+        
         <button class="btn btn-primary mt-3" @click="showModal = false">Tutup</button>
       </div>
     </div>
@@ -508,6 +629,10 @@ function submit() {
   outline: none;
 }
 
+.form-control.is-invalid {
+  border-color: #f56565;
+}
+
 .form-footer {
   display: flex;
   justify-content: space-between;
@@ -521,11 +646,16 @@ function submit() {
   font-weight: 500;
   border-radius: 8px;
   transition: all 0.2s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-primary {
   background: #4299e1;
   border: none;
+  color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -533,9 +663,15 @@ function submit() {
   transform: translateY(-1px);
 }
 
+.btn-primary:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
 .btn-outline-success {
   border: 1.5px solid #48bb78;
   color: #48bb78;
+  background: transparent;
 }
 
 .btn-outline-success:hover {
@@ -546,6 +682,7 @@ function submit() {
 .btn-outline-danger {
   border: 1.5px solid #f56565;
   color: #f56565;
+  background: transparent;
 }
 
 .btn-outline-danger:hover {
@@ -556,6 +693,7 @@ function submit() {
 .btn-outline-secondary {
   border: 1.5px solid #718096;
   color: #718096;
+  background: transparent;
 }
 
 .btn-outline-secondary:hover {
@@ -589,8 +727,10 @@ function submit() {
   background: white;
   padding: 32px;
   border-radius: 20px;
-  max-width: 400px;
+  max-width: 500px;
   width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .alert {
@@ -602,6 +742,144 @@ function submit() {
   background-color: #ebf8ff;
   border: 1px solid #90cdf4;
   color: #2c5282;
+}
+
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  min-width: 300px;
+  max-width: 400px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  overflow: hidden;
+  animation: slideIn 0.3s ease;
+}
+
+.toast-notification.success {
+  border-left: 4px solid #48bb78;
+}
+
+.toast-notification.error {
+  border-left: 4px solid #f56565;
+}
+
+.toast-notification.info {
+  border-left: 4px solid #4299e1;
+}
+
+.toast-notification.warning {
+  border-left: 4px solid #ed8936;
+}
+
+.toast-content {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-content i {
+  font-size: 20px;
+}
+
+.toast-notification.success i {
+  color: #48bb78;
+}
+
+.toast-notification.error i {
+  color: #f56565;
+}
+
+.toast-notification.info i {
+  color: #4299e1;
+}
+
+.toast-notification.warning i {
+  color: #ed8936;
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 14px;
+  color: #2d3748;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #a0aec0;
+  padding: 0 4px;
+}
+
+.toast-close:hover {
+  color: #4a5568;
+}
+
+/* Animations */
+.slide-fade-enter-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.error-details {
+  text-align: left;
+  background: #fef5f5;
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.error-item {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #fed7d7;
+}
+
+.error-item:last-child {
+  border-bottom: none;
+}
+
+.error-item strong {
+  color: #c53030;
+  font-size: 14px;
+}
+
+.error-item ul {
+  margin: 4px 0 0 0;
+  padding-left: 20px;
+}
+
+.error-item li {
+  color: #742a2a;
+  font-size: 13px;
+  margin: 2px 0;
 }
 
 @media (max-width: 768px) {
@@ -623,6 +901,13 @@ function submit() {
   
   .form-footer button {
     width: 100%;
+  }
+  
+  .toast-notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
   }
 }
 </style>
