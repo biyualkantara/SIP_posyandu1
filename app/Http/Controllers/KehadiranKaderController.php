@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 class KehadiranKaderController extends Controller
 {
@@ -163,70 +164,108 @@ class KehadiranKaderController extends Controller
 
     public function edit($id)
     {
-        $kecamatan = DB::table('kcmtn')->orderBy('nama_kec')->get();
+        try {
+            $kecamatan = DB::table('kcmtn')->orderBy('nama_kec')->get();
 
-        $kelurahan = DB::table('klrhn')
-            ->select('id_kel', 'id_kec', 'nama_kel')
-            ->orderBy('nama_kel')
-            ->get()
-            ->groupBy('id_kec');
+            $kelurahan = DB::table('klrhn')
+                ->select('id_kel', 'id_kec', 'nama_kel')
+                ->orderBy('nama_kel')
+                ->get()
+                ->groupBy('id_kec');
 
-        $posyandu = DB::table('duspy')
-            ->select('id_posyandu', 'id_kel', 'nama_posyandu')
-            ->orderBy('nama_posyandu')
-            ->get()
-            ->groupBy('id_kel');
+            $posyandu = DB::table('duspy')
+                ->select('id_posyandu', 'id_kel', 'nama_posyandu')
+                ->orderBy('nama_posyandu')
+                ->get()
+                ->groupBy('id_kel');
 
-        $kdr = DB::table('kdrhdr as k')
-            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'k.id_posyandu')
-            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
-            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
-            ->select([
-                'k.id_kdrhdr',
-                'k.id_posyandu',
-                DB::raw('DATE_FORMAT(k.`bulan`, "%Y-%m") as bulan'),
-                'k.pkk', 'k.plkb', 'k.medis',
-                'kel.id_kel',
-                'kel.nama_kel',
-                'kec.id_kec',
-                'kec.nama_kec',
-            ])
-            ->where('k.id_kdrhdr', $id)
-            ->first();
+            $kdr = DB::table('kdrhdr as k')
+                ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'k.id_posyandu')
+                ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+                ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+                ->select([
+                    'k.id_kdrhdr',
+                    'k.id_posyandu',
+                    DB::raw('DATE_FORMAT(k.`bulan`, "%Y-%m") as bulan'),
+                    'k.pkk', 
+                    'k.plkb', 
+                    'k.medis',
+                    'd.nama_posyandu',
+                    'kel.id_kel',
+                    'kel.nama_kel',
+                    'kec.id_kec',
+                    'kec.nama_kec',
+                ])
+                ->where('k.id_kdrhdr', $id)
+                ->first();
 
-        abort_if(!$kdr, 404);
+            if (!$kdr) {
+                Log::error('Data kdrhdr tidak ditemukan untuk ID: ' . $id);
+                abort(404, 'Data tidak ditemukan');
+            }
 
-        return Inertia::render('posyandu/KehadiranKader/Edit', [
-            'kdrhdr' => $kdr,
-            'kecamatan' => $kecamatan,
-            'kelurahan' => $kelurahan,
-            'posyandu'  => $posyandu,
-        ]);
+            // Log data untuk debugging
+            Log::info('Data kdrhdr yang akan diedit:', [
+                'id' => $kdr->id_kdrhdr,
+                'bulan' => $kdr->bulan,
+                'pkk' => $kdr->pkk,
+                'plkb' => $kdr->plkb,
+                'medis' => $kdr->medis,
+                'id_posyandu' => $kdr->id_posyandu
+            ]);
+
+            return Inertia::render('posyandu/KehadiranKader/Edit', [
+                'kdrhdr' => $kdr,
+                'kecamatan' => $kecamatan,
+                'kelurahan' => $kelurahan,
+                'posyandu'  => $posyandu,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error di edit: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'id_posyandu' => ['required'],
-            'bulan' => ['required'], // YYYY-MM
-            'pkk' => ['required'],
-            'plkb' => ['required'],
-            'medis' => ['required'],
-        ]);
-
-        $bulan = $request->bulan . '-01';
-
-        DB::table('kdrhdr')
-            ->where('id_kdrhdr', $id)
-            ->update([
-                'id_posyandu' => $request->id_posyandu,
-                'bulan' => $bulan,
-                'pkk' => (int)$request->pkk,
-                'plkb' => (int)$request->plkb,
-                'medis' => (int)$request->medis,
+        try {
+            $request->validate([
+                'id_posyandu' => ['required'],
+                'bulan' => ['required'], // YYYY-MM
+                'pkk' => ['required', 'numeric'],
+                'plkb' => ['required', 'numeric'],
+                'medis' => ['required', 'numeric'],
             ]);
 
-        return redirect('/posyandu/kehadiran-kader');
+            // Log request data
+            Log::info('Update request:', $request->all());
+
+            $bulan = $request->bulan . '-01';
+
+            $affected = DB::table('kdrhdr')
+                ->where('id_kdrhdr', $id)
+                ->update([
+                    'id_posyandu' => $request->id_posyandu,
+                    'bulan' => $bulan,
+                    'pkk' => (int)$request->pkk,
+                    'plkb' => (int)$request->plkb,
+                    'medis' => (int)$request->medis,
+                ]);
+
+            Log::info('Update affected rows: ' . $affected);
+
+            if ($affected === 0) {
+                Log::warning('Tidak ada data yang diupdate untuk ID: ' . $id);
+            }
+
+            return redirect('/posyandu/kehadiran-kader')
+                ->with('success', 'Data berhasil diupdate');
+
+        } catch (\Exception $e) {
+            Log::error('Error di update: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function destroy($id)
