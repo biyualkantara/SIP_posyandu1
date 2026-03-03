@@ -8,9 +8,9 @@ const props = defineProps({
   wuspus: Array 
 })
 
-// Filter WUS/PUS yang masih aktif saja
+// Filter WUS/PUS yang masih aktif saja (sudah dari controller)
 const wuspusAktif = computed(() => {
-  return (props.wuspus || []).filter(w => w.status === 'Aktif')
+  return props.wuspus || []
 })
 
 const form = useForm({
@@ -96,7 +96,7 @@ function submit() {
                 <VueSelect
                   v-model="form.id_wuspus"
                   :options="wuspusAktif.map(w => ({
-                    label: `${w.nik_wuspus} - ${w.nama_wuspus}`,
+                    label: `${w.nik_wuspus} - ${w.nama_wuspus} (${w.nama_posyandu || '-'})`,
                     value: w.id_wuspus
                   }))"
                   placeholder="Pilih WUS/PUS"
@@ -140,7 +140,9 @@ function submit() {
           </div>
 
           <div class="form-footer">
-            <div></div> <!-- Spacer untuk flex space-between -->
+            <Link href="/posyandu/wuspus-kematian" class="btn btn-outline-secondary">
+              <i class="icon-close me-2"></i>Batal
+            </Link>
             <button type="submit" class="btn btn-primary" :disabled="form.processing">
               <i class="icon-check me-2"></i>
               {{ form.processing ? 'Menyimpan...' : 'Simpan Data' }}
@@ -262,6 +264,7 @@ function submit() {
 .form-footer {
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
   margin-top: 28px;
   padding-top: 24px;
   border-top: 2px solid #f0f2f5;
