@@ -371,23 +371,6 @@ const formatValue = (value) => {
             <span class="select-icon">▼</span>
           </div>
         </div>
-
-        <div class="filter-item search-item">
-          <label class="filter-label">Pencarian</label>
-          <div class="search-wrapper">
-            <span class="search-icon">🔍</span>
-            <input 
-              type="text" 
-              class="search-input" 
-              v-model="searchText" 
-              placeholder="Cari Nama / NIK / Jenis Imunisasi..."
-              @keyup.enter="applyFilter"
-            >
-            <button class="search-btn" @click="applyFilter">
-              Cari
-            </button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -1097,6 +1080,7 @@ const formatValue = (value) => {
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
+  text-align: center;
 }
 
 .modal-info-item {
@@ -1115,12 +1099,14 @@ const formatValue = (value) => {
   text-transform: uppercase;
   letter-spacing: 0.3px;
   margin-bottom: 2px;
+  text-align: center;
 }
 
 .modal-info-value {
   font-size: 14px;
   color: #1e293b;
   word-break: break-word;
+  text-align: center;
 }
 
 .modal-info-value strong {

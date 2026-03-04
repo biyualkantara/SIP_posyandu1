@@ -379,23 +379,6 @@ const formatValue = (value) => {
             <span class="select-icon">▼</span>
           </div>
         </div>
-
-        <div class="filter-item search-item">
-          <label class="filter-label">Pencarian</label>
-          <div class="search-wrapper">
-            <span class="search-icon">🔍</span>
-            <input 
-              type="text" 
-              class="search-input" 
-              v-model="searchText" 
-              placeholder="Cari Nama / NIK / Jenis Kontrasepsi..."
-              @keyup.enter="applyFilter"
-            >
-            <button class="search-btn" @click="applyFilter">
-              Cari
-            </button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -537,11 +520,20 @@ const formatValue = (value) => {
           </div>
         </div>
 
-        <div class="modal-info-item">
-          <span class="modal-info-label">KB Baru</span>
-          <div class="modal-info-value">
-            <span class="kb-badge" :class="selected.kontrasepsi_baru == 1 ? 'kb-ya' : 'kb-tidak'">
-              {{ getKbBaruStatus(selected.kontrasepsi_baru) }}
+       <div class="modal-info-item">
+        <span class="modal-info-label">KB Baru</span>
+        <div class="modal-info-value">
+            <span 
+              class="kb-badge" 
+              :class="{
+                'kb-ya': selected.kontrasepsi_baru == 1 || selected.kontrasepsi_baru === 'Ya',
+                'kb-tidak': selected.kontrasepsi_baru == 0 || selected.kontrasepsi_baru === 'Tidak',
+                'kb-default': !selected.kontrasepsi_baru && selected.kontrasepsi_baru !== 0
+              }"
+            >
+              {{ selected.kontrasepsi_baru == 1 || selected.kontrasepsi_baru === 'Ya' ? 'Ya' : 
+                selected.kontrasepsi_baru == 0 || selected.kontrasepsi_baru === 'Tidak' ? 'Tidak' : 
+                '-' }}
             </span>
           </div>
         </div>
@@ -1151,12 +1143,14 @@ const formatValue = (value) => {
   text-transform: uppercase;
   letter-spacing: 0.3px;
   margin-bottom: 2px;
+  text-align: center;
 }
 
 .modal-info-value {
   font-size: 14px;
   color: #1e293b;
   word-break: break-word;
+  text-align: center;
 }
 
 .modal-info-value strong {

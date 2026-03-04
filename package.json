@@ -31,6 +31,7 @@
         "vue-tsc": "^2.2.4"
     },
     "dependencies": {
+        "@fortawesome/fontawesome-free": "^7.2.0",
         "@inertiajs/core": "^2.2.18",
         "@inertiajs/inertia": "^0.11.1",
         "@inertiajs/inertia-vue3": "^0.6.0",
