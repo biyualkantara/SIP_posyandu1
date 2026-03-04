@@ -174,7 +174,7 @@ try {
             'id_wuspus' => $idWuspus,
             'tgl_daftar' => $r['tgl_daftar'] ?? null,
             'umur_kehamilan' => $r['umur_kehamilan'] !== '' ? (int)$r['umur_kehamilan'] : null,
-            'hamil_ke' => $r['hamil_kehamilan'] ?? null,
+            'hamil_ke' => $r['hamil_ke'] ?? null,
             'pmt_pemulihan' => $r['pmt_pemulihan'] ?? null,
             'lila' => $r['lila'] !== '' ? (float)$r['lila'] : null,
             'ket' => $r['ket'] ?? null,
