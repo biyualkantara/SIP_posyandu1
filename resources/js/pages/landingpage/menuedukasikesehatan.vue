@@ -13,8 +13,8 @@
           </p>
 
           <div class="btn-row">
-            <a href="#" class="btn-edukasi">DP3APPKB</a>
-            <a href="#" class="btn-edukasi">Lihat jumlah posyandu</a>
+            <a href="/berita-posyandu" class="btn-edukasi">DP3APPKB</a>
+            <a href="/halaman-posyandu" class="btn-edukasi">Lihat jumlah posyandu</a>
           </div>
         </div>
 
