@@ -130,7 +130,6 @@ const columns = [
 const selectedKec = ref(props.filter?.kec ?? '')
 const selectedKel = ref(props.filter?.kel ?? '')
 const selectedPos = ref(props.filter?.pos ?? '')
-const searchText  = ref(props.filter?.q ?? '')
 
 const kelurahanList = computed(() => {
   if (!selectedKec.value) return []
@@ -156,7 +155,6 @@ function applyFilter() {
         kec: selectedKec.value || '',
         kel: selectedKel.value || '',
         pos: selectedPos.value || '',
-        q:   searchText.value || '',
     }, { 
         preserveState: true, 
         preserveScroll: true, 
@@ -297,8 +295,7 @@ const formatDate = (date) => {
                     class="btn-create"
                     @click="handleLinkClick"
                 >
-                    
-                    <span> + Tambah Imunisasi</span>
+                    <span>+ Tambah Imunisasi</span>
                 </Link>
             </div>
         </div>
@@ -307,7 +304,7 @@ const formatDate = (date) => {
         <div class="filter-section">
             <div class="filter-grid">
                 <div class="filter-item">
-                    <label class="filter-label">Kecamatan</label>
+                    <label class="filter-label">KECAMATAN</label>
                     <div class="select-wrapper">
                         <select class="filter-select" v-model="selectedKec" @change="applyFilter">
                             <option value="">Semua Kecamatan</option>
@@ -320,7 +317,7 @@ const formatDate = (date) => {
                 </div>
 
                 <div class="filter-item">
-                    <label class="filter-label">Kelurahan</label>
+                    <label class="filter-label">KELURAHAN</label>
                     <div class="select-wrapper">
                         <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
                             <option value="">Semua Kelurahan</option>
@@ -333,7 +330,7 @@ const formatDate = (date) => {
                 </div>
 
                 <div class="filter-item">
-                    <label class="filter-label">Posyandu</label>
+                    <label class="filter-label">POSYANDU</label>
                     <div class="select-wrapper">
                         <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
                             <option value="">Semua Posyandu</option>
@@ -344,23 +341,6 @@ const formatDate = (date) => {
                         <i class="icon-chevron-down select-icon"></i>
                     </div>
                 </div>
-
-                <div class="filter-item search-item">
-                    <label class="filter-label">Pencarian</label>
-                    <div class="search-wrapper">
-                        <i class="icon-search search-icon"></i>
-                        <input 
-                            type="text" 
-                            class="search-input" 
-                            v-model="searchText" 
-                            placeholder="Cari nama atau NIK..."
-                            @keyup.enter="applyFilter"
-                        >
-                        <button class="search-btn" @click="applyFilter">
-                            Cari
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -369,7 +349,7 @@ const formatDate = (date) => {
             <!-- Tampilkan pesan jika tidak ada data -->
             <div v-if="rows.length === 0" class="empty-state">
                 <div class="empty-icon">
-                    <i class="icon-database"></i>
+                    <span>📊</span>
                 </div>
                 <h3 class="empty-title">Belum Ada Data</h3>
                 <p class="empty-description">Data imunisasi ibu hamil belum tersedia. Silakan tambah data baru.</p>
@@ -547,7 +527,7 @@ const formatDate = (date) => {
     gap: 12px;
 }
 
-/* Button Create (Biru Tua) */
+/* Button Create */
 .btn-create {
     display: inline-flex;
     align-items: center;
@@ -592,7 +572,7 @@ const formatDate = (date) => {
 
 .filter-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
@@ -658,73 +638,6 @@ const formatDate = (date) => {
     color: #64748b;
     font-size: 14px;
     pointer-events: none;
-}
-
-/* Search Item */
-.search-item {
-    flex: 1;
-}
-
-.search-wrapper {
-    display: flex;
-    align-items: center;
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    transition: all 0.2s;
-}
-
-.search-wrapper:focus-within {
-    border-color: #1e293b;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
-}
-
-.search-icon {
-    padding: 0 12px;
-    color: #94a3b8;
-    font-size: 16px;
-}
-
-.search-input {
-    flex: 1;
-    height: 42px;
-    border: none;
-    background: transparent;
-    font-size: 14px;
-    color: #1e293b;
-    padding: 0;
-}
-
-.search-input:focus {
-    outline: none;
-}
-
-.search-input::placeholder {
-    color: #94a3b8;
-}
-
-.search-btn {
-    height: 42px;
-    padding: 0 20px;
-    background: #f1f5f9;
-    border: none;
-    border-left: 2px solid #e2e8f0;
-    border-radius: 0 8px 8px 0;
-    color: #475569;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.search-btn:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-}
-
-.search-btn:active {
-    background: #cbd5e1;
 }
 
 /* Table Section */
@@ -821,7 +734,6 @@ const formatDate = (date) => {
     font-size: 16px;
 }
 
-/* Button Show */
 .btn-show {
     background: #e2e8f0;
     color: #475569;
@@ -834,13 +746,6 @@ const formatDate = (date) => {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.btn-show:active {
-    background: #94a3b8;
-    color: white;
-    transform: translateY(0);
-}
-
-/* Button Edit */
 .btn-edit {
     background: #dbeafe;
     color: #1e40af;
@@ -853,13 +758,6 @@ const formatDate = (date) => {
     box-shadow: 0 4px 8px rgba(30, 64, 175, 0.2);
 }
 
-.btn-edit:active {
-    background: #93c5fd;
-    color: #1e3a8a;
-    transform: translateY(0);
-}
-
-/* Button Delete */
 .btn-delete {
     background: #fee2e2;
     color: #991b1b;
@@ -872,12 +770,6 @@ const formatDate = (date) => {
     box-shadow: 0 4px 8px rgba(153, 27, 27, 0.2);
 }
 
-.btn-delete:active {
-    background: #fca5a5;
-    color: #7f1d1d;
-    transform: translateY(0);
-}
-
 /* Empty State */
 .empty-state {
     text-align: center;
@@ -885,14 +777,15 @@ const formatDate = (date) => {
 }
 
 .empty-icon {
-    width: 80px;
-    height: 80px;
-    background: #f1f5f9;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 24px;
+  width: 80px;
+  height: 80px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 40px;
 }
 
 .empty-icon i {
@@ -910,10 +803,6 @@ const formatDate = (date) => {
 .empty-description {
     color: #64748b;
     margin: 0 0 24px 0;
-}
-
-.empty-btn {
-    display: inline-flex;
 }
 
 /* Pagination Section */
@@ -1067,13 +956,6 @@ const formatDate = (date) => {
     word-break: break-word;
 }
 
-.modal-highlight .nik-info {
-    font-size: 12px;
-    color: #64748b;
-    display: block;
-    margin-bottom: 8px;
-}
-
 .modal-warning {
     display: flex;
     align-items: center;
@@ -1117,10 +999,6 @@ const formatDate = (date) => {
     color: #1e293b;
 }
 
-.modal-btn-cancel:active {
-    background: #cbd5e1;
-}
-
 .modal-btn-delete {
     background: #dc2626;
     color: white;
@@ -1130,11 +1008,6 @@ const formatDate = (date) => {
     background: #b91c1c;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-}
-
-.modal-btn-delete:active {
-    background: #991b1b;
-    transform: translateY(0);
 }
 
 /* Toast Notification */
@@ -1178,22 +1051,6 @@ const formatDate = (date) => {
 
 .toast-content i {
     font-size: 20px;
-}
-
-.toast-notification.success i {
-    color: #10b981;
-}
-
-.toast-notification.error i {
-    color: #ef4444;
-}
-
-.toast-notification.info i {
-    color: #3b82f6;
-}
-
-.toast-notification.warning i {
-    color: #f59e0b;
 }
 
 .toast-message {
@@ -1241,14 +1098,19 @@ const formatDate = (date) => {
     }
 }
 
+/* Helper Classes */
+.mt-1 {
+    margin-top: 4px;
+}
+
+.mt-2 {
+    margin-top: 8px;
+}
+
 /* Responsive */
-@media (max-width: 1200px) {
+@media (max-width: 992px) {
     .filter-grid {
         grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .search-item {
-        grid-column: span 2;
     }
 }
 
@@ -1275,10 +1137,6 @@ const formatDate = (date) => {
     
     .filter-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .search-item {
-        grid-column: span 1;
     }
     
     .pagination-section {
