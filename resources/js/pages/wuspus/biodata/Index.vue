@@ -298,269 +298,247 @@ const getStatusClass = (status) => {
 </script>
 
 <template>
-  <!-- Toast Notification -->
+     <!-- Toast Notification -->
   <Transition name="slide-fade">
     <div v-if="toast.show" class="toast-notification" :class="toast.type">
       <div class="toast-content">
-        <i 
-          class="icon" 
-          :class="{
-            'icon-check-circle': toast.type === 'success',
-            'icon-exclamation-circle': toast.type === 'error',
-            'icon-info-circle': toast.type === 'info',
-            'icon-exclamation-triangle': toast.type === 'warning'
-          }"
-        ></i>
+        <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+        <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+        <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+        <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
         <span class="toast-message">{{ toast.message }}</span>
         <button class="toast-close" @click="hideToast">×</button>
       </div>
     </div>
   </Transition>
 
-  <div class="data-container">
-    <!-- Header Section -->
-    <div class="header-section">
-      <div class="header-left">
-        <h1 class="page-title">WUS/PUS - Biodata</h1>
-        <p class="page-subtitle">Kelola data WUS/PUS (Wanita Usia Subur / Pasangan Usia Subur)</p>
+    <div class="data-container">
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="header-left">
+          <h1 class="page-title">WUS/PUS - Biodata</h1>
+          <p class="page-subtitle">Kelola data WUS/PUS (Wanita Usia Subur / Pasangan Usia Subur)</p>
+        </div>
+        <div class="header-right">
+          <Link 
+            href="/posyandu/wuspus/create" 
+            class="btn-create"
+            @click="handleLinkClick"
+          >
+            <span>+</span>
+            <span>Tambah Data</span>
+          </Link>
+        </div>
       </div>
-      <div class="header-right">
-        <Link 
-          href="/posyandu/wuspus/create" 
-          class="btn-create"
-          @click="handleLinkClick"
-        >
-          <span>+</span>
-          <span>Tambah Data</span>
-        </Link>
-      </div>
-    </div>
 
-    <!-- Filter Section -->
-    <div class="filter-section">
-      <div class="filter-grid">
-        <div class="filter-item">
-          <label class="filter-label">Kecamatan</label>
-          <div class="select-wrapper">
-            <select class="filter-select" v-model="selectedKec" @change="applyFilter">
-              <option value="">Semua Kecamatan</option>
-              <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
-                {{ k.nama_kec }}
-              </option>
-            </select>
-            <i class="icon-chevron-down select-icon"></i>
+      <!-- Filter Section -->
+      <div class="filter-section">
+        <div class="filter-grid">
+          <div class="filter-item">
+            <label class="filter-label">Kecamatan</label>
+            <div class="select-wrapper">
+              <select class="filter-select" v-model="selectedKec" @change="applyFilter">
+                <option value="">Semua Kecamatan</option>
+                <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
+                  {{ k.nama_kec }}
+                </option>
+              </select>
+              <i class="icon-chevron-down select-icon"></i>
+            </div>
           </div>
-        </div>
 
-        <div class="filter-item">
-          <label class="filter-label">Kelurahan</label>
-          <div class="select-wrapper">
-            <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
-              <option value="">Semua Kelurahan</option>
-              <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
-                {{ k.nama_kel }}
-              </option>
-            </select>
-            <i class="icon-chevron-down select-icon"></i>
+          <div class="filter-item">
+            <label class="filter-label">Kelurahan</label>
+            <div class="select-wrapper">
+              <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+                <option value="">Semua Kelurahan</option>
+                <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
+                  {{ k.nama_kel }}
+                </option>
+              </select>
+              <i class="icon-chevron-down select-icon"></i>
+            </div>
           </div>
-        </div>
 
-        <div class="filter-item">
-          <label class="filter-label">Posyandu</label>
-          <div class="select-wrapper">
-            <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
-              <option value="">Semua Posyandu</option>
-              <option v-for="p in posyanduList" :key="p.id_posyandu" :value="p.id_posyandu">
-                {{ p.nama_posyandu }}
-              </option>
-            </select>
-            <i class="icon-chevron-down select-icon"></i>
-          </div>
-        </div>
-
-        <div class="filter-item search-item">
-          <label class="filter-label">Pencarian</label>
-          <div class="search-wrapper">
-            <i class="icon-search search-icon"></i>
-            <input 
-              type="text" 
-              class="search-input" 
-              v-model="searchText" 
-              placeholder="Cari Nama / NIK / Suami / Status / Posyandu..."
-              @keyup.enter="applyFilter"
-            >
-            <button class="search-btn" @click="applyFilter">
-              Cari
-            </button>
+          <div class="filter-item">
+            <label class="filter-label">Posyandu</label>
+            <div class="select-wrapper">
+              <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
+                <option value="">Semua Posyandu</option>
+                <option v-for="p in posyanduList" :key="p.id_posyandu" :value="p.id_posyandu">
+                  {{ p.nama_posyandu }}
+                </option>
+              </select>
+              <i class="icon-chevron-down select-icon"></i>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Debug Info (Hapus setelah selesai) -->
-    <div v-if="false" class="debug-info mb-3">
-      <pre>Total Data: {{ props.data?.total || 0 }}</pre>
-      <pre>Jumlah Rows: {{ rows.length }}</pre>
-    </div>
-
-    <!-- Table Section -->
-   <div class="table-section">
-      <!-- Tampilkan pesan jika tidak ada data -->
-      <div v-if="rows.length === 0" class="empty-state">
-        <div class="empty-icon">
-          <span>📊</span>
-        </div>
-        <h3 class="empty-title">Belum Ada Data</h3>
-        <p class="empty-description">Data WUS/PUS belum tersedia. Silakan tambah data baru.</p>
-        <Link href="/posyandu/wuspus-imun/create" class="btn-create empty-btn" @click="handleLinkClick">
-          <span>+</span>
-          <span>Tambah Data Pertama</span>
-        </Link>
+      <!-- Debug Info (Hapus setelah selesai) -->
+      <div v-if="false" class="debug-info mb-3">
+        <pre>Total Data: {{ props.data?.total || 0 }}</pre>
+        <pre>Jumlah Rows: {{ rows.length }}</pre>
       </div>
 
-      <!-- Tampilkan tabel jika ada data -->
-      <DataTable v-else :columns="columns" :rows="rows" :perPage="10">
-        <!-- Custom Column Templates -->
-        <template #col-id_wuspus="{ row }">
-          <span class="id-badge">#{{ row.id_wuspus }}</span>
-        </template>
-
-        <template #col-nama_wuspus="{ row }">
-          <div class="nama-info">
-            <span class="nik-text">{{ row.nik_wuspus || '-' }}</span>
-            <span class="nama-text">{{ formatValue(row.nama_wuspus) }}</span>
-            <span v-if="row.nama_suami" class="suami-text">
-              <i class="icon-user"></i> {{ row.nama_suami }}
-            </span>
+      <!-- Table Section -->
+      <div class="table-section">
+        <!-- Tampilkan pesan jika tidak ada data -->
+        <div v-if="rows.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <span>📊</span>
           </div>
-        </template>
+          <h3 class="empty-title">Belum Ada Data</h3>
+          <p class="empty-description">Data WUS/PUS belum tersedia. Silakan tambah data baru.</p>
+          <Link href="/posyandu/wuspus/create" class="btn-create empty-btn" @click="handleLinkClick">
+            <span>+</span>
+            <span>Tambah Data Pertama</span>
+          </Link>
+        </div>
 
-        <template #col-posyandu="{ row }">
-          <span class="posyandu-badge">
-            {{ getNamaPosyandu(row) }}
-          </span>
-        </template>
+        <!-- Tampilkan tabel jika ada data -->
+        <DataTable v-else :columns="columns" :rows="rows" :perPage="10">
+          <!-- Custom Column Templates -->
+          <template #col-id_wuspus="{ row }">
+            <span class="id-badge">#{{ row.id_wuspus }}</span>
+          </template>
 
-        <template #col-umur="{ row }">
-          <span class="umur-badge">{{ row.umur || '-' }} tahun</span>
-        </template>
-
-        <template #col-status="{ row }">
-          <span class="status-badge" :class="getStatusClass(row.status)">
-            {{ row.status || '-' }}
-          </span>
-        </template>
-
-        <template #col-actions="{ row }">
-          <div class="action-group">
-            <Link 
-              :href="`/posyandu/wuspus/${row.id_wuspus}`"
-              @click="handleLinkClick"
-            >
-              <span :class="getButtonClass('show')" title="Lihat Detail">
-                <i class="icon-eye"></i>
+          <template #col-nama_wuspus="{ row }">
+            <div class="nama-info">
+              <span class="nik-text">{{ row.nik_wuspus || '-' }}</span>
+              <span class="nama-text">{{ formatValue(row.nama_wuspus) }}</span>
+              <span v-if="row.nama_suami" class="suami-text">
+                <i class="icon-user"></i> {{ row.nama_suami }}
               </span>
-            </Link>
+            </div>
+          </template>
 
-            <Link 
-              :href="`/posyandu/wuspus/${row.id_wuspus}/edit`"
-              @click="handleLinkClick"
-            >
-              <span :class="getButtonClass('edit')" title="Edit Data">
-                <i class="icon-pencil"></i>
+          <template #col-posyandu="{ row }">
+            <span class="posyandu-badge">
+              {{ getNamaPosyandu(row) }}
+            </span>
+          </template>
+
+          <template #col-umur="{ row }">
+            <span class="umur-badge">{{ row.umur || '-' }} tahun</span>
+          </template>
+
+          <template #col-status="{ row }">
+            <span class="status-badge" :class="getStatusClass(row.status)">
+              {{ row.status || '-' }}
+            </span>
+          </template>
+
+          <template #col-actions="{ row }">
+            <div class="action-group">
+              <Link 
+                :href="`/posyandu/wuspus/${row.id_wuspus}`"
+                @click="handleLinkClick"
+              >
+                <span :class="getButtonClass('show')" title="Lihat Detail">
+                  <i class="icon-eye"></i>
+                </span>
+              </Link>
+
+              <Link 
+                :href="`/posyandu/wuspus/${row.id_wuspus}/edit`"
+                @click="handleLinkClick"
+              >
+                <span :class="getButtonClass('edit')" title="Edit Data">
+                  <i class="icon-pencil"></i>
+                </span>
+              </Link>
+
+              <span 
+                :class="getButtonClass('delete')" 
+                title="Hapus Data"
+                @click="askDelete(row)"
+              >
+                <i class="icon-trash"></i>
               </span>
-            </Link>
+            </div>
+          </template>
+        </DataTable>
 
-            <span 
-              :class="getButtonClass('delete')" 
-              title="Hapus Data"
-              @click="askDelete(row)"
-            >
-              <i class="icon-trash"></i>
-            </span>
+        <!-- Pagination -->
+        <div class="pagination-section" v-if="props.data?.links?.length && rows.length > 0">
+          <div class="pagination-info">
+            Menampilkan {{ props.data.from || 0 }} - {{ props.data.to || 0 }} 
+            dari {{ props.data.total || 0 }} data
           </div>
-        </template>
-      </DataTable>
-
-      <!-- Pagination -->
-      <div class="pagination-section" v-if="props.data?.links?.length && rows.length > 0">
-        <div class="pagination-info">
-          Menampilkan {{ props.data.from || 0 }} - {{ props.data.to || 0 }} 
-          dari {{ props.data.total || 0 }} data
+          <nav class="pagination-nav">
+            <ul class="pagination-list">
+              <li v-for="(l, idx) in props.data.links" :key="idx" 
+                  class="pagination-item" 
+                  :class="{ 
+                    active: l.active, 
+                    disabled: !l.url 
+                  }"
+              >
+                <a 
+                  class="pagination-link" 
+                  href="#" 
+                  @click.prevent="l.url && router.visit(l.url, { preserveScroll: true, onStart: saveScrollPosition })"
+                  v-html="l.label"
+                ></a>
+              </li>
+            </ul>
+          </nav>
         </div>
-        <nav class="pagination-nav">
-          <ul class="pagination-list">
-            <li v-for="(l, idx) in props.data.links" :key="idx" 
-                class="pagination-item" 
-                :class="{ 
-                  active: l.active, 
-                  disabled: !l.url 
-                }"
-            >
-              <a 
-                class="pagination-link" 
-                href="#" 
-                @click.prevent="l.url && router.visit(l.url, { preserveScroll: true, onStart: saveScrollPosition })"
-                v-html="l.label"
-              ></a>
-            </li>
-          </ul>
-        </nav>
       </div>
     </div>
-  </div>
 
-  <!-- Modal Konfirmasi Hapus -->
-  <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content">
-      <div class="modal-icon-wrapper">
-        <i class="icon-bin modal-icon"></i>
-      </div>
-      <h3 class="modal-title">Hapus Data WUS/PUS?</h3>
-      <p class="modal-text">Anda akan menghapus data:</p>
-      
-      <div class="modal-highlight">
-        <div class="modal-info-item">
-          <span class="modal-info-label">NIK / Nama</span>
-          <div class="modal-info-value">
-            <strong>{{ selected.nik_wuspus || '-' }}</strong> - {{ selected.nama_wuspus || 'Tidak diketahui' }}
+    <!-- Modal Konfirmasi Hapus -->
+    <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content">
+        <div class="modal-icon-wrapper">
+          <i class="icon-bin modal-icon"></i>
+        </div>
+        <h3 class="modal-title">Hapus Data WUS/PUS?</h3>
+        <p class="modal-text">Anda akan menghapus data:</p>
+        
+        <div class="modal-highlight">
+          <div class="modal-info-item">
+            <span class="modal-info-label">NIK / Nama</span>
+            <div class="modal-info-value">
+              <strong>{{ selected.nik_wuspus || '-' }}</strong> - {{ selected.nama_wuspus || 'Tidak diketahui' }}
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <span class="modal-info-label">Posyandu</span>
+            <div class="modal-info-value">
+              {{ getNamaPosyandu(selected) }}
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <span class="modal-info-label">Status</span>
+            <div>
+              <span class="status-badge" :class="getStatusClass(selected.status)">
+                {{ selected.status || '-' }}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div class="modal-info-item">
-          <span class="modal-info-label">Posyandu</span>
-          <div class="modal-info-value">
-            {{ getNamaPosyandu(selected) }}
-          </div>
+        <p class="modal-warning">
+          <i class="icon-exclamation-triangle"></i>
+          Data yang dihapus tidak dapat dikembalikan
+        </p>
+
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-cancel" @click="closeModal">
+            <i class="icon-close"></i>
+            Batal
+          </button>
+          <button class="modal-btn modal-btn-delete" @click="confirmDelete">
+            <i class="icon-trash"></i>
+            Hapus
+          </button>
         </div>
-
-        <div class="modal-info-item">
-          <span class="modal-info-label">Status</span>
-          <div>
-            <span class="status-badge" :class="getStatusClass(selected.status)">
-              {{ selected.status || '-' }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <p class="modal-warning">
-        <i class="icon-exclamation-triangle"></i>
-        Data yang dihapus tidak dapat dikembalikan
-      </p>
-
-      <div class="modal-actions">
-        <button class="modal-btn modal-btn-cancel" @click="closeModal">
-          <i class="icon-close"></i>
-          Batal
-        </button>
-        <button class="modal-btn modal-btn-delete" @click="confirmDelete">
-          <i class="icon-trash"></i>
-          Hapus
-        </button>
       </div>
     </div>
-  </div>
 </template>
 
 <style scoped>
@@ -1154,11 +1132,12 @@ const getStatusClass = (status) => {
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
+  text-align: center;
 }
 
 .modal-info-item {
-  margin-bottom: 12px;
-  text-align: left;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
 .modal-info-item:last-child {
@@ -1171,13 +1150,15 @@ const getStatusClass = (status) => {
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  text-align: center;
 }
 
 .modal-info-value {
   font-size: 14px;
   color: #1e293b;
   word-break: break-word;
+  text-align: center;
 }
 
 .modal-info-value strong {
@@ -1195,6 +1176,7 @@ const getStatusClass = (status) => {
   border-radius: 8px;
   font-size: 13px;
   margin-bottom: 24px;
+  text-align: center;
 }
 
 .modal-actions {
@@ -1247,7 +1229,7 @@ const getStatusClass = (status) => {
   transform: translateY(0);
 }
 
-/* Toast Notification */
+/* Toast Notification - Tanpa Icon */
 .toast-notification {
   position: fixed;
   top: 24px;
@@ -1260,56 +1242,42 @@ const getStatusClass = (status) => {
   box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   overflow: hidden;
   animation: slideInRight 0.3s ease;
-  border-left: 4px solid;
 }
 
 .toast-notification.success {
-  border-left-color: #10b981;
+  background: #d4edda;
+  border-left: 4px solid #28a745;
+  color: #155724;
 }
 
 .toast-notification.error {
-  border-left-color: #ef4444;
+  background: #f8d7da;
+  border-left: 4px solid #dc3545;
+  color: #721c24;
 }
 
 .toast-notification.info {
-  border-left-color: #3b82f6;
+  background: #d1ecf1;
+  border-left: 4px solid #17a2b8;
+  color: #0c5460;
 }
 
 .toast-notification.warning {
-  border-left-color: #f59e0b;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  color: #856404;
 }
 
 .toast-content {
   padding: 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.toast-content i {
-  font-size: 20px;
-}
-
-.toast-notification.success i {
-  color: #10b981;
-}
-
-.toast-notification.error i {
-  color: #ef4444;
-}
-
-.toast-notification.info i {
-  color: #3b82f6;
-}
-
-.toast-notification.warning i {
-  color: #f59e0b;
+  justify-content: space-between;
 }
 
 .toast-message {
   flex: 1;
   font-size: 14px;
-  color: #1e293b;
   font-weight: 500;
 }
 
@@ -1318,14 +1286,15 @@ const getStatusClass = (status) => {
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: #94a3b8;
+  color: inherit;
   padding: 0 4px;
   line-height: 1;
   transition: color 0.2s;
+  opacity: 0.7;
 }
 
 .toast-close:hover {
-  color: #475569;
+  opacity: 1;
 }
 
 /* Animations */

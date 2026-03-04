@@ -102,45 +102,47 @@ class WuspusImunisasiController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        $kecamatan = DB::table('kcmtn')
-            ->select('id_kec', 'nama_kec')
-            ->orderBy('nama_kec')
-            ->get();
+   public function create()
+{
+    $kecamatan = DB::table('kcmtn')
+        ->select('id_kec', 'nama_kec')
+        ->orderBy('nama_kec')
+        ->get();
 
-        $kelurahan = DB::table('klrhn')
-            ->select('id_kel', 'id_kec', 'nama_kel')
-            ->orderBy('nama_kel')
-            ->get()
-            ->groupBy('id_kec');
+    $kelurahan = DB::table('klrhn')
+        ->select('id_kel', 'id_kec', 'nama_kel')
+        ->orderBy('nama_kel')
+        ->get()
+        ->groupBy('id_kec');
 
-        $posyandu = DB::table('duspy')
-            ->select('id_posyandu', 'id_kel', 'nama_posyandu')
-            ->orderBy('nama_posyandu')
-            ->get()
-            ->groupBy('id_kel');
+    $posyandu = DB::table('duspy')
+        ->select('id_posyandu', 'id_kel', 'nama_posyandu')
+        ->orderBy('nama_posyandu')
+        ->get()
+        ->groupBy('id_kel');
 
-        // WUS/PUS dikelompokkan per posyandu
-        $wuspus = DB::table('wuspus')
-            ->select('id_wuspus', 'id_posyandu', 'nik_wuspus', 'nama_wuspus')
-            ->orderBy('nama_wuspus')
-            ->get()
-            ->groupBy('id_posyandu');
+    // WUS/PUS dikelompokkan per posyandu
+    $wuspus = DB::table('wuspus')
+        ->select('id_wuspus', 'id_posyandu', 'nik_wuspus', 'nama_wuspus')
+        ->orderBy('nama_wuspus')
+        ->get()
+        ->groupBy('id_posyandu');
 
-        $imun = DB::table('imunisasi')
-            ->select('id_imun', 'jns_imun')
-            ->orderBy('jns_imun')
-            ->get();
+    // FILTER: Hanya imunisasi untuk WUS/PUS
+    $imun = DB::table('imunisasi')
+        ->where('imun_untuk', 'WUS/PUS')
+        ->select('id_imun', 'jns_imun')
+        ->orderBy('jns_imun')
+        ->get();
 
-        return Inertia::render('wuspus/imunisasi/Create', [
-            'kecamatan' => $kecamatan,
-            'kelurahan' => $kelurahan,
-            'posyandu'  => $posyandu,
-            'wuspus'    => $wuspus,
-            'imun'      => $imun,
-        ]);
-    }
+    return Inertia::render('wuspus/imunisasi/Create', [
+        'kecamatan' => $kecamatan,
+        'kelurahan' => $kelurahan,
+        'posyandu'  => $posyandu,
+        'wuspus'    => $wuspus,
+        'imun'      => $imun,
+    ]);
+}
 
     public function storeMultiple(Request $request)
     {

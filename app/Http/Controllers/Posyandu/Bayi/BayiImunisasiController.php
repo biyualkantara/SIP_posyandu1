@@ -117,7 +117,12 @@ class BayiImunisasiController extends Controller
             ->get()
             ->groupBy('id_posyandu');
 
-        $imun = DB::table('imunisasi')->select('id_imun', 'jns_imun')->orderBy('jns_imun')->get();
+        // FILTER: Hanya imunisasi untuk Bayi
+        $imun = DB::table('imunisasi')
+            ->where('imun_untuk', 'Bayi')
+            ->select('id_imun', 'jns_imun')
+            ->orderBy('jns_imun')
+            ->get();
 
         return Inertia::render('bayi/imunisasi/Create', compact(
             'kecamatan',
