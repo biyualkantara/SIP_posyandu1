@@ -302,9 +302,10 @@ const formatValue = (value) => {
             </div>
         </div>
 
-        <!-- Filter Section -->
+        <!-- FILTER SECTION - DIPERBAIKI -->
         <div class="filter-section">
-            <div class="filter-grid">
+            <h6 class="filter-section-title">Filter Data</h6>
+            <div class="filter-grid-2">
                 <div class="filter-item">
                     <label class="filter-label">Kecamatan</label>
                     <div class="select-wrapper">
@@ -314,7 +315,7 @@ const formatValue = (value) => {
                                 {{ k.nama_kec }}
                             </option>
                         </select>
-                        <i class="icon-chevron-down select-icon"></i>
+                        <span class="select-icon">▼</span>
                     </div>
                 </div>
 
@@ -327,7 +328,7 @@ const formatValue = (value) => {
                                 {{ k.nama_kel }}
                             </option>
                         </select>
-                        <i class="icon-chevron-down select-icon"></i>
+                        <span class="select-icon">▼</span>
                     </div>
                 </div>
             </div>
@@ -552,18 +553,25 @@ const formatValue = (value) => {
     box-shadow: 0 2px 4px rgba(30, 41, 59, 0.1);
 }
 
-/* Filter Section */
+/* Filter Section - DIPERBAIKI */
 .filter-section {
     background: white;
     border-radius: 16px;
     padding: 20px 24px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.filter-grid {
+.filter-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 16px 0;
+}
+
+.filter-grid-2 {
     display: grid;
-    grid-template-columns: 1fr 1fr 1.5fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
 
@@ -627,13 +635,17 @@ const formatValue = (value) => {
     top: 50%;
     transform: translateY(-50%);
     color: #64748b;
-    font-size: 14px;
+    font-size: 12px;
     pointer-events: none;
 }
 
-/* Search Item */
-.search-item {
-    flex: 1;
+/* Search Section - DIPISAH */
+.search-section {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .search-wrapper {
@@ -643,6 +655,7 @@ const formatValue = (value) => {
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     transition: all 0.2s;
+    width: 100%;
 }
 
 .search-wrapper:focus-within {
@@ -677,12 +690,11 @@ const formatValue = (value) => {
 
 .search-btn {
     height: 42px;
-    padding: 0 20px;
-    background: #f1f5f9;
+    padding: 0 24px;
+    background: #1e293b;
     border: none;
-    border-left: 2px solid #e2e8f0;
     border-radius: 0 8px 8px 0;
-    color: #475569;
+    color: white;
     font-weight: 600;
     font-size: 14px;
     cursor: pointer;
@@ -690,12 +702,7 @@ const formatValue = (value) => {
 }
 
 .search-btn:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-}
-
-.search-btn:active {
-    background: #cbd5e1;
+    background: #0f172a;
 }
 
 /* Debug Info */
@@ -1230,12 +1237,8 @@ const formatValue = (value) => {
 
 /* Responsive */
 @media (max-width: 1024px) {
-    .filter-grid {
+    .filter-grid-2 {
         grid-template-columns: 1fr 1fr;
-    }
-    
-    .search-item {
-        grid-column: span 2;
     }
 }
 
@@ -1260,12 +1263,8 @@ const formatValue = (value) => {
         justify-content: center;
     }
     
-    .filter-grid {
+    .filter-grid-2 {
         grid-template-columns: 1fr;
-    }
-    
-    .search-item {
-        grid-column: span 1;
     }
     
     .pagination-section {

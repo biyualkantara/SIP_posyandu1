@@ -297,240 +297,241 @@ const formatValue = (value) => {
 </script>
 
 <template>
-  <!-- Toast Notification -->
-  <Transition name="slide-fade">
-    <div v-if="toast.show" class="toast-notification" :class="toast.type">
-      <div class="toast-content">
-        <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
-        <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
-        <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
-        <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
-        <span class="toast-message">{{ toast.message }}</span>
-        <button class="toast-close" @click="hideToast">×</button>
-      </div>
-    </div>
-  </Transition>
-
-  <div class="data-container">
-    <!-- Header Section -->
-    <div class="header-section">
-      <div class="header-left">
-        <h1 class="page-title">Imunisasi WUS/PUS</h1>
-        <p class="page-subtitle">Kelola data imunisasi WUS/PUS (Wanita Usia Subur / Pasangan Usia Subur)</p>
-      </div>
-      <div class="header-right">
-        <Link 
-          href="/posyandu/wuspus-imun/create" 
-          class="btn-create"
-          @click="handleLinkClick"
-        >
-          <span>+</span>
-          <span>Tambah Data</span>
-        </Link>
-      </div>
-    </div>
-
-    <!-- Filter Section -->
-    <div class="filter-section">
-      <div class="filter-grid">
-        <div class="filter-item">
-          <label class="filter-label">Kecamatan</label>
-          <div class="select-wrapper">
-            <select class="filter-select" v-model="selectedKec" @change="applyFilter">
-              <option value="">Semua Kecamatan</option>
-              <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
-                {{ k.nama_kec }}
-              </option>
-            </select>
-            <span class="select-icon">▼</span>
-          </div>
-        </div>
-
-        <div class="filter-item">
-          <label class="filter-label">Kelurahan</label>
-          <div class="select-wrapper">
-            <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
-              <option value="">Semua Kelurahan</option>
-              <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
-                {{ k.nama_kel }}
-              </option>
-            </select>
-            <span class="select-icon">▼</span>
-          </div>
-        </div>
-
-        <div class="filter-item">
-          <label class="filter-label">Posyandu</label>
-          <div class="select-wrapper">
-            <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
-              <option value="">Semua Posyandu</option>
-              <option v-for="p in posyanduList" :key="p.id_posyandu" :value="p.id_posyandu">
-                {{ p.nama_posyandu }}
-              </option>
-            </select>
-            <span class="select-icon">▼</span>
-          </div>
+    <!-- Toast Notification -->
+    <Transition name="slide-fade">
+      <div v-if="toast.show" class="toast-notification" :class="toast.type">
+        <div class="toast-content">
+          <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+          <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+          <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+          <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+          <span class="toast-message">{{ toast.message }}</span>
+          <button class="toast-close" @click="hideToast">×</button>
         </div>
       </div>
-    </div>
+    </Transition>
 
-    <!-- Debug Info (Hapus setelah selesai) -->
-    <div v-if="false" class="debug-info mb-3">
-      <pre>Total Data: {{ props.data?.total || 0 }}</pre>
-      <pre>Jumlah Rows: {{ rows.length }}</pre>
-    </div>
-
-    <!-- Table Section -->
-    <div class="table-section">
-      <!-- Tampilkan pesan jika tidak ada data -->
-      <div v-if="rows.length === 0" class="empty-state">
-        <div class="empty-icon">
-          <span>📊</span>
+    <div class="data-container">
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="header-left">
+          <h1 class="page-title">Imunisasi WUS/PUS</h1>
+          <p class="page-subtitle">Kelola data imunisasi WUS/PUS</p>
         </div>
-        <h3 class="empty-title">Belum Ada Data</h3>
-        <p class="empty-description">Data WUS/PUS belum tersedia. Silakan tambah data baru.</p>
-        <Link href="/posyandu/wuspus-imun/create" class="btn-create empty-btn" @click="handleLinkClick">
-          <span>+</span>
-          <span>Tambah Data Pertama</span>
-        </Link>
+        <div class="header-right">
+          <Link 
+            href="/posyandu/wuspus-imun/create" 
+            class="btn-create"
+            @click="handleLinkClick"
+          >
+            <span>+</span>
+            <span>Tambah Data</span>
+          </Link>
+        </div>
       </div>
 
-      <!-- Tampilkan tabel jika ada data -->
-      <DataTable v-else :columns="columns" :rows="rows" :perPage="10">
-        <!-- Custom Column Templates -->
-        <template #col-id_wuspus_imun="{ row }">
-          <span class="id-badge">#{{ row.id_wuspus_imun }}</span>
-        </template>
-
-        <template #col-nama_wuspus="{ row }">
-          <div class="nama-info">
-            <span class="nik-text">{{ row.nik_wuspus || '-' }}</span>
-            <span class="nama-text">{{ formatValue(row.nama_wuspus) }}</span>
+      <!-- FILTER SECTION - DIPERBAIKI -->
+      <div class="filter-section">
+        <h6 class="filter-section-title">Filter Data</h6>
+        <div class="filter-grid-3">
+          <div class="filter-item">
+            <label class="filter-label">Kecamatan</label>
+            <div class="select-wrapper">
+              <select class="filter-select" v-model="selectedKec" @change="applyFilter">
+                <option value="">Semua Kecamatan</option>
+                <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
+                  {{ k.nama_kec }}
+                </option>
+              </select>
+              <span class="select-icon">▼</span>
+            </div>
           </div>
-        </template>
 
-        <template #col-posyandu="{ row }">
-          <span class="posyandu-badge">
-            {{ getNamaPosyandu(row) }}
-          </span>
-        </template>
+          <div class="filter-item">
+            <label class="filter-label">Kelurahan</label>
+            <div class="select-wrapper">
+              <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+                <option value="">Semua Kelurahan</option>
+                <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
+                  {{ k.nama_kel }}
+                </option>
+              </select>
+              <span class="select-icon">▼</span>
+            </div>
+          </div>
 
-        <template #col-jns_imun="{ row }">
-          <span class="imun-badge">{{ row.jns_imun || '-' }}</span>
-        </template>
+          <div class="filter-item">
+            <label class="filter-label">Posyandu</label>
+            <div class="select-wrapper">
+              <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
+                <option value="">Semua Posyandu</option>
+                <option v-for="p in posyanduList" :key="p.id_posyandu" :value="p.id_posyandu">
+                  {{ p.nama_posyandu }}
+                </option>
+              </select>
+              <span class="select-icon">▼</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <template #col-tgl_imun="{ row }">
-          <span class="tanggal-text">{{ formatTanggal(row.tgl_imun) }}</span>
-        </template>
+      <!-- Debug Info (Hapus setelah selesai) -->
+      <div v-if="false" class="debug-info mb-3">
+        <pre>Total Data: {{ props.data?.total || 0 }}</pre>
+        <pre>Jumlah Rows: {{ rows.length }}</pre>
+      </div>
 
-        <template #col-actions="{ row }">
-          <div class="action-group">
-            <Link 
-              :href="`/posyandu/wuspus-imun/${row.id_wuspus_imun}`"
-              @click="handleLinkClick"
-            >
-              <span :class="getButtonClass('show')" title="Lihat Detail">
-                <i class="icon-eye"></i>
-              </span>
-            </Link>
+      <!-- Table Section -->
+      <div class="table-section">
+        <!-- Tampilkan pesan jika tidak ada data -->
+        <div v-if="rows.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <span>📊</span>
+          </div>
+          <h3 class="empty-title">Belum Ada Data</h3>
+          <p class="empty-description">Data imunisasi WUS/PUS belum tersedia. Silakan tambah data baru.</p>
+          <Link href="/posyandu/wuspus-imun/create" class="btn-create empty-btn" @click="handleLinkClick">
+            <span>+</span>
+            <span>Tambah Data Pertama</span>
+          </Link>
+        </div>
 
-            <Link 
-              :href="`/posyandu/wuspus-imun/${row.id_wuspus_imun}/edit`"
-              @click="handleLinkClick"
-            >
-              <span :class="getButtonClass('edit')" title="Edit Data">
-                <i class="icon-pencil"></i>
-              </span>
-            </Link>
+        <!-- Tampilkan tabel jika ada data -->
+        <DataTable v-else :columns="columns" :rows="rows" :perPage="10">
+          <!-- Custom Column Templates -->
+          <template #col-id_wuspus_imun="{ row }">
+            <span class="id-badge">#{{ row.id_wuspus_imun }}</span>
+          </template>
 
-            <span 
-              :class="getButtonClass('delete')" 
-              title="Hapus Data"
-              @click="askDelete(row)"
-            >
-              <i class="icon-trash"></i>
+          <template #col-nama_wuspus="{ row }">
+            <div class="nama-info">
+              <span class="nik-text">{{ row.nik_wuspus || '-' }}</span>
+              <span class="nama-text">{{ formatValue(row.nama_wuspus) }}</span>
+            </div>
+          </template>
+
+          <template #col-posyandu="{ row }">
+            <span class="posyandu-badge">
+              {{ getNamaPosyandu(row) }}
             </span>
-          </div>
-        </template>
-      </DataTable>
+          </template>
 
-      <!-- Pagination -->
-      <div class="pagination-section" v-if="props.data?.links?.length && rows.length > 0">
-        <div class="pagination-info">
-          Menampilkan {{ props.data.from || 0 }} - {{ props.data.to || 0 }} 
-          dari {{ props.data.total || 0 }} data
+          <template #col-jns_imun="{ row }">
+            <span class="imun-badge">{{ row.jns_imun || '-' }}</span>
+          </template>
+
+          <template #col-tgl_imun="{ row }">
+            <span class="tanggal-text">{{ formatTanggal(row.tgl_imun) }}</span>
+          </template>
+
+          <template #col-actions="{ row }">
+            <div class="action-group">
+              <Link 
+                :href="`/posyandu/wuspus-imun/${row.id_wuspus_imun}`"
+                @click="handleLinkClick"
+              >
+                <span :class="getButtonClass('show')" title="Lihat Detail">
+                  <i class="icon-eye"></i>
+                </span>
+              </Link>
+
+              <Link 
+                :href="`/posyandu/wuspus-imun/${row.id_wuspus_imun}/edit`"
+                @click="handleLinkClick"
+              >
+                <span :class="getButtonClass('edit')" title="Edit Data">
+                  <i class="icon-pencil"></i>
+                </span>
+              </Link>
+
+              <span 
+                :class="getButtonClass('delete')" 
+                title="Hapus Data"
+                @click="askDelete(row)"
+              >
+                <i class="icon-trash"></i>
+              </span>
+            </div>
+          </template>
+        </DataTable>
+
+        <!-- Pagination -->
+        <div class="pagination-section" v-if="props.data?.links?.length && rows.length > 0">
+          <div class="pagination-info">
+            Menampilkan {{ props.data.from || 0 }} - {{ props.data.to || 0 }} 
+            dari {{ props.data.total || 0 }} data
+          </div>
+          <nav class="pagination-nav">
+            <ul class="pagination-list">
+              <li v-for="(l, idx) in props.data.links" :key="idx" 
+                  class="pagination-item" 
+                  :class="{ 
+                    active: l.active, 
+                    disabled: !l.url 
+                  }"
+              >
+                <a 
+                  class="pagination-link" 
+                  href="#" 
+                  @click.prevent="l.url && router.visit(l.url, { preserveScroll: true, onStart: saveScrollPosition })"
+                  v-html="l.label"
+                ></a>
+              </li>
+            </ul>
+          </nav>
         </div>
-        <nav class="pagination-nav">
-          <ul class="pagination-list">
-            <li v-for="(l, idx) in props.data.links" :key="idx" 
-                class="pagination-item" 
-                :class="{ 
-                  active: l.active, 
-                  disabled: !l.url 
-                }"
-            >
-              <a 
-                class="pagination-link" 
-                href="#" 
-                @click.prevent="l.url && router.visit(l.url, { preserveScroll: true, onStart: saveScrollPosition })"
-                v-html="l.label"
-              ></a>
-            </li>
-          </ul>
-        </nav>
       </div>
     </div>
-  </div>
 
-  <!-- Modal Konfirmasi Hapus -->
-  <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content">
-      <div class="modal-icon-wrapper">
-        <span class="modal-icon">🗑️</span>
-      </div>
-      <h3 class="modal-title">Hapus Data Imunisasi?</h3>
-      <p class="modal-text">Anda akan menghapus data:</p>
-      
-      <div class="modal-highlight">
-        <div class="modal-info-item">
-          <span class="modal-info-label">NIK / Nama</span>
-          <div class="modal-info-value">
-            <strong>{{ selected.nik_wuspus || '-' }}</strong> - {{ selected.nama_wuspus || 'Tidak diketahui' }}
+    <!-- Modal Konfirmasi Hapus -->
+    <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content">
+        <div class="modal-icon-wrapper">
+          <span class="modal-icon">🗑️</span>
+        </div>
+        <h3 class="modal-title">Hapus Data Imunisasi?</h3>
+        <p class="modal-text">Anda akan menghapus data:</p>
+        
+        <div class="modal-highlight">
+          <div class="modal-info-item">
+            <span class="modal-info-label">NIK / Nama</span>
+            <div class="modal-info-value">
+              <strong>{{ selected.nik_wuspus || '-' }}</strong> - {{ selected.nama_wuspus || 'Tidak diketahui' }}
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <span class="modal-info-label">Jenis Imunisasi</span>
+            <div class="modal-info-value">
+              {{ selected.jns_imun || '-' }}
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <span class="modal-info-label">Tanggal</span>
+            <div class="modal-info-value">
+              {{ formatTanggal(selected.tgl_imun) }}
+            </div>
           </div>
         </div>
 
-        <div class="modal-info-item">
-          <span class="modal-info-label">Jenis Imunisasi</span>
-          <div class="modal-info-value">
-            {{ selected.jns_imun || '-' }}
-          </div>
+        <p class="modal-warning">
+          <span>⚠️</span>
+          <span>Data yang dihapus tidak dapat dikembalikan</span>
+        </p>
+
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-cancel" @click="closeModal">
+            <span>✕</span>
+            <span>Batal</span>
+          </button>
+          <button class="modal-btn modal-btn-delete" @click="confirmDelete">
+            <span>🗑️</span>
+            <span>Hapus</span>
+          </button>
         </div>
-
-        <div class="modal-info-item">
-          <span class="modal-info-label">Tanggal</span>
-          <div class="modal-info-value">
-            {{ formatTanggal(selected.tgl_imun) }}
-          </div>
-        </div>
-      </div>
-
-      <p class="modal-warning">
-        <span>⚠️</span>
-        <span>Data yang dihapus tidak dapat dikembalikan</span>
-      </p>
-
-      <div class="modal-actions">
-        <button class="modal-btn modal-btn-cancel" @click="closeModal">
-          <span>✕</span>
-          <span>Batal</span>
-        </button>
-        <button class="modal-btn modal-btn-delete" @click="confirmDelete">
-          <span>🗑️</span>
-          <span>Hapus</span>
-        </button>
       </div>
     </div>
-  </div>
 </template>
 
 <style scoped>
@@ -576,7 +577,7 @@ const formatValue = (value) => {
   gap: 12px;
 }
 
-/* Button Create (Biru Tua) */
+/* Button Create */
 .btn-create {
   display: inline-flex;
   align-items: center;
@@ -603,21 +604,27 @@ const formatValue = (value) => {
 .btn-create:active {
   background: #1e293b;
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(30, 41, 59, 0.1);
 }
 
-/* Filter Section */
+/* Filter Section - DIPERBAIKI */
 .filter-section {
   background: white;
   border-radius: 16px;
   padding: 20px 24px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.filter-grid {
+.filter-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.filter-grid-3 {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -685,9 +692,13 @@ const formatValue = (value) => {
   pointer-events: none;
 }
 
-/* Search Item */
-.search-item {
-  flex: 1;
+/* Search Section - DIPISAH */
+.search-section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .search-wrapper {
@@ -697,6 +708,7 @@ const formatValue = (value) => {
   border: 2px solid #e2e8f0;
   border-radius: 10px;
   transition: all 0.2s;
+  width: 100%;
 }
 
 .search-wrapper:focus-within {
@@ -731,12 +743,11 @@ const formatValue = (value) => {
 
 .search-btn {
   height: 42px;
-  padding: 0 20px;
-  background: #f1f5f9;
+  padding: 0 24px;
+  background: #1e293b;
   border: none;
-  border-left: 2px solid #e2e8f0;
   border-radius: 0 8px 8px 0;
-  color: #475569;
+  color: white;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -744,12 +755,7 @@ const formatValue = (value) => {
 }
 
 .search-btn:hover {
-  background: #e2e8f0;
-  color: #1e293b;
-}
-
-.search-btn:active {
-  background: #cbd5e1;
+  background: #0f172a;
 }
 
 /* Debug Info */
@@ -1085,7 +1091,7 @@ const formatValue = (value) => {
 
 .modal-info-item {
   margin-bottom: 12px;
-  text-align: left;
+  text-align: center;
 }
 
 .modal-info-item:last-child {
@@ -1124,6 +1130,7 @@ const formatValue = (value) => {
   border-radius: 8px;
   font-size: 13px;
   margin-bottom: 24px;
+  text-align: center;
 }
 
 .modal-actions {
@@ -1264,8 +1271,8 @@ const formatValue = (value) => {
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
-  .filter-grid {
+@media (max-width: 1024px) {
+  .filter-grid-3 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -1291,7 +1298,7 @@ const formatValue = (value) => {
     justify-content: center;
   }
   
-  .filter-grid {
+  .filter-grid-3 {
     grid-template-columns: 1fr;
   }
   
@@ -1304,6 +1311,13 @@ const formatValue = (value) => {
     width: 90%;
     margin: 0 16px;
     padding: 24px;
+  }
+  
+  .toast-notification {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
   }
 }
 </style>

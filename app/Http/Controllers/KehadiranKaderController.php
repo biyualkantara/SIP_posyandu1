@@ -10,12 +10,15 @@ use Illuminate\Support\Facades\Log;
 
 class KehadiranKaderController extends Controller
 {
-    public function index(Request $request)
+   public function index(Request $request)
     {
         $kec = $request->get('kec', '');
         $kel = $request->get('kel', '');
         $bln = $request->get('bln', ''); // YYYY-MM
         $q   = $request->get('q', '');
+
+        // Debug: log nilai filter
+        Log::info('Filter bulan yang dikirim: ' . $bln);
 
         $kecamatan = DB::table('kcmtn')->orderBy('nama_kec')->get();
 
@@ -25,27 +28,27 @@ class KehadiranKaderController extends Controller
             ->get()
             ->groupBy('id_kec');
 
-       $query = DB::table('kdrhdr as k')
-        ->select([
-            'k.id_kdrhdr',
-            'k.id_posyandu',
-            DB::raw('`k`.`bulan` as bulan_tahun'),
-            'k.pkk',
-            'k.plkb',
-            'k.medis',
-            'd.nama_posyandu',
-            'kel.id_kel',
-            'kel.nama_kel',
-            'kec.id_kec',
-            'kec.nama_kec'
-        ])
-        ->leftJoin('duspy as d','d.id_posyandu','=','k.id_posyandu')
-        ->leftJoin('klrhn as kel','kel.id_kel','=','d.id_kel')
-        ->leftJoin('kcmtn as kec','kec.id_kec','=','kel.id_kec')
-        ->orderByDesc(DB::raw('`k`.`bulan`'))
-        ->orderByDesc('k.id_kdrhdr');
+        $query = DB::table('kdrhdr as k')
+            ->select([
+                'k.id_kdrhdr',
+                'k.id_posyandu',
+                DB::raw('`k`.`bulan` as bulan_tahun'),
+                'k.pkk',
+                'k.plkb',
+                'k.medis',
+                'd.nama_posyandu',
+                'kel.id_kel',
+                'kel.nama_kel',
+                'kec.id_kec',
+                'kec.nama_kec'
+            ])
+            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'k.id_posyandu')
+            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+            ->orderByDesc(DB::raw('`k`.`bulan`'))
+            ->orderByDesc('k.id_kdrhdr');
 
-       if (!empty($kec)) {
+        if (!empty($kec)) {
             $query->where('kec.id_kec', $kec);
         }
 
@@ -59,8 +62,14 @@ class KehadiranKaderController extends Controller
             });
         }
 
+        // PERBAIKAN FILTER BULAN
         if (!empty($bln)) {
-            $query->whereRaw('DATE_FORMAT(k.bulan, "%Y-%m") = ?', [$bln]);
+            // Debug: cek data sebelum filter
+            $sampleData = DB::table('kdrhdr')->select('bulan')->limit(5)->get();
+            Log::info('Sample data bulan:', $sampleData->toArray());
+            
+            // Coba dengan LIKE (karena bulan disimpan sebagai YYYY-MM-DD)
+            $query->where('k.bulan', 'like', $bln . '%');
         }
 
         $data = $query->paginate(10)->withQueryString();

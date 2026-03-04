@@ -298,19 +298,19 @@ const getStatusClass = (status) => {
 </script>
 
 <template>
-     <!-- Toast Notification -->
-  <Transition name="slide-fade">
-    <div v-if="toast.show" class="toast-notification" :class="toast.type">
-      <div class="toast-content">
-        <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
-        <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
-        <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
-        <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
-        <span class="toast-message">{{ toast.message }}</span>
-        <button class="toast-close" @click="hideToast">×</button>
+    <!-- Toast Notification -->
+    <Transition name="slide-fade">
+      <div v-if="toast.show" class="toast-notification" :class="toast.type">
+        <div class="toast-content">
+          <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+          <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+          <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+          <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+          <span class="toast-message">{{ toast.message }}</span>
+          <button class="toast-close" @click="hideToast">×</button>
+        </div>
       </div>
-    </div>
-  </Transition>
+    </Transition>
 
     <div class="data-container">
       <!-- Header Section -->
@@ -331,9 +331,10 @@ const getStatusClass = (status) => {
         </div>
       </div>
 
-      <!-- Filter Section -->
+      <!-- Filter Section - DIPERBAIKI -->
       <div class="filter-section">
-        <div class="filter-grid">
+        <h6 class="filter-section-title">Filter Data</h6>
+        <div class="filter-grid-3">
           <div class="filter-item">
             <label class="filter-label">Kecamatan</label>
             <div class="select-wrapper">
@@ -343,7 +344,7 @@ const getStatusClass = (status) => {
                   {{ k.nama_kec }}
                 </option>
               </select>
-              <i class="icon-chevron-down select-icon"></i>
+              <span class="select-icon">▼</span>
             </div>
           </div>
 
@@ -356,7 +357,7 @@ const getStatusClass = (status) => {
                   {{ k.nama_kel }}
                 </option>
               </select>
-              <i class="icon-chevron-down select-icon"></i>
+              <span class="select-icon">▼</span>
             </div>
           </div>
 
@@ -369,7 +370,7 @@ const getStatusClass = (status) => {
                   {{ p.nama_posyandu }}
                 </option>
               </select>
-              <i class="icon-chevron-down select-icon"></i>
+              <span class="select-icon">▼</span>
             </div>
           </div>
         </div>
@@ -408,7 +409,7 @@ const getStatusClass = (status) => {
               <span class="nik-text">{{ row.nik_wuspus || '-' }}</span>
               <span class="nama-text">{{ formatValue(row.nama_wuspus) }}</span>
               <span v-if="row.nama_suami" class="suami-text">
-                <i class="icon-user"></i> {{ row.nama_suami }}
+                <span>👤</span> {{ row.nama_suami }}
               </span>
             </div>
           </template>
@@ -436,7 +437,7 @@ const getStatusClass = (status) => {
                 @click="handleLinkClick"
               >
                 <span :class="getButtonClass('show')" title="Lihat Detail">
-                  <i class="icon-eye"></i>
+                    <i class="icon-eye"></i>
                 </span>
               </Link>
 
@@ -445,7 +446,7 @@ const getStatusClass = (status) => {
                 @click="handleLinkClick"
               >
                 <span :class="getButtonClass('edit')" title="Edit Data">
-                  <i class="icon-pencil"></i>
+                    <i class="icon-pencil"></i>
                 </span>
               </Link>
 
@@ -492,7 +493,7 @@ const getStatusClass = (status) => {
     <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
         <div class="modal-icon-wrapper">
-          <i class="icon-bin modal-icon"></i>
+          <span class="modal-icon">🗑️</span>
         </div>
         <h3 class="modal-title">Hapus Data WUS/PUS?</h3>
         <p class="modal-text">Anda akan menghapus data:</p>
@@ -523,18 +524,18 @@ const getStatusClass = (status) => {
         </div>
 
         <p class="modal-warning">
-          <i class="icon-exclamation-triangle"></i>
-          Data yang dihapus tidak dapat dikembalikan
+          <span>⚠️</span>
+          <span>Data yang dihapus tidak dapat dikembalikan</span>
         </p>
 
         <div class="modal-actions">
           <button class="modal-btn modal-btn-cancel" @click="closeModal">
-            <i class="icon-close"></i>
-            Batal
+            <span>✕</span>
+            <span>Batal</span>
           </button>
           <button class="modal-btn modal-btn-delete" @click="confirmDelete">
-            <i class="icon-trash"></i>
-            Hapus
+            <span>🗑️</span>
+            <span>Hapus</span>
           </button>
         </div>
       </div>
@@ -584,7 +585,7 @@ const getStatusClass = (status) => {
   gap: 12px;
 }
 
-/* Button Create (Biru Tua) */
+/* Button Create */
 .btn-create {
   display: inline-flex;
   align-items: center;
@@ -602,10 +603,6 @@ const getStatusClass = (status) => {
   box-shadow: 0 2px 4px rgba(30, 41, 59, 0.1);
 }
 
-.btn-create i {
-  font-size: 18px;
-}
-
 .btn-create:hover {
   background: #0f172a;
   transform: translateY(-2px);
@@ -615,7 +612,6 @@ const getStatusClass = (status) => {
 .btn-create:active {
   background: #1e293b;
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(30, 41, 59, 0.1);
 }
 
 /* Filter Section */
@@ -623,13 +619,20 @@ const getStatusClass = (status) => {
   background: white;
   border-radius: 16px;
   padding: 20px 24px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.filter-grid {
+.filter-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.filter-grid-3 {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -693,13 +696,17 @@ const getStatusClass = (status) => {
   top: 50%;
   transform: translateY(-50%);
   color: #64748b;
-  font-size: 14px;
+  font-size: 12px;
   pointer-events: none;
 }
 
-/* Search Item */
-.search-item {
-  flex: 1;
+/* Search Section - DIPISAH */
+.search-section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .search-wrapper {
@@ -709,6 +716,7 @@ const getStatusClass = (status) => {
   border: 2px solid #e2e8f0;
   border-radius: 10px;
   transition: all 0.2s;
+  width: 100%;
 }
 
 .search-wrapper:focus-within {
@@ -743,12 +751,11 @@ const getStatusClass = (status) => {
 
 .search-btn {
   height: 42px;
-  padding: 0 20px;
-  background: #f1f5f9;
+  padding: 0 24px;
+  background: #1e293b;
   border: none;
-  border-left: 2px solid #e2e8f0;
   border-radius: 0 8px 8px 0;
-  color: #475569;
+  color: white;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -756,12 +763,11 @@ const getStatusClass = (status) => {
 }
 
 .search-btn:hover {
-  background: #e2e8f0;
-  color: #1e293b;
+  background: #0f172a;
 }
 
 .search-btn:active {
-  background: #cbd5e1;
+  background: #1e293b;
 }
 
 /* Debug Info */
@@ -819,10 +825,6 @@ const getStatusClass = (status) => {
   display: flex;
   align-items: center;
   gap: 2px;
-}
-
-.suami-text i {
-  font-size: 10px;
 }
 
 /* Posyandu Badge */
@@ -971,11 +973,6 @@ const getStatusClass = (status) => {
   font-size: 40px;
 }
 
-.empty-icon i {
-  font-size: 40px;
-  color: #94a3b8;
-}
-
 .empty-title {
   font-size: 18px;
   font-weight: 600;
@@ -1105,11 +1102,7 @@ const getStatusClass = (status) => {
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px;
-}
-
-.modal-icon {
   font-size: 40px;
-  color: #dc2626;
 }
 
 .modal-title {
@@ -1229,7 +1222,7 @@ const getStatusClass = (status) => {
   transform: translateY(0);
 }
 
-/* Toast Notification - Tanpa Icon */
+/* Toast Notification */
 .toast-notification {
   position: fixed;
   top: 24px;
@@ -1272,7 +1265,11 @@ const getStatusClass = (status) => {
   padding: 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+}
+
+.toast-icon {
+  font-size: 20px;
 }
 
 .toast-message {
@@ -1289,7 +1286,6 @@ const getStatusClass = (status) => {
   color: inherit;
   padding: 0 4px;
   line-height: 1;
-  transition: color 0.2s;
   opacity: 0.7;
 }
 
@@ -1320,9 +1316,14 @@ const getStatusClass = (status) => {
   }
 }
 
+/* Margin */
+.mb-3 {
+  margin-bottom: 12px;
+}
+
 /* Responsive */
-@media (max-width: 1200px) {
-  .filter-grid {
+@media (max-width: 1024px) {
+  .filter-grid-3 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -1348,7 +1349,7 @@ const getStatusClass = (status) => {
     justify-content: center;
   }
   
-  .filter-grid {
+  .filter-grid-3 {
     grid-template-columns: 1fr;
   }
   
@@ -1361,6 +1362,13 @@ const getStatusClass = (status) => {
     width: 90%;
     margin: 0 16px;
     padding: 24px;
+  }
+  
+  .toast-notification {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
   }
 }
 </style>
