@@ -180,7 +180,7 @@ function submit() {
               <VueSelect
                 v-model="form.kecamatan_id"
                 :options="(kecamatan||[]).map(k => ({ label: k.nama_kec, value: k.id_kec }))"
-                placeholder="Pilih Kecamatan"
+                :reduce="option => option.value" placeholder="Pilih Kecamatan"
               />
             </div>
 
@@ -190,7 +190,7 @@ function submit() {
                 v-model="form.kelurahan_id"
                 :options="kelurahanOptions.map(k => ({ label: k.nama_kel, value: k.id_kel }))"
                 :isDisabled="!form.kecamatan_id"
-                placeholder="Pilih Kelurahan"
+                :reduce="option => option.value" placeholder="Pilih Kecamatan"
               />
             </div>
 
@@ -200,7 +200,7 @@ function submit() {
                 v-model="form.posyandu_id"
                 :options="posyanduOptions.map(p => ({ label: p.nama_posyandu, value: p.id_posyandu }))"
                 :isDisabled="!form.kelurahan_id"
-                placeholder="Pilih Posyandu"
+                :reduce="option => option.value" placeholder="Pilih Kecamatan"
               />
             </div>
           </div>
@@ -245,6 +245,7 @@ function submit() {
                   <VueSelect
                     v-model="row.id_wuspus"
                     :options="getWuspusOptionsForRow(i)"
+                    :reduce="option => option.value"
                     :isDisabled="!form.posyandu_id"
                     placeholder="Pilih WUS/PUS"
                     :key="`${form.posyandu_id}-${i}`"
@@ -259,7 +260,7 @@ function submit() {
                   <VueSelect
                     v-model="row.id_imun"
                     :options="(imun||[]).map(i => ({ label: i.jns_imun, value: i.id_imun }))"
-                    placeholder="Pilih Jenis Imunisasi"
+                    :reduce="option => option.value" placeholder="Pilih Jenis Imunisasi"
                   />
                 </div>
               </div>

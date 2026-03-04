@@ -12,6 +12,7 @@ const props = defineProps({
 })
 
 const form = useForm({
+  id_wuspus: props.row.id_wuspus ?? '',
   tgl_daftar: props.row.tgl_daftar ?? '',
   umur_kehamilan: props.row.umur_kehamilan ?? '',
   hamil_ke: props.row.hamil_ke ?? '',

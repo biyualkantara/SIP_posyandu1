@@ -13,6 +13,7 @@ const props = defineProps({
 })
 
 const form = useForm({
+  id_wuspus: props.row.id_wuspus,
   id_imun: props.row.id_imun,
   tgl_imun: props.row.tgl_imun ?? '',
   ket: props.row.ket ?? '',
@@ -123,7 +124,7 @@ function submitForm() {
             <div class="grid-2">
               <div class="field">
                 <label>Jenis Imunisasi <span class="text-danger">*</span></label>
-                <select class="form-control" v-model="form.id_imun">
+                <select class="form-control" v-model.number="form.id_imun">
                   <option value="">-- Pilih --</option>
                   <option v-for="i in imun" :key="i.id_imun" :value="i.id_imun">
                     {{ i.jns_imun }}
