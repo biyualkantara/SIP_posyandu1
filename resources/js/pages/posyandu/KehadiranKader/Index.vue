@@ -92,7 +92,6 @@ function handleCustomToast(event) {
 }
 
 function showToast(type, message, duration = 3000) {
-    // Clear existing timeout
     if (toast.value.timeout) {
         clearTimeout(toast.value.timeout)
     }
@@ -101,7 +100,6 @@ function showToast(type, message, duration = 3000) {
     toast.value.type = type
     toast.value.message = message
     
-    // Auto hide after duration
     toast.value.timeout = setTimeout(() => {
         toast.value.show = false
         toast.value.timeout = null
@@ -117,9 +115,6 @@ function hideToast() {
 }
 
 const rows = computed(() => props.data?.data ?? [])
-
-// Debug
-console.log('Rows:', rows.value)
 
 const columns = [
     { key: "id_kdrhdr", label: "ID", sortable: true },
@@ -192,22 +187,18 @@ function confirmDelete() {
         onSuccess: (page) => {
             closeModal()
             
-            // Cek flash message dari response
             if (page.props.flash?.success) {
                 showToast('success', page.props.flash.success)
             } else {
-                // Fallback message
                 showToast('success', `Data kehadiran "${namaPosyandu}" berhasil dihapus!`)
             }
             
-            // Reload data
             router.reload({ only: ['data'] })
             restoreScrollPosition()
         },
         onError: (errors) => {
             closeModal()
             
-            // Tampilkan notifikasi error
             let errorMsg = 'Gagal menghapus data.'
             if (errors.message) {
                 errorMsg = errors.message
@@ -217,31 +208,22 @@ function confirmDelete() {
             
             showToast('error', errorMsg)
             restoreScrollPosition()
-            
-            // Cek flash error dari response
-            if (page.props.flash?.error) {
-                showToast('error', page.props.flash.error)
-            }
         }
     })
 }
 
-// Fungsi untuk mendapatkan kelas button berdasarkan tipe
+// Fungsi untuk mendapatkan kelas button
 const getButtonClass = (type) => {
     const baseClass = 'action-btn'
     switch(type) {
-        case 'show':
-            return `${baseClass} btn-show`
-        case 'edit':
-            return `${baseClass} btn-edit`
-        case 'delete':
-            return `${baseClass} btn-delete`
-        default:
-            return baseClass
+        case 'show': return `${baseClass} btn-show`
+        case 'edit': return `${baseClass} btn-edit`
+        case 'delete': return `${baseClass} btn-delete`
+        default: return baseClass
     }
 }
 
-// Fungsi untuk format nilai null/undefined
+// Fungsi untuk format nilai
 const formatValue = (value) => {
     if (value === null || value === undefined || value === '') {
         return '-'
@@ -249,12 +231,11 @@ const formatValue = (value) => {
     return value
 }
 
-// Format bulan (hanya nama bulan)
+// Format bulan
 const formatBulan = (bulan) => {
     if (!bulan) return '-'
     try {
         const date = new Date(bulan)
-        // Nama bulan dalam bahasa Indonesia (lengkap)
         const bulanNama = [
             'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
@@ -264,233 +245,221 @@ const formatBulan = (bulan) => {
         return '-'
     }
 }
-
-// Format bulan singkat (opsional, bisa digunakan jika ingin yang pendek)
-const formatBulanSingkat = (bulan) => {
-    if (!bulan) return '-'
-    try {
-        const date = new Date(bulan)
-        const bulanNama = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des']
-        return bulanNama[date.getMonth()]
-    } catch (e) {
-        return '-'
-    }
-}
 </script>
 
 <template>
-    <!-- Toast Notification -->
-  <Transition name="slide-fade">
-    <div v-if="toast.show" class="toast-notification" :class="toast.type">
-      <div class="toast-content">
-        <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
-        <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
-        <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
-        <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
-        <span class="toast-message">{{ toast.message }}</span>
-        <button class="toast-close" @click="hideToast">×</button>
-      </div>
-    </div>
-  </Transition>
-
-    <div class="data-container">
-        <!-- Header Section -->
-        <div class="header-section">
-            <div class="header-left">
-                <h1 class="page-title">Data Kehadiran Kader</h1>
-                <p class="page-subtitle">Kelola data kehadiran kader posyandu</p>
+        <!-- Toast Notification -->
+        <Transition name="slide-fade">
+            <div v-if="toast.show" class="toast-notification" :class="toast.type">
+                <div class="toast-content">
+                    <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+                    <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+                    <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+                    <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+                    <span class="toast-message">{{ toast.message }}</span>
+                    <button class="toast-close" @click="hideToast">×</button>
+                </div>
             </div>
-            <div class="header-right">
-                <Link 
-                    href="/posyandu/kehadiran-kader/create" 
-                    class="btn-create"
-                    @click="handleLinkClick"
-                >
-                    <span>+</span>
-                    <span>Tambah Kehadiran</span>
-                </Link>
-            </div>
-        </div>
+        </Transition>
 
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <div class="filter-grid">
-                <div class="filter-item">
-                    <label class="filter-label">Kecamatan</label>
-                    <div class="select-wrapper">
-                        <select class="filter-select" v-model="selectedKec" @change="applyFilter">
-                            <option value="">Semua Kecamatan</option>
-                            <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
-                                {{ k.nama_kec }}
-                            </option>
-                        </select>
-                        <i class="icon-chevron-down select-icon"></i>
+        <div class="data-container">
+            <!-- Header Section -->
+            <div class="header-section">
+                <div class="header-left">
+                    <h1 class="page-title">Data Kehadiran Kader</h1>
+                    <p class="page-subtitle">Kelola data kehadiran kader posyandu</p>
+                </div>
+                <div class="header-right">
+                    <Link 
+                        href="/posyandu/kehadiran-kader/create" 
+                        class="btn-create"
+                        @click="handleLinkClick"
+                    >
+                        <span>+</span>
+                        <span>Tambah Kehadiran</span>
+                    </Link>
+                </div>
+            </div>
+
+            <!-- FILTER SECTION - DIPERBAIKI -->
+            <div class="filter-section">
+                <h6 class="filter-section-title">Filter Data</h6>
+                <div class="filter-grid-3">
+                    <div class="filter-item">
+                        <label class="filter-label">Kecamatan</label>
+                        <div class="select-wrapper">
+                            <select class="filter-select" v-model="selectedKec" @change="applyFilter">
+                                <option value="">Semua Kecamatan</option>
+                                <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
+                                    {{ k.nama_kec }}
+                                </option>
+                            </select>
+                            <span class="select-icon">▼</span>
+                        </div>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="filter-label">Kelurahan</label>
+                        <div class="select-wrapper">
+                            <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+                                <option value="">Semua Kelurahan</option>
+                                <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
+                                    {{ k.nama_kel }}
+                                </option>
+                            </select>
+                            <span class="select-icon">▼</span>
+                        </div>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="filter-label">Bulan</label>
+                        <div class="input-wrapper">
+                            <i class="input-icon">📅</i>
+                            <input 
+                                type="month" 
+                                class="filter-input" 
+                                v-model="selectedBln" 
+                                @change="applyFilter"
+                                placeholder="Pilih bulan"
+                            >
+                        </div>
                     </div>
                 </div>
-
-                <div class="filter-item">
-                    <label class="filter-label">Kelurahan</label>
-                    <div class="select-wrapper">
-                        <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
-                            <option value="">Semua Kelurahan</option>
-                            <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
-                                {{ k.nama_kel }}
-                            </option>
-                        </select>
-                        <i class="icon-chevron-down select-icon"></i>
-                    </div>
-                </div>
-
-                <div class="filter-item">
-                    <label class="filter-label">Bulan</label>
-                    <div class="input-wrapper">
-                        <i class="icon-calendar input-icon"></i>
-                        <input 
-                            type="month" 
-                            class="filter-input" 
-                            v-model="selectedBln" 
-                            @change="applyFilter"
-                            placeholder="Pilih bulan"
-                        >
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Table Section -->
-        <div class="table-section">
-            <!-- Tampilkan pesan jika tidak ada data -->
-            <div v-if="rows.length === 0" class="empty-state">
-                <div class="empty-icon">
-                     <span>📊</span>
-                </div>
-                <h3 class="empty-title">Belum Ada Data</h3>
-                <p class="empty-description">Data kehadiran kader belum tersedia. Silakan tambah data baru.</p>
-                <Link href="/posyandu/kehadiran-kader/create" class="btn-create empty-btn" @click="handleLinkClick">
-                    <span>+</span>
-                    <span>Tambah Data Pertama</span>
-                </Link>
             </div>
 
-            <!-- Tampilkan tabel jika ada data -->
-            <DataTable v-else :columns="columns" :rows="rows" :perPage="10">
-                <!-- Custom Column Templates -->
-                <template #col-id_kdrhdr="{ row }">
-                    <span class="id-badge">#{{ row.id_kdrhdr }}</span>
-                </template>
+            <!-- Table Section -->
+            <div class="table-section">
+                <!-- Tampilkan pesan jika tidak ada data -->
+                <div v-if="rows.length === 0" class="empty-state">
+                    <div class="empty-icon">
+                        <span>📊</span>
+                    </div>
+                    <h3 class="empty-title">Belum Ada Data</h3>
+                    <p class="empty-description">Data kehadiran kader belum tersedia. Silakan tambah data baru.</p>
+                    <Link href="/posyandu/kehadiran-kader/create" class="btn-create empty-btn" @click="handleLinkClick">
+                        <span>+</span>
+                        <span>Tambah Data Pertama</span>
+                    </Link>
+                </div>
 
-                <template #col-nama_posyandu="{ row }">
-                    <span class="nama-posyandu">{{ formatValue(row.nama_posyandu) }}</span>
-                </template>
+                <!-- Tampilkan tabel jika ada data -->
+                <DataTable v-else :columns="columns" :rows="rows" :perPage="10">
+                    <!-- Custom Column Templates -->
+                    <template #col-id_kdrhdr="{ row }">
+                        <span class="id-badge">#{{ row.id_kdrhdr }}</span>
+                    </template>
 
-                <template #col-bulan="{ row }">
-                    <span class="bulan-badge">
-                        {{ formatBulan(row.bulan_tahun) }}
-                        <!-- Atau pakai format bulan singkat: {{ formatBulanSingkat(row.bulan_tahun) }} -->
-                    </span>
-                </template>
+                    <template #col-nama_posyandu="{ row }">
+                        <span class="nama-posyandu">{{ formatValue(row.nama_posyandu) }}</span>
+                    </template>
 
-                <template #col-pkk="{ row }">
-                    <span class="kader-count">{{ row.pkk || 0 }}</span>
-                </template>
-
-                <template #col-plkb="{ row }">
-                    <span class="kader-count">{{ row.plkb || 0 }}</span>
-                </template>
-
-                <template #col-medis="{ row }">
-                    <span class="kader-count">{{ row.medis || 0 }}</span>
-                </template>
-
-                <template #col-actions="{ row }">
-                    <div class="action-group">
-                        <Link 
-                            :href="`/posyandu/kehadiran-kader/${row.id_kdrhdr}`"
-                            @click="handleLinkClick"
-                        >
-                            <span :class="getButtonClass('show')" title="Lihat Detail">
-                                <i class="icon-eye"></i>
-                            </span>
-                        </Link>
-
-                        <Link 
-                            :href="`/posyandu/kehadiran-kader/${row.id_kdrhdr}/edit`"
-                            @click="handleLinkClick"
-                        >
-                            <span :class="getButtonClass('edit')" title="Edit Data">
-                                <i class="icon-pencil"></i>
-                            </span>
-                        </Link>
-
-                        <span 
-                            :class="getButtonClass('delete')" 
-                            title="Hapus Data"
-                            @click="deleteRow(row)"
-                        >
-                            <i class="icon-trash"></i>
+                    <template #col-bulan="{ row }">
+                        <span class="bulan-badge">
+                            {{ formatBulan(row.bulan_tahun) }}
                         </span>
+                    </template>
+
+                    <template #col-pkk="{ row }">
+                        <span class="kader-count">{{ row.pkk || 0 }}</span>
+                    </template>
+
+                    <template #col-plkb="{ row }">
+                        <span class="kader-count">{{ row.plkb || 0 }}</span>
+                    </template>
+
+                    <template #col-medis="{ row }">
+                        <span class="kader-count">{{ row.medis || 0 }}</span>
+                    </template>
+
+                    <template #col-actions="{ row }">
+                        <div class="action-group">
+                            <Link 
+                                :href="`/posyandu/kehadiran-kader/${row.id_kdrhdr}`"
+                                @click="handleLinkClick"
+                            >
+                                <span :class="getButtonClass('show')" title="Lihat Detail">
+                                    <i class="icon-eye"></i>
+                                </span>
+                            </Link>
+
+                            <Link 
+                                :href="`/posyandu/kehadiran-kader/${row.id_kdrhdr}/edit`"
+                                @click="handleLinkClick"
+                            >
+                                <span :class="getButtonClass('edit')" title="Edit Data">
+                                    <i class="icon-pencil"></i>
+                                </span>
+                            </Link>
+
+                            <span 
+                                :class="getButtonClass('delete')" 
+                                title="Hapus Data"
+                                @click="deleteRow(row)"
+                            >
+                                <i class="icon-trash"></i>
+                            </span>
+                        </div>
+                    </template>
+                </DataTable>
+
+                <!-- Pagination -->
+                <div class="pagination-section" v-if="props.data?.links?.length && rows.length > 0">
+                    <div class="pagination-info">
+                        Menampilkan {{ props.data.from || 0 }} - {{ props.data.to || 0 }} 
+                        dari {{ props.data.total || 0 }} data
                     </div>
-                </template>
-            </DataTable>
-
-            <!-- Pagination -->
-            <div class="pagination-section" v-if="props.data?.links?.length && rows.length > 0">
-                <div class="pagination-info">
-                    Menampilkan {{ props.data.from || 0 }} - {{ props.data.to || 0 }} 
-                    dari {{ props.data.total || 0 }} data
-                </div>
-                <nav class="pagination-nav">
-                    <ul class="pagination-list">
-                        <li v-for="(l, idx) in props.data.links" :key="idx" 
-                            class="pagination-item" 
-                            :class="{ 
-                                active: l.active, 
-                                disabled: !l.url 
-                            }"
-                        >
-                            <a 
-                                class="pagination-link" 
-                                href="#" 
-                                @click.prevent="l.url && router.visit(l.url, { preserveScroll: true, onStart: saveScrollPosition })"
-                                v-html="l.label"
-                            ></a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Konfirmasi Hapus -->
-    <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
-        <div class="modal-content">
-            <div class="modal-icon-wrapper">
-                <i class="icon-bin modal-icon"></i>
-            </div>
-            <h3 class="modal-title">Hapus Data Kehadiran?</h3>
-            <p class="modal-text">Anda akan menghapus data:</p>
-            <div class="modal-highlight">
-                <strong>{{ selected.nama_posyandu || 'Data tidak diketahui' }}</strong>
-                <div class="modal-subinfo">
-                    Bulan {{ formatBulan(selected.bulan_tahun) }}
+                    <nav class="pagination-nav">
+                        <ul class="pagination-list">
+                            <li v-for="(l, idx) in props.data.links" :key="idx" 
+                                class="pagination-item" 
+                                :class="{ 
+                                    active: l.active, 
+                                    disabled: !l.url 
+                                }"
+                            >
+                                <a 
+                                    class="pagination-link" 
+                                    href="#" 
+                                    @click.prevent="l.url && router.visit(l.url, { preserveScroll: true, onStart: saveScrollPosition })"
+                                    v-html="l.label"
+                                ></a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
-            <p class="modal-warning">
-                <i class="icon-exclamation-triangle"></i>
-                Data yang dihapus tidak dapat dikembalikan
-            </p>
-            <div class="modal-actions">
-                <button class="modal-btn modal-btn-cancel" @click="closeModal">
-                    <i class="icon-close"></i>
-                    Batal
-                </button>
-                <button class="modal-btn modal-btn-delete" @click="confirmDelete">
-                    <i class="icon-trash"></i>
-                    Hapus
-                </button>
+        </div>
+
+        <!-- Modal Konfirmasi Hapus -->
+        <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
+            <div class="modal-content">
+                <div class="modal-icon-wrapper">
+                    <i class="icon-bin modal-icon"></i>
+                </div>
+                <h3 class="modal-title">Hapus Data Kehadiran?</h3>
+                <p class="modal-text">Anda akan menghapus data:</p>
+                <div class="modal-highlight">
+                    <strong>{{ selected.nama_posyandu || 'Data tidak diketahui' }}</strong>
+                    <div class="modal-subinfo">
+                        Bulan {{ formatBulan(selected.bulan_tahun) }}
+                    </div>
+                </div>
+                <p class="modal-warning">
+                    <i class="icon-exclamation-triangle"></i>
+                    Data yang dihapus tidak dapat dikembalikan
+                </p>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-cancel" @click="closeModal">
+                        <i class="icon-close"></i>
+                        Batal
+                    </button>
+                    <button class="modal-btn modal-btn-delete" @click="confirmDelete">
+                        <i class="icon-trash"></i>
+                        Hapus
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 </template>
 
 <style scoped>
@@ -536,7 +505,7 @@ const formatBulanSingkat = (bulan) => {
     gap: 12px;
 }
 
-/* Button Create (Biru Tua) */
+/* Button Create */
 .btn-create {
     display: inline-flex;
     align-items: center;
@@ -554,10 +523,6 @@ const formatBulanSingkat = (bulan) => {
     box-shadow: 0 2px 4px rgba(30, 41, 59, 0.1);
 }
 
-.btn-create i {
-    font-size: 18px;
-}
-
 .btn-create:hover {
     background: #0f172a;
     transform: translateY(-2px);
@@ -567,21 +532,27 @@ const formatBulanSingkat = (bulan) => {
 .btn-create:active {
     background: #1e293b;
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(30, 41, 59, 0.1);
 }
 
-/* Filter Section */
+/* Filter Section - DIPERBAIKI */
 .filter-section {
     background: white;
     border-radius: 16px;
     padding: 20px 24px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.filter-grid {
+.filter-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 16px 0;
+}
+
+.filter-grid-3 {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1.5fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
@@ -645,7 +616,7 @@ const formatBulanSingkat = (bulan) => {
     top: 50%;
     transform: translateY(-50%);
     color: #64748b;
-    font-size: 14px;
+    font-size: 12px;
     pointer-events: none;
 }
 
@@ -694,9 +665,13 @@ const formatBulanSingkat = (bulan) => {
     color: #94a3b8;
 }
 
-/* Search Item */
-.search-item {
-    flex: 1;
+/* Search Section - DIPISAH */
+.search-section {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .search-wrapper {
@@ -706,6 +681,7 @@ const formatBulanSingkat = (bulan) => {
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     transition: all 0.2s;
+    width: 100%;
 }
 
 .search-wrapper:focus-within {
@@ -740,12 +716,11 @@ const formatBulanSingkat = (bulan) => {
 
 .search-btn {
     height: 42px;
-    padding: 0 20px;
-    background: #f1f5f9;
+    padding: 0 24px;
+    background: #1e293b;
     border: none;
-    border-left: 2px solid #e2e8f0;
     border-radius: 0 8px 8px 0;
-    color: #475569;
+    color: white;
     font-weight: 600;
     font-size: 14px;
     cursor: pointer;
@@ -753,12 +728,7 @@ const formatBulanSingkat = (bulan) => {
 }
 
 .search-btn:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-}
-
-.search-btn:active {
-    background: #cbd5e1;
+    background: #0f172a;
 }
 
 /* Table Section */
@@ -907,11 +877,6 @@ const formatBulanSingkat = (bulan) => {
     justify-content: center;
     margin: 0 auto 24px;
     font-size: 40px;
-}
-
-.empty-icon i {
-    font-size: 40px;
-    color: #94a3b8;
 }
 
 .empty-title {
@@ -1189,24 +1154,8 @@ const formatBulanSingkat = (bulan) => {
     gap: 12px;
 }
 
-.toast-content i {
+.toast-icon {
     font-size: 20px;
-}
-
-.toast-notification.success i {
-    color: #10b981;
-}
-
-.toast-notification.error i {
-    color: #ef4444;
-}
-
-.toast-notification.info i {
-    color: #3b82f6;
-}
-
-.toast-notification.warning i {
-    color: #f59e0b;
 }
 
 .toast-message {
@@ -1224,7 +1173,6 @@ const formatBulanSingkat = (bulan) => {
     color: #94a3b8;
     padding: 0 4px;
     line-height: 1;
-    transition: color 0.2s;
 }
 
 .toast-close:hover {
@@ -1255,13 +1203,9 @@ const formatBulanSingkat = (bulan) => {
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
-    .filter-grid {
+@media (max-width: 1024px) {
+    .filter-grid-3 {
         grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .search-item {
-        grid-column: span 2;
     }
 }
 
@@ -1286,12 +1230,8 @@ const formatBulanSingkat = (bulan) => {
         justify-content: center;
     }
     
-    .filter-grid {
+    .filter-grid-3 {
         grid-template-columns: 1fr;
-    }
-    
-    .search-item {
-        grid-column: span 1;
     }
     
     .pagination-section {
@@ -1303,6 +1243,13 @@ const formatBulanSingkat = (bulan) => {
         width: 90%;
         margin: 0 16px;
         padding: 24px;
+    }
+    
+    .toast-notification {
+        top: 16px;
+        right: 16px;
+        left: 16px;
+        max-width: none;
     }
 }
 </style>

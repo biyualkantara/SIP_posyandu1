@@ -25,20 +25,58 @@ const displayData = {
   nama: props.row?.nama_wuspus || '-'
 }
 
+// State untuk notifikasi
 const showModal = ref(false)
 const modalType = ref('success')
 const modalMessage = ref('')
+const modalTitle = ref('')
+const validationErrors = ref([])
 
-function openError(msg) {
+// Notifikasi toast
+const toast = ref({
+  show: false,
+  type: 'success',
+  message: '',
+  timeout: null
+})
+
+function showToast(type, message, duration = 3000) {
+  if (toast.value.timeout) clearTimeout(toast.value.timeout)
+  
+  toast.value.show = true
+  toast.value.type = type
+  toast.value.message = message
+  
+  toast.value.timeout = setTimeout(() => {
+    toast.value.show = false
+    toast.value.timeout = null
+  }, duration)
+}
+
+function hideToast() {
+  toast.value.show = false
+  if (toast.value.timeout) {
+    clearTimeout(toast.value.timeout)
+    toast.value.timeout = null
+  }
+}
+
+function openError(msg, errors = []) {
   modalType.value = 'error'
+  modalTitle.value = 'Gagal!'
   modalMessage.value = msg
+  validationErrors.value = errors
   showModal.value = true
+  showToast('error', msg, 4000)
 }
 
 function openSuccess(msg) {
   modalType.value = 'success'
+  modalTitle.value = 'Berhasil!'
   modalMessage.value = msg
+  validationErrors.value = []
   showModal.value = true
+  showToast('success', msg, 3000)
 }
 
 function submitForm() {
@@ -59,201 +97,311 @@ function submitForm() {
     return
   }
 
+  showToast('info', 'Menyimpan data...', 0)
+
   form.put(`/posyandu/wuspus-kontrasepsi/${props.row.id_wkp}`, {
     preserveScroll: true,
     onSuccess: () => {
+      hideToast()
       openSuccess('Data kontrasepsi berhasil diperbarui')
       setTimeout(() => {
         window.location.href = '/posyandu/wuspus-kontrasepsi'
       }, 1000)
     },
     onError: (errors) => {
+      hideToast()
       console.error('Error:', errors)
-      openError('Gagal memperbarui data')
+      
+      let errorMsg = 'Gagal memperbarui data'
+      if (errors.message) {
+        errorMsg = errors.message
+      } else if (typeof errors === 'object') {
+        errorMsg = Object.values(errors).join(', ')
+      }
+      
+      openError(errorMsg)
     }
   })
 }
 </script>
 
 <template>
-  <div class="page-wrapper">
-    <!-- Header -->
-    <div class="page-header">
-      <div>
-        <h2 class="mb-1">Edit Kontrasepsi WUS/PUS</h2>
-        <p class="text-muted">Edit data kontrasepsi WUS/PUS</p>
+    <div class="data-container">
+      <!-- Toast Notification -->
+      <Transition name="slide-fade">
+        <div v-if="toast.show" class="toast-notification" :class="toast.type">
+          <div class="toast-content">
+            <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+            <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+            <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+            <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+            <span class="toast-message">{{ toast.message }}</span>
+            <button class="toast-close" @click="hideToast">×</button>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="header-left">
+          <h1 class="page-title">Edit Kontrasepsi WUS/PUS</h1>
+          <p class="page-subtitle">Edit data kontrasepsi WUS/PUS</p>
+        </div>
+        <div class="header-right">
+          <Link href="/posyandu/wuspus-kontrasepsi" class="btn-back">
+            <span>←</span>
+            <span>Kembali</span>
+          </Link>
+        </div>
       </div>
-      <Link href="/posyandu/wuspus-kontrasepsi" class="btn btn-outline-secondary">
-        <i class="icon-arrow-left me-2"></i>Kembali
-      </Link>
+
+      <!-- Main Card -->
+      <div class="main-card">
+        <div class="card-body">
+          <form @submit.prevent="submitForm">
+            <!-- Read Only Info - Lokasi -->
+            <div class="filter-section">
+              <h6 class="filter-section-title">Informasi Lokasi & WUS/PUS</h6>
+              <div class="filter-grid-3">
+                <div class="filter-item">
+                  <label class="filter-label">Kecamatan</label>
+                  <div class="readonly-field">{{ displayData.kecamatan }}</div>
+                </div>
+                <div class="filter-item">
+                  <label class="filter-label">Kelurahan</label>
+                  <div class="readonly-field">{{ displayData.kelurahan }}</div>
+                </div>
+                <div class="filter-item">
+                  <label class="filter-label">Posyandu</label>
+                  <div class="readonly-field">{{ displayData.posyandu }}</div>
+                </div>
+              </div>
+
+              <div class="filter-grid-2 mt-3">
+                <div class="filter-item">
+                  <label class="filter-label">NIK WUS/PUS</label>
+                  <div class="readonly-field">{{ displayData.nik }}</div>
+                </div>
+                <div class="filter-item">
+                  <label class="filter-label">Nama WUS/PUS</label>
+                  <div class="readonly-field">{{ displayData.nama }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Data yang bisa diedit -->
+            <div class="data-card">
+              <div class="data-card-header">
+                <div class="card-title">
+                  <span class="card-number">1</span>
+                  <strong>Edit Data Kontrasepsi</strong>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-field">
+                  <label>WUS/PUS <span class="text-danger">*</span></label>
+                  <select class="form-input" v-model="form.id_wuspus">
+                    <option value="">-- Pilih WUS/PUS --</option>
+                    <option v-for="w in wuspus" :key="w.id_wuspus" :value="w.id_wuspus">
+                      {{ w.nik_wuspus }} - {{ w.nama_wuspus }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label>Jenis Kontrasepsi <span class="text-danger">*</span></label>
+                  <select class="form-input" v-model="form.jns_kontrasepsi">
+                    <option value="">-- Pilih --</option>
+                    <option value="PIL">PIL</option>
+                    <option value="SUNTIK">SUNTIK</option>
+                    <option value="IUD">IUD</option>
+                    <option value="IMPLAN">IMPLAN</option>
+                    <option value="MOW">MOW</option>
+                    <option value="MOP">MOP</option>
+                    <option value="KONDOM">KONDOM</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid-2 mt-3">
+                <div class="form-field">
+                  <label>Tanggal Ganti <span class="text-danger">*</span></label>
+                  <input 
+                    type="date" 
+                    class="form-input" 
+                    v-model="form.tgl_ganti"
+                  />
+                </div>
+
+                <div class="form-field">
+                  <label>Kontrasepsi Baru <span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    class="form-input" 
+                    v-model="form.kontrasepsi_baru"
+                    placeholder="Masukkan kontrasepsi baru jawab dengan Ya/Tidak"
+                  />
+                </div>
+              </div>
+
+              <div class="form-grid-2 mt-3">
+                <div class="form-field">
+                  <label>Keterangan</label>
+                  <input 
+                    type="text" 
+                    class="form-input" 
+                    v-model="form.ket"
+                    placeholder="Masukkan keterangan (opsional)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <Link href="/posyandu/wuspus-kontrasepsi" class="btn-cancel">
+                <span>✕</span>
+                <span>Batal</span>
+              </Link>
+              <button type="submit" class="btn-save" :disabled="form.processing">
+                <span>✓</span>
+                <span>{{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
-    <div class="main-card">
-      <div class="card-body">
-        <form @submit.prevent="submitForm">
-          <!-- Read Only Info - Lokasi -->
-          <div class="filter-box">
-            <h6 class="mb-3">Informasi Lokasi</h6>
-            <div class="grid-3">
-              <div class="field">
-                <label>Kecamatan</label>
-                <div class="readonly-field">{{ displayData.kecamatan }}</div>
-              </div>
-              <div class="field">
-                <label>Kelurahan</label>
-                <div class="readonly-field">{{ displayData.kelurahan }}</div>
-              </div>
-              <div class="field">
-                <label>Posyandu</label>
-                <div class="readonly-field">{{ displayData.posyandu }}</div>
-              </div>
-            </div>
-
-            <div class="grid-2 mt-3">
-              <div class="field">
-                <label>NIK WUS/PUS</label>
-                <div class="readonly-field">{{ displayData.nik }}</div>
-              </div>
-              <div class="field">
-                <label>Nama WUS/PUS</label>
-                <div class="readonly-field">{{ displayData.nama }}</div>
-              </div>
+    <!-- Modal Notifikasi -->
+    <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+      <div class="modal-card">
+        <div class="text-center">
+          <span v-if="modalType === 'success'" class="modal-icon">✅</span>
+          <span v-else-if="modalType === 'error'" class="modal-icon">❌</span>
+          <h4 class="modal-title-text">{{ modalTitle }}</h4>
+          <p class="modal-message">{{ modalMessage }}</p>
+          
+          <!-- Tampilkan detail error jika ada -->
+          <div v-if="validationErrors.length > 0" class="error-details">
+            <div v-for="(error, idx) in validationErrors" :key="idx" class="error-item">
+              <strong>Baris {{ error.row }}:</strong>
+              <ul>
+                <li v-for="(err, errIdx) in error.errors" :key="errIdx">{{ err }}</li>
+              </ul>
             </div>
           </div>
-
-          <!-- Form Data yang bisa diedit -->
-          <div class="data-card mt-4">
-            <div class="data-header">
-              <div>
-                <span class="badge bg-primary me-2">1</span>
-                <strong>Edit Data Kontrasepsi</strong>
-              </div>
-            </div>
-
-            <div class="grid-2">
-              <div class="field">
-                <label>WUS/PUS <span class="text-danger">*</span></label>
-                <select class="form-control" v-model="form.id_wuspus">
-                  <option value="">-- Pilih WUS/PUS --</option>
-                  <option v-for="w in wuspus" :key="w.id_wuspus" :value="w.id_wuspus">
-                    {{ w.nik_wuspus }} - {{ w.nama_wuspus }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label>Jenis Kontrasepsi <span class="text-danger">*</span></label>
-                <select class="form-control" v-model="form.jns_kontrasepsi">
-                  <option value="">-- Pilih --</option>
-                  <option value="PIL">PIL</option>
-                  <option value="SUNTIK">SUNTIK</option>
-                  <option value="IUD">IUD</option>
-                  <option value="IMPLAN">IMPLAN</option>
-                  <option value="MOW">MOW</option>
-                  <option value="MOP">MOP</option>
-                  <option value="KONDOM">KONDOM</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="grid-2 mt-3">
-              <div class="field">
-                <label>Tanggal Ganti <span class="text-danger">*</span></label>
-                <input 
-                  type="date" 
-                  class="form-control" 
-                  v-model="form.tgl_ganti"
-                />
-              </div>
-
-              <div class="field">
-                <label>Kontrasepsi Baru <span class="text-danger">*</span></label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  v-model="form.kontrasepsi_baru"
-                  placeholder="Masukkan kontrasepsi baru"
-                />
-              </div>
-            </div>
-
-            <div class="grid-2 mt-3">
-              <div class="field">
-                <label>Keterangan</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  v-model="form.ket"
-                  placeholder="Masukkan keterangan (opsional)"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-footer">
-            <Link href="/posyandu/wuspus-kontrasepsi" class="btn btn-outline-secondary">
-              <i class="icon-close me-2"></i>Batal
-            </Link>
-            <button type="submit" class="btn btn-primary" :disabled="form.processing">
-              <i class="icon-check me-2"></i>
-              {{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}
-            </button>
-          </div>
-        </form>
+          
+          <button class="btn-modal-close" @click="showModal = false">Tutup</button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Modal Notifikasi -->
-  <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
-    <div class="modal-card">
-      <div class="text-center">
-        <i 
-          class="icon" 
-          :class="{
-            'icon-check-circle text-success': modalType === 'success',
-            'icon-exclamation-circle text-danger': modalType === 'error'
-          }"
-          style="font-size: 48px;"
-        ></i>
-        <h4 class="mt-3">{{ modalType === 'success' ? 'Berhasil!' : 'Gagal!' }}</h4>
-        <p class="text-muted">{{ modalMessage }}</p>
-        <button class="btn btn-primary mt-3" @click="showModal = false">Tutup</button>
-      </div>
-    </div>
-  </div>
 </template>
 
 <style scoped>
-.page-wrapper {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 24px 16px 40px;
+/* Container Utama */
+.data-container {
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.page-header {
+/* Header Section */
+.header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  background: white;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.page-header h2 {
+.header-left {
+  flex: 1;
+}
+
+.page-title {
   font-size: 24px;
-  font-weight: 600;
-  color: #2c3e50;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #64748b;
   margin: 0;
 }
 
-.page-header p {
-  color: #64748b;
-  margin: 4px 0 0 0;
+.header-right {
+  display: flex;
+  gap: 12px;
 }
 
+/* Button Back */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-back:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  transform: translateY(-2px);
+}
+
+.btn-back:active {
+  background: #cbd5e1;
+  transform: translateY(0);
+}
+
+/* Button Cancel */
+.btn-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  transform: translateY(-2px);
+}
+
+.btn-cancel:active {
+  background: #cbd5e1;
+  transform: translateY(0);
+}
+
+/* Main Card */
 .main-card {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
   overflow: hidden;
 }
 
@@ -261,24 +409,46 @@ function submitForm() {
   padding: 28px;
 }
 
-.filter-box {
+/* Filter Section */
+.filter-section {
   background: #f8fafc;
   padding: 24px;
-  border-radius: 12px;
+  border-radius: 16px;
   margin-bottom: 24px;
-  border: 1px solid #eef2f6;
+  border: 1px solid #e2e8f0;
 }
 
-.field {
+.filter-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.filter-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.filter-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.filter-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.field label {
-  font-weight: 500;
-  font-size: 14px;
-  color: #4a5568;
+.filter-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .readonly-field {
@@ -293,153 +463,396 @@ function submitForm() {
   align-items: center;
 }
 
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.grid-3 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
-}
-
+/* Data Card */
 .data-card {
-  border: 1px solid #eef1f4;
-  border-radius: 12px;
-  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
   background: white;
   transition: all 0.2s;
+  margin-bottom: 20px;
 }
 
 .data-card:hover {
-  border-color: #cbd5e0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.data-header {
+.data-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #eef1f4;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f1f5f9;
 }
 
-.form-control {
-  height: 42px;
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #1e293b;
+  color: white;
   border-radius: 8px;
-  border: 1.5px solid #e5e7eb;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Form Grid */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-weight: 500;
+  font-size: 13px;
+  color: #475569;
+}
+
+/* Form Input */
+.form-input {
+  height: 42px;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
   padding: 0 12px;
   font-size: 14px;
   transition: all 0.2s;
+  background: #f8fafc;
   width: 100%;
 }
 
-.form-control:focus {
-  border-color: #4299e1;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+.form-input:hover {
+  border-color: #94a3b8;
+  background: white;
+}
+
+.form-input:focus {
+  border-color: #1e293b;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
   outline: none;
 }
 
-.form-footer {
+.form-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Text Danger */
+.text-danger {
+  color: #ef4444;
+}
+
+/* Form Actions */
+.form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 28px;
   padding-top: 24px;
-  border-top: 2px solid #f0f2f5;
+  border-top: 2px solid #f1f5f9;
 }
 
-.btn {
-  padding: 10px 20px;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.2s;
-  cursor: pointer;
-  border: none;
+.btn-save {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-.btn-primary {
-  background: #4299e1;
+  padding: 10px 28px;
+  background: #1e293b;
   color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(30, 41, 59, 0.1);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: #3182ce;
-  transform: translateY(-1px);
+.btn-save:hover:not(:disabled) {
+  background: #0f172a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(30, 41, 59, 0.2);
 }
 
-.btn-primary:disabled {
-  background: #a0aec0;
+.btn-save:active:not(:disabled) {
+  background: #1e293b;
+  transform: translateY(0);
+}
+
+.btn-save:disabled {
+  background: #94a3b8;
   cursor: not-allowed;
 }
 
-.btn-outline-secondary {
-  background: transparent;
-  border: 1.5px solid #718096;
-  color: #718096;
-}
-
-.btn-outline-secondary:hover {
-  background: #718096;
-  color: white;
-}
-
-.badge {
-  padding: 10px 12px;
-  border-radius: 20px;
-  font-weight: 500;
-  margin-left: 10px;
-}
-
+/* Modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  animation: fadeIn 0.2s ease;
 }
 
 .modal-card {
+  width: 420px;
   background: white;
-  padding: 32px;
   border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.modal-title-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 16px 0 8px 0;
+}
+
+.modal-message {
+  color: #64748b;
+  margin: 0 0 16px 0;
+}
+
+.btn-modal-close {
+  padding: 10px 28px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 16px;
+}
+
+.btn-modal-close:hover {
+  background: #0f172a;
+  transform: translateY(-2px);
+}
+
+/* Error Details */
+.error-details {
+  text-align: left;
+  background: #fef2f2;
+  border-radius: 12px;
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.error-item {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #fecaca;
+}
+
+.error-item:last-child {
+  border-bottom: none;
+}
+
+.error-item strong {
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.error-item ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.error-item li {
+  color: #b91c1c;
+  font-size: 13px;
+  margin: 4px 0;
+}
+
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  min-width: 320px;
   max-width: 400px;
-  width: 90%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  overflow: hidden;
+  animation: slideInRight 0.3s ease;
+  border-left: 4px solid;
+}
+
+.toast-notification.success {
+  border-left-color: #10b981;
+}
+
+.toast-notification.error {
+  border-left-color: #ef4444;
+}
+
+.toast-notification.info {
+  border-left-color: #3b82f6;
+}
+
+.toast-notification.warning {
+  border-left-color: #f59e0b;
+}
+
+.toast-content {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-icon {
+  font-size: 20px;
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.toast-close:hover {
+  color: #475569;
+}
+
+/* Animations */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(30px);
+  opacity: 0;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Margin */
+.mt-3 {
+  margin-top: 12px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .filter-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
-  .grid-2,
-  .grid-3 {
+  .data-container {
+    padding: 16px;
+  }
+  
+  .header-section {
+    flex-direction: column;
+    gap: 16px;
+    align-items: start;
+    padding: 16px;
+  }
+  
+  .header-right {
+    width: 100%;
+  }
+  
+  .btn-back,
+  .btn-cancel,
+  .btn-save {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filter-grid-3,
+  .filter-grid-2,
+  .form-grid-2 {
     grid-template-columns: 1fr;
   }
   
-  .page-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: start;
-  }
-  
-  .form-footer {
+  .form-actions {
     flex-direction: column-reverse;
+    gap: 12px;
   }
   
-  .form-footer .btn {
-    width: 100%;
-    justify-content: center;
+  .toast-notification {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
+  }
+  
+  .modal-card {
+    width: 90%;
+    margin: 0 16px;
+    padding: 24px;
   }
 }
 </style>
