@@ -170,17 +170,18 @@ function confirmDelete() {
     <!-- TABLE -->
     <div class="table-section">
             <div v-if="rows.length === 0" class="empty-state">
-                <i class="icon-database empty-icon"></i>
-                <h3>Belum Ada Data Bayi</h3>
-                <p>Silakan tambahkan data bayi terlebih dahulu.</p>
-                <Link href="/posyandu/bayi-pnb/create" class="btn-create">
-                    Tambah Data Pertama
+                <div class="empty-icon">
+                <span>📊</span>
+                </div>
+                <h3 class="empty-title">Belum Ada Data Penimbangan Bayi</h3>
+                <p class="empty-description">Data penimbangan bayi belum tersedia. Silakan tambah data baru.</p>
+                <Link href="/posyandu/bayi-pnb/create" class="btn-create empty-btn" @click="handleLinkClick">
+                <span>+</span>
+                <span>Tambah Data Pertama</span>
                 </Link>
             </div>
 
-      <DataTable :columns="columns"
-                 :rows="rows"
-                 :perPage="10">
+      <DataTable v-else :columns="columns" :rows="rows" :perPage="20">
 
         <template #col-actions="{ row }">
           <div class="action-group">
@@ -680,40 +681,41 @@ function confirmDelete() {
 
 /* Empty State */
 .empty-state {
-    text-align: center;
-    padding: 48px 24px;
+  text-align: center;
+  padding: 48px 24px;
 }
 
 .empty-icon {
-    width: 80px;
-    height: 80px;
-    background: #f1f5f9;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 24px;
+  width: 80px;
+  height: 80px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 40px;
 }
 
 .empty-icon i {
-    font-size: 40px;
-    color: #94a3b8;
+  font-size: 40px;
+  color: #94a3b8;
 }
 
 .empty-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
 }
 
 .empty-description {
-    color: #64748b;
-    margin: 0 0 24px 0;
+  color: #64748b;
+  margin: 0 0 24px 0;
 }
 
 .empty-btn {
-    display: inline-flex;
+  display: inline-flex;
 }
 
 /* Pagination Section */

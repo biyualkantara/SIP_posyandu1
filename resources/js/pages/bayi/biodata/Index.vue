@@ -133,18 +133,20 @@ function hideToast() {
 </script>
 <template>
 
-    <!-- Toast -->
-    <Transition name="slide-fade">
-        <div v-if="toast.show" class="toast-notification" :class="toast.type">
-            <div class="toast-content">
-                <i class="icon-check-circle" v-if="toast.type==='success'"></i>
-                <i class="icon-exclamation-circle" v-if="toast.type==='error'"></i>
-                <i class="icon-info-circle" v-if="toast.type==='info'"></i>
-                <span class="toast-message">{{ toast.message }}</span>
-                <button class="toast-close" @click="hideToast">×</button>
-            </div>
-        </div>
-    </Transition>
+
+    <!-- Toast Notification -->
+  <Transition name="slide-fade">
+    <div v-if="toast.show" class="toast-notification" :class="toast.type">
+      <div class="toast-content">
+        <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+        <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+        <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+        <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+        <span class="toast-message">{{ toast.message }}</span>
+        <button class="toast-close" @click="hideToast">×</button>
+      </div>
+    </div>
+  </Transition>
 
     <div class="data-container">
 
@@ -188,36 +190,21 @@ function hideToast() {
                         </option>
                     </select>
                 </div>
-
-                <div class="filter-item search-item">
-                    <label class="filter-label">Pencarian</label>
-                    <div class="search-wrapper">
-                        <i class="icon-search search-icon"></i>
-                        <input 
-                            type="text" 
-                            class="search-input" 
-                            v-model="searchText" 
-                            placeholder="Cari nama bayi..."
-                            @keyup.enter="applyFilter"
-                        >
-                        <button class="search-btn" @click="applyFilter">
-                            Cari
-                        </button>
-                    </div>
-                </div>
-
             </div>
         </div>
 
         <!-- Table -->
         <div class="table-section">
 
-            <div v-if="rows.length === 0" class="empty-state">
-                <i class="icon-database empty-icon"></i>
-                <h3>Belum Ada Data Bayi</h3>
-                <p>Silakan tambahkan data bayi terlebih dahulu.</p>
-                <Link href="/posyandu/bayi/create" class="btn-create">
-                    Tambah Data Pertama
+             <div v-if="rows.length === 0" class="empty-state">
+                <div class="empty-icon">
+                <span>📊</span>
+                </div>
+                <h3 class="empty-title">Belum Ada Data Bayi</h3>
+                <p class="empty-description">Data Bayi belum tersedia. Silakan tambah data baru.</p>
+                <Link href="/posyandu/bayi/create" class="btn-create empty-btn" @click="handleLinkClick">
+                <span>+</span>
+                <span>Tambah Data Pertama</span>
                 </Link>
             </div>
 
@@ -485,71 +472,43 @@ function hideToast() {
     pointer-events: none;
 }
 
-/* Search Item */
-.search-item {
-    flex: 1;
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
 }
 
-.search-wrapper {
-    display: flex;
-    align-items: center;
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    transition: all 0.2s;
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 40px;
 }
 
-.search-wrapper:focus-within {
-    border-color: #1e293b;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+.empty-icon i {
+  font-size: 40px;
+  color: #94a3b8;
 }
 
-.search-icon {
-    padding: 0 12px;
-    color: #94a3b8;
-    font-size: 16px;
+.empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
 }
 
-.search-input {
-    flex: 1;
-    height: 42px;
-    border: none;
-    background: transparent;
-    font-size: 14px;
-    color: #1e293b;
-    padding: 0;
+.empty-description {
+  color: #64748b;
+  margin: 0 0 24px 0;
 }
 
-.search-input:focus {
-    outline: none;
-}
-
-.search-input::placeholder {
-    color: #94a3b8;
-}
-
-.search-btn {
-    height: 42px;
-    padding: 0 20px;
-    background: #f1f5f9;
-    border: none;
-    border-left: 2px solid #e2e8f0;
-    border-radius: 0 8px 8px 0;
-    color: #475569;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.search-btn:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-}
-
-.search-btn:active {
-    background: #cbd5e1;
+.empty-btn {
+  display: inline-flex;
 }
 
 /* Debug Info */
