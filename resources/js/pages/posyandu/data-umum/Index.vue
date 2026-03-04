@@ -269,24 +269,19 @@ const formatValue = (value) => {
 
 <template>
 <AdminLayout>
-    <!-- Toast Notification -->
-    <Transition name="slide-fade">
-        <div v-if="toast.show" class="toast-notification" :class="toast.type">
-            <div class="toast-content">
-                <i 
-                    class="icon" 
-                    :class="{
-                        'icon-check-circle': toast.type === 'success',
-                        'icon-exclamation-circle': toast.type === 'error',
-                        'icon-info-circle': toast.type === 'info',
-                        'icon-exclamation-triangle': toast.type === 'warning'
-                    }"
-                ></i>
-                <span class="toast-message">{{ toast.message }}</span>
-                <button class="toast-close" @click="hideToast">×</button>
-            </div>
-        </div>
-    </Transition>
+      <!-- Toast Notification -->
+  <Transition name="slide-fade">
+    <div v-if="toast.show" class="toast-notification" :class="toast.type">
+      <div class="toast-content">
+        <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+        <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+        <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+        <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+        <span class="toast-message">{{ toast.message }}</span>
+        <button class="toast-close" @click="hideToast">×</button>
+      </div>
+    </div>
+  </Transition>
 
     <div class="data-container">
         <!-- Header Section -->
@@ -333,23 +328,6 @@ const formatValue = (value) => {
                             </option>
                         </select>
                         <i class="icon-chevron-down select-icon"></i>
-                    </div>
-                </div>
-
-                <div class="filter-item search-item">
-                    <label class="filter-label">Pencarian</label>
-                    <div class="search-wrapper">
-                        <i class="icon-search search-icon"></i>
-                        <input 
-                            type="text" 
-                            class="search-input" 
-                            v-model="searchText" 
-                            placeholder="Cari nama posyandu..."
-                            @keyup.enter="applyFilter"
-                        >
-                        <button class="search-btn" @click="applyFilter">
-                            Cari
-                        </button>
                     </div>
                 </div>
             </div>
