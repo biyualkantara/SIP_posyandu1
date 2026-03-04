@@ -121,17 +121,29 @@ class WuspusKontrasepsiController extends Controller
             'rows.*.id_wuspus' => ['required','exists:wuspus,id_wuspus'],
             'rows.*.jns_kontrasepsi' => ['required','string','max:120'],
             'rows.*.tgl_ganti' => ['required','date'],
-            'rows.*.kontrasepsi_baru' => ['nullable','string','max:120'],
+            'rows.*.kontrasepsi_baru' => ['nullable'],
             'rows.*.ket' => ['nullable','string'],
         ]);
 
         DB::transaction(function() use ($request){
             foreach($request->rows as $r){
+                // Konversi nilai ke integer (1/0)
+                $kbBaru = null;
+                if (isset($r['kontrasepsi_baru'])) {
+                    if ($r['kontrasepsi_baru'] === 'Ya' || $r['kontrasepsi_baru'] === 'ya' || $r['kontrasepsi_baru'] === '1' || $r['kontrasepsi_baru'] === 1 || $r['kontrasepsi_baru'] === true) {
+                        $kbBaru = 1;
+                    } else if ($r['kontrasepsi_baru'] === 'Tidak' || $r['kontrasepsi_baru'] === 'tidak' || $r['kontrasepsi_baru'] === '0' || $r['kontrasepsi_baru'] === 0 || $r['kontrasepsi_baru'] === false) {
+                        $kbBaru = 0;
+                    } else {
+                        $kbBaru = null;
+                    }
+                }
+
                 DB::table('wuspus_kontrasepsi')->insert([
                     'id_wuspus' => (int)$r['id_wuspus'],
                     'jns_kontrasepsi' => $r['jns_kontrasepsi'],
                     'tgl_ganti' => $r['tgl_ganti'],
-                    'kontrasepsi_baru' => $r['kontrasepsi_baru'] ?? null,
+                    'kontrasepsi_baru' => $kbBaru,
                     'ket' => $r['ket'] ?? null,
                 ]);
             }
@@ -201,20 +213,29 @@ class WuspusKontrasepsiController extends Controller
 
     public function update(Request $request,$id)
     {
-        
         $request->validate([
             'id_wuspus' => ['required','exists:wuspus,id_wuspus'],
             'jns_kontrasepsi' => ['required','string','max:120'],
             'tgl_ganti' => ['required','date'],
-            'kontrasepsi_baru' => ['nullable','string','max:120'],
+            'kontrasepsi_baru' => ['nullable'],
             'ket' => ['nullable','string'],
         ]);
+
+        // Konversi nilai ke integer (1/0)
+        $kbBaru = null;
+        if ($request->has('kontrasepsi_baru') && $request->kontrasepsi_baru !== null && $request->kontrasepsi_baru !== '') {
+            if ($request->kontrasepsi_baru === 'Ya' || $request->kontrasepsi_baru === 'ya' || $request->kontrasepsi_baru === '1' || $request->kontrasepsi_baru === 1 || $request->kontrasepsi_baru === true) {
+                $kbBaru = 1;
+            } else if ($request->kontrasepsi_baru === 'Tidak' || $request->kontrasepsi_baru === 'tidak' || $request->kontrasepsi_baru === '0' || $request->kontrasepsi_baru === 0 || $request->kontrasepsi_baru === false) {
+                $kbBaru = 0;
+            }
+        }
 
         WuspusKontrasepsi::where('id_wkp',$id)->update([
             'id_wuspus' => (int)$request->id_wuspus,
             'jns_kontrasepsi' => $request->jns_kontrasepsi,
             'tgl_ganti' => $request->tgl_ganti,
-            'kontrasepsi_baru' => $request->kontrasepsi_baru,
+            'kontrasepsi_baru' => $kbBaru,
             'ket' => $request->ket,
         ]);
 
