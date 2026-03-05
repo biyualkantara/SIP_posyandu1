@@ -267,12 +267,13 @@ function closeModal() {
   width:min(1120px, 100%);
   margin:0 auto;
   padding:0 20px;
-  padding-top: 50px;
+  padding-top: 80px;
   padding-bottom: 5px;
   display:grid;
   grid-template-columns: 1fr 230px;
   gap:22px;
   align-items:start;
+  flex: 1;
 }
 
 /* Panel utama */
