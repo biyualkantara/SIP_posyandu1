@@ -95,6 +95,8 @@ const formatDate = (date) => {
 const getButtonClass = (type) => {
     const baseClass = 'action-btn'
     switch(type) {
+        case 'show':
+            return `${baseClass} btn-show`  // Tambahkan case untuk show
         case 'edit':
             return `${baseClass} btn-edit`
         case 'delete':
@@ -167,6 +169,17 @@ const getButtonClass = (type) => {
 
                     <template #col-actions="{ row }">
                         <div class="action-group">
+                            <!-- Tombol Lihat (Show) - Abu-abu -->
+                            <Link 
+                                :href="`/berita/${row.id_berita}`"
+                                @click="handleLinkClick"
+                            >
+                                <span :class="getButtonClass('show')" title="Lihat Berita">
+                                    <i class="icon-eye"></i>
+                                </span>
+                            </Link>
+
+                            <!-- Tombol Edit - Biru -->
                             <Link 
                                 :href="`/berita/${row.id_berita}/edit`"
                                 @click="handleLinkClick"
@@ -176,6 +189,7 @@ const getButtonClass = (type) => {
                                 </span>
                             </Link>
 
+                            <!-- Tombol Hapus - Merah -->
                             <span 
                                 :class="getButtonClass('delete')" 
                                 title="Hapus Berita"
@@ -412,6 +426,20 @@ const getButtonClass = (type) => {
     font-size: 16px;
 }
 
+/* Button Show - Abu-abu */
+.btn-show {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.btn-show:hover {
+    background: #cbd5e1;
+    color: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Button Edit - Biru */
 .btn-edit {
     background: #dbeafe;
     color: #1e40af;
@@ -424,6 +452,7 @@ const getButtonClass = (type) => {
     box-shadow: 0 4px 8px rgba(30, 64, 175, 0.2);
 }
 
+/* Button Delete - Merah */
 .btn-delete {
     background: #fee2e2;
     color: #991b1b;
