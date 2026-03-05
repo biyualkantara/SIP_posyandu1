@@ -27,10 +27,10 @@
     <!-- Mobile Drawer Menu -->
     <transition name="fade">
       <div class="mobile-drawer" v-if="drawerOpen">
-        <a href="#" class="menu-link">Beranda</a>
-        <a href="#" class="menu-link">Berita</a>
-        <a href="#" class="menu-link">Daftar Posyandu</a>
-        <a href="login" class="btn-login mt-2">Login</a>
+        <a href="/" class="menu-link">Beranda</a>
+        <a href="/berita-posyandu" class="menu-link">Berita</a>
+        <a href="/halaman-posyandu" class="menu-link">Daftar Posyandu</a>
+        <a href="/login" class="btn-login mt-2">Login</a>
       </div>
     </transition>
   </header>

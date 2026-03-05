@@ -268,7 +268,7 @@ function closeModal() {
   margin:0 auto;
   padding:0 20px;
   padding-top: 80px;
-  padding-bottom: 5px;
+  padding-bottom: 30px;
   display:grid;
   grid-template-columns: 1fr 230px;
   gap:22px;

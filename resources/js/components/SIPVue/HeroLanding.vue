@@ -145,6 +145,7 @@ onBeforeUnmount(() => document.body.classList.remove("esip-landing-page"));
     justify-content: center;
     text-align: center;
     padding: 0 20px;
+    padding-top: 200px;
   }
 
   .hero-content{
