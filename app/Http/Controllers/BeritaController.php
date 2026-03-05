@@ -10,9 +10,11 @@ class BeritaController extends Controller
 {
     public function index()
     {
+        $berita = Berita::latest('tanggal_waktu')->paginate(10);
+        
         return Inertia::render('berita/Berita', [
-            'title' => 'Berita',
-            'berita' => Berita::all(),
+            'berita' => $berita,
+            'filters' => request()->all(['search', 'kategori'])
         ]);
     }
 
@@ -28,16 +30,33 @@ class BeritaController extends Controller
             'ringkasan' => 'required|string|max:500',
             'isi' => 'required|string',
             'penulis' => 'required|string|max:100',
+            'kategori' => 'nullable|string|max:50',
         ]);
+
+        // Set default kategori jika tidak diisi
+        if (empty($validated['kategori'])) {
+            $validated['kategori'] = $this->detectKategori($validated['judul'], $validated['ringkasan']);
+        }
 
         Berita::create($validated);
 
-        return redirect()->route('berita')->with('success', 'Berita berhasil ditambahkan.');
+        return redirect()->route('berita.index')
+            ->with('success', 'Berita berhasil ditambahkan.');
     }   
+
+    public function show($id)
+    {
+        $berita = Berita::findOrFail($id);
+
+        return Inertia::render('berita/Show', [
+            'berita' => $berita
+        ]);
+    }
 
     public function edit($id)
     {
         $berita = Berita::findOrFail($id);
+        
         return Inertia::render('berita/EditBerita', [
             'berita' => $berita,
         ]);
@@ -52,11 +71,13 @@ class BeritaController extends Controller
             'ringkasan' => 'required|string|max:500',
             'isi' => 'required|string',
             'penulis' => 'required|string|max:100',
+            'kategori' => 'nullable|string|max:50',
         ]);
 
         $berita->update($validated);
 
-        return redirect()->route('berita')->with('success', 'Berita berhasil diubah.');
+        return redirect()->route('berita.index')
+            ->with('success', 'Berita berhasil diubah.');
     }
 
     public function destroy($id)
@@ -64,15 +85,29 @@ class BeritaController extends Controller
         $berita = Berita::findOrFail($id);
         $berita->delete();
 
-        return redirect()->route('berita')->with('success', 'Berita berhasil dihapus.');
+        return redirect()->route('berita.index')
+            ->with('success', 'Berita berhasil dihapus.');
     }
 
-    public function show($id)
+    /**
+     * Deteksi kategori berdasarkan judul/ringkasan
+     */
+    private function detectKategori($judul, $ringkasan)
     {
-        $berita = \App\Models\Berita::findOrFail($id);
-
-        return Inertia::render('berita/Show', [
-            'berita' => $berita
-        ]);
+        $text = strtolower($judul . ' ' . $ringkasan);
+        
+        if (str_contains($text, 'penting') || str_contains($text, 'urgent') || str_contains($text, 'peringatan')) {
+            return 'Penting';
+        }
+        
+        if (str_contains($text, 'kegiatan') || str_contains($text, 'acara') || str_contains($text, 'jadwal')) {
+            return 'Kegiatan';
+        }
+        
+        if (str_contains($text, 'imunisasi') || str_contains($text, 'vaksin') || str_contains($text, 'kesehatan')) {
+            return 'Kesehatan';
+        }
+        
+        return 'Info';
     }
 }
