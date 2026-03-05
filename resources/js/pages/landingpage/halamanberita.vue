@@ -270,6 +270,15 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
   .news-heading {
     font-size: 26px;
   }
+  .view-all-container {
+    margin-top: 20px;
+     padding-bottom: 100px;
+  }
+  .view-all-btn {
+    padding: 10px 24px;
+    font-size: 13px;
+   
+  }
 }
 
 @media (max-width: 576px) {

@@ -1,3 +1,4 @@
+
 <template>
   <AdminLayout>
     <!-- WRAPPER KHUSUS HALAMAN -->
@@ -54,13 +55,26 @@
               class="fitur-card link-card"
             >
               <h4>WA MANTAP</h4>
+
               <p>
-                Fitur WA MANTAP akan mengirimkan pesan otomatis edukasi stunting dan rekomendasi menu kepada orang tua bayi
-                yang berpotensi stunting.
+                Fitur WA MANTAP akan mengirimkan pesan otomatis edukasi stunting dan
+                rekomendasi menu kepada orang tua bayi yang berpotensi stunting.
               </p>
 
               <div class="wa-btn">
-                <i class="fa-brands fa-whatsapp"></i>
+                <svg
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94
+                    1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059
+                    -.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05
+                    -.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57
+                    -.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149
+                    .198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085
+                    1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"
+                  />
+                </svg>
               </div>
             </a>
           </div>
@@ -244,29 +258,33 @@ onBeforeUnmount(() => {
 .wa-btn {
   width: 60px;
   height: 60px;
-  background-color: #1faf38;
-  border-radius: 12px;
+  background: linear-gradient(145deg,#25D366,#1ebd5a);
+    border-radius: 18px; 
 
   display: flex;
   justify-content: center;
   align-items: center;
 
-  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.25);
-  transition: 0.2s ease;
+  margin: 20px auto 0;
 
-  margin-top: 20px;
-  margin-left: auto;
-  margin-right: auto;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  transition: 0.25s;
 }
 
-.wa-btn i {
-  font-size: 28px;
-  color: white;
+.wa-btn svg {
+  width: 32px;
+  height: 32px;
+  fill: white;
 }
 
 .wa-btn:hover {
-  background-color: #15922c;
-  transform: scale(1.05);
+  transform: scale(1.08);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+}
+
+.wa-btn:hover {
+  background-color: #1ebe5d;
+  transform: translateY(-2px);
 }
 
 /* responsive */

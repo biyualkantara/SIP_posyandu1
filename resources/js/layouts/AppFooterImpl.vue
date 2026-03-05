@@ -16,9 +16,9 @@ import logoeSIP from '../../images/eSIP.png'
 
 <style scoped>
 .footer-layout {
-    /* position: fixed;
+    position: fixed;
     bottom: 0;
-    left: 0; */
+    left: 0;
     width: 100%;
   /* tinggi footer + jarak aman */
     display: flex;
