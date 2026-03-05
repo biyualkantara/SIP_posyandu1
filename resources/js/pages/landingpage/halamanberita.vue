@@ -41,11 +41,12 @@
           <a href="/halamanberita" class="view-all-btn">Lihat semua berita</a>
         </div>
       </div>
+      <Kontakesip />
+  <AppFooterImpl />
     </div>
   </AdminLayout>
 
-  <Kontakesip />
-  <AppFooterImpl />
+  
 </template>
 
 <script setup>
@@ -96,17 +97,19 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
    PAGE WRAP + BACKGROUND (AMAN, KHUSUS HALAMAN INI)
    ========================= */
 .esip-news-page {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  padding: 34px 0 60px;
+  padding: 34px 0 0; /* atas + bawah footer sudah di AppFooterImpl */
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  isolation: isolate; /* biar z-index layer aman */
+  isolation: isolate;
+  position: relative;
 }
 
 /* background ikut scroll (bukan fixed) dan gak bocor */
 .esip-news-page::before {
   content: "";
-  position: absolute; /* ✅ ikut scroll */
+  position: absolute; /* ikut scroll */
   inset: 0;
   z-index: -1;
 
@@ -118,9 +121,7 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 
 /* konten di atas background */
 .content-inner {
-  position: relative;
-  z-index: 1;
-
+  flex: 1; /* dorong footer ke bawah jika konten sedikit */
   width: min(1200px, 100%);
   margin: 0 auto;
   padding: 0 20px;
@@ -134,6 +135,7 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
   color: #00a6d6;
   font-size: 32px;
   font-weight: 700;
+  padding-top: 50px;
   margin: 10px 0 30px;
 }
 
