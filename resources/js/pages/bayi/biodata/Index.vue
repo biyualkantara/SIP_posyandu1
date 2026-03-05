@@ -1,9 +1,9 @@
 <script setup>
 import AdminLayout from '@/layouts/AdminLayout.vue'
-import { Link, router } from '@inertiajs/vue3'
 import DataTable from '@/components/ui/DataTable.vue'
 import VueSelect from "vue3-select-component"
-import { ref, computed, watch } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
+import { ref, computed, watch, onMounted } from 'vue'
 
 const props = defineProps({
   data: Object,
@@ -12,7 +12,35 @@ const props = defineProps({
   posyandu: Object,
   filter: Object
 })
+const page = usePage()
+const flash = computed(() => page.props.flash)
 
+onMounted(() => {
+  if (flash.value?.success) {
+    showToast('success', flash.value.success)
+  } else if (flash.value?.error) {
+    showToast('error', flash.value.error)
+  }
+
+  window.addEventListener('toast', handleCustomToast)
+
+  return () => {
+    window.removeEventListener('toast', handleCustomToast)
+    if (toast.value.timeout) clearTimeout(toast.value.timeout)
+  }
+})
+
+watch(flash, (newFlash) => {
+  if (newFlash?.success) {
+    showToast('success', newFlash.success)
+  } else if (newFlash?.error) {
+    showToast('error', newFlash.error)
+  }
+}, { deep: true })
+
+function handleCustomToast(event) {
+  showToast(event.detail.type, event.detail.message)
+}
 const rows = computed(() => props.data?.data ?? [])
 
 const columns = [
@@ -34,7 +62,12 @@ const searchText  = ref(props.filter?.q ?? '')
 const kecamatanOptions = computed(() =>
   (props.kecamatan ?? []).map(k => ({ label: k.nama_kec, value: String(k.id_kec) }))
 )
+const kelurahanList = computed(() => {
+  if (!selectedKec.value) return []
 
+  const key = String(selectedKec.value)
+  return props.kelurahan?.[key] || []
+})
 const kelurahanOptions = computed(() => {
   if (!selectedKec.value) return []
 
@@ -47,7 +80,12 @@ const kelurahanOptions = computed(() => {
     value: String(k.id_kel)
   }))
 })
+const posyanduList = computed(() => {
+  if (!selectedKel.value) return []
 
+  const key = String(selectedKel.value)
+  return props.posyandu?.[key] || []
+})
 const posyanduOptions = computed(() => {
   const key = String(selectedKel.value || '')
   const arr = props.posyandu?.[key]
@@ -65,12 +103,37 @@ watch(selectedKel, () => {
 })
 
 function applyFilter() {
+  saveScrollPosition()
   router.get('/posyandu/bayi', {
     kec: selectedKec.value || '',
     kel: selectedKel.value || '',
     pos: selectedPos.value || '',
     q:   searchText.value || '',
-  }, { preserveState: true, preserveScroll: true, replace: true })
+  }, { 
+    preserveState: true, 
+    preserveScroll: true,
+    replace: true,
+    onSuccess: () => {
+      showToast('info', 'Filter diterapkan')
+      restoreScrollPosition()
+    }
+  })
+}
+const scrollPosition = ref(0)
+
+function saveScrollPosition() {
+  scrollPosition.value = window.scrollY
+  sessionStorage.setItem('scrollPosition', scrollPosition.value)
+}
+
+function restoreScrollPosition() {
+  const saved = sessionStorage.getItem('scrollPosition')
+  if (saved) {
+    setTimeout(() => {
+      window.scrollTo({ top: parseInt(saved), behavior: 'smooth' })
+      sessionStorage.removeItem('scrollPosition')
+    }, 100)
+  }
 }
 
 // modal hapus blur
@@ -162,33 +225,46 @@ function hideToast() {
             </Link>
         </div>
 
-        <!-- Filter -->
+        <!-- Filter Section -->
         <div class="filter-section">
             <div class="filter-grid">
-
                 <div class="filter-item">
-                    <label>Kecamatan</label>
-                    <select class="filter-select" v-model="selectedKec" @change="applyFilter">
-                        <option value="">Semua Kecamatan</option>
-                        <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
-                            {{ k.nama_kec }}
-                        </option>
-                    </select>
+                    <label class="filter-label">KECAMATAN</label>
+                    <div class="select-wrapper">
+                        <select class="filter-select" v-model="selectedKec" @change="applyFilter">
+                            <option value="">Semua Kecamatan</option>
+                            <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
+                                {{ k.nama_kec }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
                 </div>
 
                 <div class="filter-item">
-                    <label>Kelurahan</label>
-                    <select class="filter-select"
-                        v-model="selectedKel"
-                        :disabled="!selectedKec"
-                        @change="applyFilter">
-                        <option value="">Semua Kelurahan</option>
-                        <option v-for="k in kelurahanOptions"
-                            :key="k.value"
-                            :value="k.value">
-                            {{ k.label }}
-                        </option>
-                    </select>
+                    <label class="filter-label">KELURAHAN</label>
+                    <div class="select-wrapper">
+                        <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+                            <option value="">Semua Kelurahan</option>
+                            <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
+                                {{ k.nama_kel }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
+                </div>
+
+                <div class="filter-item">
+                    <label class="filter-label">POSYANDU</label>
+                    <div class="select-wrapper">
+                        <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
+                            <option value="">Semua Posyandu</option>
+                            <option v-for="p in posyanduList" :key="p.id_posyandu" :value="p.id_posyandu">
+                                {{ p.nama_posyandu }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1091,4 +1167,16 @@ function hideToast() {
         padding: 24px;
     }
 }
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  color: white;
+  z-index: 9999;
+}
+.toast.success { background-color: #4caf50; }
+.toast.error   { background-color: #f44336; }
+.toast.info    { background-color: #2196f3; }
 </style>

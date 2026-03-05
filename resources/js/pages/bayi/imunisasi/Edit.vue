@@ -1,6 +1,6 @@
 <script setup>
 import AdminLayout from '@/layouts/AdminLayout.vue'
-import { Link, useForm } from "@inertiajs/vue3"
+import { Link, useForm, router } from "@inertiajs/vue3"
 import { ref } from "vue"
 import VueSelect from "vue3-select-component"
 
@@ -47,25 +47,37 @@ const displayData = {
 
 function submitForm() {
   if (!form.id_imun) {
-    openError('Jenis imunisasi wajib dipilih')
+    window.dispatchEvent(new CustomEvent("toast", {
+      detail: { type: "error", message: "Jenis imunisasi wajib dipilih" }
+    }))
     return
   }
+
   if (!form.tgl_imun) {
-    openError('Tanggal imunisasi wajib diisi')
+    window.dispatchEvent(new CustomEvent("toast", {
+      detail: { type: "error", message: "Tanggal imunisasi wajib diisi" }
+    }))
     return
   }
 
   form.put(`/posyandu/bayi-imun/${props.row.id_bayi_imun}`, {
     preserveScroll: true,
     onSuccess: () => {
-      openSuccess('Data imunisasi bayi berhasil diperbarui')
+
+      // 🔥 kirim toast global
+      window.dispatchEvent(new CustomEvent("toast", {
+        detail: { type: "success", message: "Data imunisasi bayi berhasil diperbarui!" }
+      }))
+
+      // redirect setelah 800ms
       setTimeout(() => {
         window.location.href = '/posyandu/bayi-imun'
-      }, 1000)
+      }, 800)
     },
-    onError: (errors) => {
-      console.error('Error:', errors)
-      openError('Gagal menyimpan data')
+    onError: () => {
+      window.dispatchEvent(new CustomEvent("toast", {
+        detail: { type: "error", message: "Gagal menyimpan data." }
+      }))
     }
   })
 }

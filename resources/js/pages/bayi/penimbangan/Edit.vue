@@ -14,7 +14,7 @@ const props = defineProps({
 const form = useForm({
   tgl_pnb: props.row?.tgl_pnb ?? '',
   berat: props.row?.berat ?? '',
-  tb: props.row?.tb ?? '',
+  tb: props.row?.tb ?? '',  
   hasil: props.row?.hasil ?? '',
   ket: props.row?.ket ?? '',
 })
@@ -51,17 +51,31 @@ function submitForm() {
     return
   }
 
+  if (!form.berat) {
+    openError('Berat bayi wajib diisi')
+    return
+  }
+
+  if (!form.hasil) {
+    openError('Hasil penimbangan wajib diisi')
+    return
+  }
+
   form.put(`/posyandu/bayi-pnb/${props.row.id_bayi_pnb}`, {
     preserveScroll: true,
     onSuccess: () => {
-      openSuccess('Data penimbangan bayi berhasil diperbarui')
+      window.dispatchEvent(new CustomEvent("toast", {
+        detail: { type: "success", message: "Data penimbangan bayi berhasil diperbarui!" }
+      }))
+
       setTimeout(() => {
         window.location.href = '/posyandu/bayi-pnb'
-      }, 1000)
+      }, 800)
     },
-    onError: (errors) => {
-      console.error('Error:', errors)
-      openError('Gagal menyimpan data')
+    onError: () => {
+      window.dispatchEvent(new CustomEvent("toast", {
+        detail: { type: "error", message: "Gagal memperbarui data penimbangan." }
+      }))
     }
   })
 }
@@ -151,7 +165,7 @@ function submitForm() {
                   type="number" 
                   step="0.1" 
                   class="form-control" 
-                  v-model="form.tb"
+                  v-model="row.tb"
                   placeholder="Contoh: 60.5"
                 />
               </div>
