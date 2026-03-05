@@ -281,6 +281,7 @@ Route::prefix('posyandu')->name('posyandu.')->group(function () {
     Route::post('/berita', [BeritaController::class, 'store'])->name('berita.store');
     Route::get('/berita/{id}/edit', [BeritaController::class, 'edit'])->name('berita.edit');
     Route::put('/berita/{id}', [BeritaController::class, 'update'])->name('berita.update');
+    Route::get('/berita/{id}', [BeritaController::class, 'show'])->name('berita.show');
     Route::delete('/berita/{id}', [BeritaController::class, 'destroy'])->name('berita.destroy');
 
     /*

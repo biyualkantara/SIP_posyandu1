@@ -66,4 +66,13 @@ class BeritaController extends Controller
 
         return redirect()->route('berita')->with('success', 'Berita berhasil dihapus.');
     }
+
+    public function show($id)
+    {
+        $berita = \App\Models\Berita::findOrFail($id);
+
+        return Inertia::render('berita/Show', [
+            'berita' => $berita
+        ]);
+    }
 }
