@@ -1,8 +1,10 @@
 <script setup>
-import { Link, router } from '@inertiajs/vue3'
+import { ref, computed, onMounted, watch } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import DataTable from '@/components/ui/DataTable.vue'
-import { ref, computed, watch } from 'vue'
 
+
+// Props dari server
 const props = defineProps({
   data: Object,
   kecamatan: Array,
@@ -11,8 +13,8 @@ const props = defineProps({
   filter: Object
 })
 
+// Untuk tabel
 const rows = computed(() => props.data?.data ?? [])
-
 const columns = [
   { key: 'id_bayi_imun', label: 'ID', sortable: true },
   { key: 'nama_bayi', label: 'Nama Bayi', sortable: true },
@@ -22,71 +24,134 @@ const columns = [
   { key: 'actions', label: 'Aksi', sortable: false },
 ]
 
+// Filter
 const selectedKec = ref(props.filter?.kec ?? '')
 const selectedKel = ref(props.filter?.kel ?? '')
 const selectedPos = ref(props.filter?.pos ?? '')
 const searchText  = ref(props.filter?.q ?? '')
 
-const kelurahanList = computed(() => {
-  if (!selectedKec.value) return []
-  return props.kelurahan?.[selectedKec.value] ?? []
-})
-const kelurahanOptions = computed(() => {
-  if (!selectedKec.value) return []
+const kelurahanList = computed(() => selectedKec.value ? (props.kelurahan?.[selectedKec.value] ?? []) : [])
+const posyanduList = computed(() => selectedKel.value ? (props.posyandu?.[selectedKel.value] ?? []) : [])
 
-  const key = String(selectedKec.value)
-
-  if (!props.kelurahan || !props.kelurahan[key]) return []
-
-  return props.kelurahan[key].map(k => ({
-    label: k.nama_kel,
-    value: String(k.id_kel)
-  }))
-})
-const posyanduList = computed(() => {
-  if (!selectedKel.value) return []
-  return props.posyandu?.[selectedKel.value] ?? []
-})
-
+// Watch filter
 watch(selectedKec, () => { selectedKel.value=''; selectedPos.value='' })
 watch(selectedKel, () => { selectedPos.value='' })
 
-function applyFilter(){
+function applyFilter() {
+  saveScrollPosition()
   router.get('/posyandu/bayi-imun', {
     kec: selectedKec.value || '',
     kel: selectedKel.value || '',
     pos: selectedPos.value || '',
-    q: searchText.value || '',
-  }, { preserveState:true, preserveScroll:true, replace:true })
-}
-
-const modalOpen = ref(false)
-const selected = ref({})
-
-function deleteRow(row){ selected.value=row; modalOpen.value=true }
-function closeModal(){ modalOpen.value=false; selected.value={} }
-
-function confirmDelete(){
-  router.delete(`/posyandu/bayi-imun/${selected.value.id_bayi_imun}`, {
-    preserveScroll:true,
-    onSuccess:() => {
-      closeModal()
-      router.reload({ only:['data'] })
-      window.dispatchEvent(new CustomEvent("toast", {
-        detail:{ type:"success", message:"Data imunisasi bayi berhasil dihapus!" }
-      }))
-    },
-    onError:() => {
-      window.dispatchEvent(new CustomEvent("toast", {
-        detail:{ type:"error", message:"Gagal menghapus data." }
-      }))
+    q:   searchText.value || '',
+  }, { 
+    preserveState: true, 
+    preserveScroll: true,
+    replace: true,
+    onSuccess: () => {
+      showToast('info', 'Filter diterapkan')
+      restoreScrollPosition()
     }
   })
 }
+const scrollPosition = ref(0)
+
+function saveScrollPosition() {
+  scrollPosition.value = window.scrollY
+  sessionStorage.setItem('scrollPosition', scrollPosition.value)
+}
+
+function restoreScrollPosition() {
+  const saved = sessionStorage.getItem('scrollPosition')
+  if (saved) {
+    setTimeout(() => {
+      window.scrollTo({ top: parseInt(saved), behavior: 'smooth' })
+      sessionStorage.removeItem('scrollPosition')
+    }, 100)
+  }
+}
+
+// Modal Delete
+const modalOpen = ref(false)
+const selected = ref({})
+
+function deleteRow(row){
+  selected.value = row
+  modalOpen.value = true
+}
+
+function closeModal(){
+  modalOpen.value = false
+  selected.value = {}
+}
+
+function confirmDelete() {
+  router.delete(`/posyandu/bayi-imun/${selected.value.id_bayi_imun}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      closeModal()
+      showToast('success', 'Data imunisasi bayi berhasil dihapus!')
+      router.reload({ only: ['data'] })
+    },
+    onError: () => {
+      showToast('error', 'Gagal menghapus data.')
+    }
+  })
+}
+
+// Toast Notification
+const toast = ref({
+  show: false,
+  type: 'success',
+  message: '',
+  timeout: null
+})
+
+function showToast(type, message, duration = 3000) {
+  if (toast.value.timeout) clearTimeout(toast.value.timeout)
+
+  toast.value.show = true
+  toast.value.type = type
+  toast.value.message = message
+
+  toast.value.timeout = setTimeout(() => {
+    toast.value.show = false
+    toast.value.timeout = null
+  }, duration)
+}
+
+function hideToast() {
+  toast.value.show = false
+  if (toast.value.timeout) {
+    clearTimeout(toast.value.timeout)
+    toast.value.timeout = null
+  }
+}
+
+// Global listener (misal dari halaman create/edit)
+onMounted(() => {
+  window.addEventListener('toast', e => {
+    showToast(e.detail.type, e.detail.message)
+  })
+})
+
 </script>
 
 <template>
-<AdminLayout>
+ 
+    <!-- Toast Notification -->
+  <Transition name="slide-fade">
+    <div v-if="toast.show" class="toast-notification" :class="toast.type">
+      <div class="toast-content">
+        <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+        <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+        <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+        <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+        <span class="toast-message">{{ toast.message }}</span>
+        <button class="toast-close" @click="hideToast">×</button>
+      </div>
+    </div>
+  </Transition>
 
   <div class="data-container">
 
@@ -102,74 +167,67 @@ function confirmDelete(){
       </Link>
     </div>
 
-    <!-- FILTER -->
-    <div class="filter-section">
-      <div class="filter-grid">
+   <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label class="filter-label">KECAMATAN</label>
+                    <div class="select-wrapper">
+                        <select class="filter-select" v-model="selectedKec" @change="applyFilter">
+                            <option value="">Semua Kecamatan</option>
+                            <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
+                                {{ k.nama_kec }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
+                </div>
 
-        <div class="filter-item">
-          <label>Kecamatan</label>
-          <select class="filter-select"
-                  v-model="selectedKec"
-                  @change="applyFilter">
-            <option value="">Semua Kecamatan</option>
-            <option v-for="k in kecamatan"
-                    :key="k.id_kec"
-                    :value="k.id_kec">
-              {{ k.nama_kec }}
-            </option>
-          </select>
+                <div class="filter-item">
+                    <label class="filter-label">KELURAHAN</label>
+                    <div class="select-wrapper">
+                        <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+                            <option value="">Semua Kelurahan</option>
+                            <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
+                                {{ k.nama_kel }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
+                </div>
+
+                <div class="filter-item">
+                    <label class="filter-label">POSYANDU</label>
+                    <div class="select-wrapper">
+                        <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
+                            <option value="">Semua Posyandu</option>
+                            <option v-for="p in posyanduList" :key="p.id_posyandu" :value="p.id_posyandu">
+                                {{ p.nama_posyandu }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="filter-item">
-          <label>Kelurahan</label>
-          <select class="filter-select"
-                  v-model="selectedKel"
-                  :disabled="!selectedKec"
-                  @change="applyFilter">
-            <option value="">Semua Kelurahan</option>
-            <option v-for="k in kelurahanOptions"
-                    :key="k.value"
-                    :value="k.value">
-              {{ k.label }}
-            </option>
-          </select>
-        </div>
-
-        <div class="filter-item search-item">
-          <label>Pencarian</label>
-          <div class="search-wrapper">
-            <i class="icon-search search-icon"></i>
-            <input 
-              type="text"
-              class="search-input"
-              v-model="searchText"
-              placeholder="Cari nama bayi..."
-              @keyup.enter="applyFilter"
-            >
-            <button class="search-btn"
-                    @click="applyFilter">
-              Cari
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </div>
 
     <!-- TABLE -->
     <div class="table-section">
-      <div v-if="rows.length === 0" class="empty-state">
-                <i class="icon-database empty-icon"></i>
-                <h3>Belum Ada Data Bayi</h3>
-                <p>Silakan tambahkan data bayi terlebih dahulu.</p>
-                <Link href="/posyandu/bayi-imun/create" class="btn-create">
-                    Tambah Data Pertama
+            <div v-if="rows.length === 0" class="empty-state">
+                <div class="empty-icon">
+                <span>📊</span>
+                </div>
+                <h3 class="empty-title">Belum Ada Data Imunisasi Bayi</h3>
+                <p class="empty-description">Data imunisasi bayi belum tersedia. Silakan tambah data baru.</p>
+                <Link href="/posyandu/bayi-imun/create" class="btn-create empty-btn" @click="handleLinkClick">
+                <span>+</span>
+                <span>Tambah Data Pertama</span>
                 </Link>
             </div>
 
-      <DataTable :columns="columns"
-                 :rows="rows"
-                 :perPage="10">
+      <DataTable v-else :columns="columns" :rows="rows" :perPage="20">
+        
 
         <template #col-actions="{ row }">
           <div class="action-group">
@@ -255,7 +313,7 @@ function confirmDelete(){
     </div>
   </div>
 
-</AdminLayout>
+
 </template>
 
 <style scoped>
@@ -671,40 +729,41 @@ function confirmDelete(){
 
 /* Empty State */
 .empty-state {
-    text-align: center;
-    padding: 48px 24px;
+  text-align: center;
+  padding: 48px 24px;
 }
 
 .empty-icon {
-    width: 80px;
-    height: 80px;
-    background: #f1f5f9;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 24px;
+  width: 80px;
+  height: 80px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 40px;
 }
 
 .empty-icon i {
-    font-size: 40px;
-    color: #94a3b8;
+  font-size: 40px;
+  color: #94a3b8;
 }
 
 .empty-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
 }
 
 .empty-description {
-    color: #64748b;
-    margin: 0 0 24px 0;
+  color: #64748b;
+  margin: 0 0 24px 0;
 }
 
 .empty-btn {
-    display: inline-flex;
+  display: inline-flex;
 }
 
 /* Pagination Section */
@@ -1074,4 +1133,17 @@ function confirmDelete(){
         padding: 24px;
     }
 }
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  color: white;
+  z-index: 9999;
+}
+.toast.success { background-color: #4caf50; }
+.toast.error   { background-color: #f44336; }
+.toast.info    { background-color: #2196f3; }
+
 </style>

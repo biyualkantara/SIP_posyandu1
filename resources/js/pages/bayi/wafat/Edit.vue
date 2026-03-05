@@ -12,6 +12,7 @@ const props = defineProps({
 })
 
 const form = useForm({
+  id_bayi: props.row.id_bayi,       
   tgl_kematian: props.row.tgl_kematian ?? '',
   ket: props.row.ket ?? '',
 })
@@ -58,7 +59,8 @@ function submitForm() {
     },
     onError: (errors) => {
       console.error('Error:', errors)
-      openError('Gagal menyimpan data')
+      const msg = errors ? Object.values(errors).flat().join(', ') : 'Gagal menyimpan data'
+      openError(msg)
     }
   })
 }

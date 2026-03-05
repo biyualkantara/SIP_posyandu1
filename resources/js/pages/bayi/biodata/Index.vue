@@ -1,9 +1,9 @@
 <script setup>
 import AdminLayout from '@/layouts/AdminLayout.vue'
-import { Link, router } from '@inertiajs/vue3'
 import DataTable from '@/components/ui/DataTable.vue'
 import VueSelect from "vue3-select-component"
-import { ref, computed, watch } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
+import { ref, computed, watch, onMounted } from 'vue'
 
 const props = defineProps({
   data: Object,
@@ -12,7 +12,35 @@ const props = defineProps({
   posyandu: Object,
   filter: Object
 })
+const page = usePage()
+const flash = computed(() => page.props.flash)
 
+onMounted(() => {
+  if (flash.value?.success) {
+    showToast('success', flash.value.success)
+  } else if (flash.value?.error) {
+    showToast('error', flash.value.error)
+  }
+
+  window.addEventListener('toast', handleCustomToast)
+
+  return () => {
+    window.removeEventListener('toast', handleCustomToast)
+    if (toast.value.timeout) clearTimeout(toast.value.timeout)
+  }
+})
+
+watch(flash, (newFlash) => {
+  if (newFlash?.success) {
+    showToast('success', newFlash.success)
+  } else if (newFlash?.error) {
+    showToast('error', newFlash.error)
+  }
+}, { deep: true })
+
+function handleCustomToast(event) {
+  showToast(event.detail.type, event.detail.message)
+}
 const rows = computed(() => props.data?.data ?? [])
 
 const columns = [
@@ -34,7 +62,12 @@ const searchText  = ref(props.filter?.q ?? '')
 const kecamatanOptions = computed(() =>
   (props.kecamatan ?? []).map(k => ({ label: k.nama_kec, value: String(k.id_kec) }))
 )
+const kelurahanList = computed(() => {
+  if (!selectedKec.value) return []
 
+  const key = String(selectedKec.value)
+  return props.kelurahan?.[key] || []
+})
 const kelurahanOptions = computed(() => {
   if (!selectedKec.value) return []
 
@@ -47,7 +80,12 @@ const kelurahanOptions = computed(() => {
     value: String(k.id_kel)
   }))
 })
+const posyanduList = computed(() => {
+  if (!selectedKel.value) return []
 
+  const key = String(selectedKel.value)
+  return props.posyandu?.[key] || []
+})
 const posyanduOptions = computed(() => {
   const key = String(selectedKel.value || '')
   const arr = props.posyandu?.[key]
@@ -65,12 +103,37 @@ watch(selectedKel, () => {
 })
 
 function applyFilter() {
+  saveScrollPosition()
   router.get('/posyandu/bayi', {
     kec: selectedKec.value || '',
     kel: selectedKel.value || '',
     pos: selectedPos.value || '',
     q:   searchText.value || '',
-  }, { preserveState: true, preserveScroll: true, replace: true })
+  }, { 
+    preserveState: true, 
+    preserveScroll: true,
+    replace: true,
+    onSuccess: () => {
+      showToast('info', 'Filter diterapkan')
+      restoreScrollPosition()
+    }
+  })
+}
+const scrollPosition = ref(0)
+
+function saveScrollPosition() {
+  scrollPosition.value = window.scrollY
+  sessionStorage.setItem('scrollPosition', scrollPosition.value)
+}
+
+function restoreScrollPosition() {
+  const saved = sessionStorage.getItem('scrollPosition')
+  if (saved) {
+    setTimeout(() => {
+      window.scrollTo({ top: parseInt(saved), behavior: 'smooth' })
+      sessionStorage.removeItem('scrollPosition')
+    }, 100)
+  }
 }
 
 // modal hapus blur
@@ -133,18 +196,20 @@ function hideToast() {
 </script>
 <template>
 
-    <!-- Toast -->
-    <Transition name="slide-fade">
-        <div v-if="toast.show" class="toast-notification" :class="toast.type">
-            <div class="toast-content">
-                <i class="icon-check-circle" v-if="toast.type==='success'"></i>
-                <i class="icon-exclamation-circle" v-if="toast.type==='error'"></i>
-                <i class="icon-info-circle" v-if="toast.type==='info'"></i>
-                <span class="toast-message">{{ toast.message }}</span>
-                <button class="toast-close" @click="hideToast">×</button>
-            </div>
-        </div>
-    </Transition>
+
+    <!-- Toast Notification -->
+  <Transition name="slide-fade">
+    <div v-if="toast.show" class="toast-notification" :class="toast.type">
+      <div class="toast-content">
+        <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+        <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+        <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+        <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+        <span class="toast-message">{{ toast.message }}</span>
+        <button class="toast-close" @click="hideToast">×</button>
+      </div>
+    </div>
+  </Transition>
 
     <div class="data-container">
 
@@ -160,64 +225,62 @@ function hideToast() {
             </Link>
         </div>
 
-        <!-- Filter -->
+        <!-- Filter Section -->
         <div class="filter-section">
             <div class="filter-grid">
-
                 <div class="filter-item">
-                    <label>Kecamatan</label>
-                    <select class="filter-select" v-model="selectedKec" @change="applyFilter">
-                        <option value="">Semua Kecamatan</option>
-                        <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
-                            {{ k.nama_kec }}
-                        </option>
-                    </select>
-                </div>
-
-                <div class="filter-item">
-                    <label>Kelurahan</label>
-                    <select class="filter-select"
-                        v-model="selectedKel"
-                        :disabled="!selectedKec"
-                        @change="applyFilter">
-                        <option value="">Semua Kelurahan</option>
-                        <option v-for="k in kelurahanOptions"
-                            :key="k.value"
-                            :value="k.value">
-                            {{ k.label }}
-                        </option>
-                    </select>
-                </div>
-
-                <div class="filter-item search-item">
-                    <label class="filter-label">Pencarian</label>
-                    <div class="search-wrapper">
-                        <i class="icon-search search-icon"></i>
-                        <input 
-                            type="text" 
-                            class="search-input" 
-                            v-model="searchText" 
-                            placeholder="Cari nama bayi..."
-                            @keyup.enter="applyFilter"
-                        >
-                        <button class="search-btn" @click="applyFilter">
-                            Cari
-                        </button>
+                    <label class="filter-label">KECAMATAN</label>
+                    <div class="select-wrapper">
+                        <select class="filter-select" v-model="selectedKec" @change="applyFilter">
+                            <option value="">Semua Kecamatan</option>
+                            <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
+                                {{ k.nama_kec }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
                     </div>
                 </div>
 
+                <div class="filter-item">
+                    <label class="filter-label">KELURAHAN</label>
+                    <div class="select-wrapper">
+                        <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+                            <option value="">Semua Kelurahan</option>
+                            <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
+                                {{ k.nama_kel }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
+                </div>
+
+                <div class="filter-item">
+                    <label class="filter-label">POSYANDU</label>
+                    <div class="select-wrapper">
+                        <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
+                            <option value="">Semua Posyandu</option>
+                            <option v-for="p in posyanduList" :key="p.id_posyandu" :value="p.id_posyandu">
+                                {{ p.nama_posyandu }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Table -->
         <div class="table-section">
 
-            <div v-if="rows.length === 0" class="empty-state">
-                <i class="icon-database empty-icon"></i>
-                <h3>Belum Ada Data Bayi</h3>
-                <p>Silakan tambahkan data bayi terlebih dahulu.</p>
-                <Link href="/posyandu/bayi/create" class="btn-create">
-                    Tambah Data Pertama
+             <div v-if="rows.length === 0" class="empty-state">
+                <div class="empty-icon">
+                <span>📊</span>
+                </div>
+                <h3 class="empty-title">Belum Ada Data Bayi</h3>
+                <p class="empty-description">Data Bayi belum tersedia. Silakan tambah data baru.</p>
+                <Link href="/posyandu/bayi/create" class="btn-create empty-btn" @click="handleLinkClick">
+                <span>+</span>
+                <span>Tambah Data Pertama</span>
                 </Link>
             </div>
 
@@ -485,71 +548,43 @@ function hideToast() {
     pointer-events: none;
 }
 
-/* Search Item */
-.search-item {
-    flex: 1;
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
 }
 
-.search-wrapper {
-    display: flex;
-    align-items: center;
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    transition: all 0.2s;
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 40px;
 }
 
-.search-wrapper:focus-within {
-    border-color: #1e293b;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+.empty-icon i {
+  font-size: 40px;
+  color: #94a3b8;
 }
 
-.search-icon {
-    padding: 0 12px;
-    color: #94a3b8;
-    font-size: 16px;
+.empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
 }
 
-.search-input {
-    flex: 1;
-    height: 42px;
-    border: none;
-    background: transparent;
-    font-size: 14px;
-    color: #1e293b;
-    padding: 0;
+.empty-description {
+  color: #64748b;
+  margin: 0 0 24px 0;
 }
 
-.search-input:focus {
-    outline: none;
-}
-
-.search-input::placeholder {
-    color: #94a3b8;
-}
-
-.search-btn {
-    height: 42px;
-    padding: 0 20px;
-    background: #f1f5f9;
-    border: none;
-    border-left: 2px solid #e2e8f0;
-    border-radius: 0 8px 8px 0;
-    color: #475569;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.search-btn:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-}
-
-.search-btn:active {
-    background: #cbd5e1;
+.empty-btn {
+  display: inline-flex;
 }
 
 /* Debug Info */
@@ -1132,4 +1167,16 @@ function hideToast() {
         padding: 24px;
     }
 }
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  color: white;
+  z-index: 9999;
+}
+.toast.success { background-color: #4caf50; }
+.toast.error   { background-color: #f44336; }
+.toast.info    { background-color: #2196f3; }
 </style>

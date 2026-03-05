@@ -1,270 +1,375 @@
 <script setup>
-import { Link, router } from '@inertiajs/vue3'
-import DataTable from '@/components/ui/DataTable.vue'
-import { ref, computed, watch } from 'vue'
+import DataTable from '@/components/ui/DataTable.vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
+// Props dari server
 const props = defineProps({
-  data: Object,
-  kecamatan: Array,
-  kelurahan: Object,
-  posyandu: Object,
-  filter: Object
-})
+    data: Object,
+    kecamatan: Array,
+    kelurahan: Object,
+    posyandu: Object,
+    filter: Object,
+});
 
-const rows = computed(() => props.data?.data ?? [])
+// FLASH MESSAGE DARI LARAVEL
+const page = usePage();
 
+// Tabel
+const rows = computed(() => props.data?.data ?? []);
 const columns = [
-  { key: 'id_wafat', label: 'ID', sortable: true },
-  { key: 'nama_bayi', label: 'Nama Bayi', sortable: true },
-  { key: 'nama_posyandu', label: 'Posyandu', sortable: true },
-  { key: 'tgl_kematian', label: 'Tgl Kematian', sortable: true },
-  { key: 'ket', label: 'Ket', sortable: false },
-  { key: 'actions', label: 'Aksi', sortable: false },
-]
+    { key: 'id_wafat', label: 'ID', sortable: true },
+    { key: 'nama_bayi', label: 'Nama Bayi', sortable: true },
+    { key: 'nama_posyandu', label: 'Posyandu', sortable: true },
+    { key: 'tgl_kematian', label: 'Tgl Kematian', sortable: true },
+    { key: 'ket', label: 'Keterangan', sortable: false },
+    { key: 'actions', label: 'Aksi', sortable: false },
+];
 
-const selectedKec = ref(props.filter?.kec ?? '')
-const selectedKel = ref(props.filter?.kel ?? '')
-const selectedPos = ref(props.filter?.pos ?? '')
-const searchText  = ref(props.filter?.q ?? '')
+// Filter
+const selectedKec = ref(props.filter?.kec ?? '');
+const selectedKel = ref(props.filter?.kel ?? '');
+const selectedPos = ref(props.filter?.pos ?? '');
+const searchText = ref(props.filter?.q ?? '');
 
-const kelurahanList = computed(() => {
-  if (!selectedKec.value) return []
-  return props.kelurahan?.[selectedKec.value] ?? []
-})
-const kelurahanOptions = computed(() => {
-  if (!selectedKec.value) return []
+const kelurahanList = computed(() =>
+    selectedKec.value ? (props.kelurahan?.[selectedKec.value] ?? []) : [],
+);
+const posyanduList = computed(() =>
+    selectedKel.value ? (props.posyandu?.[selectedKel.value] ?? []) : [],
+);
 
-  const key = String(selectedKec.value)
-
-  if (!props.kelurahan || !props.kelurahan[key]) return []
-
-  return props.kelurahan[key].map(k => ({
-    label: k.nama_kel,
-    value: String(k.id_kel)
-  }))
-})
-const posyanduList = computed(() => {
-  if (!selectedKel.value) return []
-  return props.posyandu?.[selectedKel.value] ?? []
-})
-
+// Watch filter
 watch(selectedKec, () => {
-  selectedKel.value = ''
-  selectedPos.value = ''
-})
+    selectedKel.value = '';
+    selectedPos.value = '';
+});
 watch(selectedKel, () => {
-  selectedPos.value = ''
-})
+    selectedPos.value = '';
+});
 
 function applyFilter() {
-  router.get('/posyandu/bayi-wafat', {
-    kec: selectedKec.value || '',
-    kel: selectedKel.value || '',
-    pos: selectedPos.value || '',
-    q:   searchText.value || '',
-  }, { preserveState: true, preserveScroll: true, replace: true })
+    saveScrollPosition();
+    router.get(
+        '/posyandu/bayi-wafat',
+        {
+            kec: selectedKec.value || '',
+            kel: selectedKel.value || '',
+            pos: selectedPos.value || '',
+            q: searchText.value || '',
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            onSuccess: () => {
+                showToast('info', 'Filter diterapkan');
+                restoreScrollPosition();
+            },
+        },
+    );
+}
+const scrollPosition = ref(0);
+
+function saveScrollPosition() {
+    scrollPosition.value = window.scrollY;
+    sessionStorage.setItem('scrollPosition', scrollPosition.value);
 }
 
-// modal hapus blur
-const modalOpen = ref(false)
-const selected = ref({})
+function restoreScrollPosition() {
+    const saved = sessionStorage.getItem('scrollPosition');
+    if (saved) {
+        setTimeout(() => {
+            window.scrollTo({ top: parseInt(saved), behavior: 'smooth' });
+            sessionStorage.removeItem('scrollPosition');
+        }, 100);
+    }
+}
+
+// Modal Hapus
+const modalOpen = ref(false);
+const selected = ref({});
 
 function deleteRow(row) {
-  selected.value = row
-  modalOpen.value = true
+    selected.value = row;
+    modalOpen.value = true;
 }
 function closeModal() {
-  modalOpen.value = false
-  selected.value = {}
+    modalOpen.value = false;
+    selected.value = {};
 }
 function confirmDelete() {
-  router.delete(`/posyandu/bayi-wafat/${selected.value.id_wafat}`, {
-    preserveScroll: true,
-    onSuccess: () => {
-      closeModal()
-      router.reload({ only: ['data'] })
-      window.dispatchEvent(new CustomEvent("toast", {
-        detail: { type: "success", message: "Data kematian bayi berhasil dihapus!" }
-      }))
-    },
-    onError: () => {
-      window.dispatchEvent(new CustomEvent("toast", {
-        detail: { type: "error", message: "Gagal menghapus data." }
-      }))
-    }
-  })
+    router.delete(`/posyandu/bayi-wafat/${selected.value.id_wafat}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeModal();
+            router.reload({ only: ['data'] });
+            showToast('success', 'Data kematian bayi berhasil dihapus!');
+        },
+        onError: () => {
+            showToast('error', 'Gagal menghapus data.');
+        },
+    });
 }
+
+// Toast Notification
+const toast = ref({
+    show: false,
+    type: 'success',
+    message: '',
+    timeout: null,
+});
+
+function showToast(type, message, duration = 3000) {
+    if (toast.value.timeout) clearTimeout(toast.value.timeout);
+
+    toast.value.show = true;
+    toast.value.type = type;
+    toast.value.message = message;
+
+    toast.value.timeout = setTimeout(() => {
+        toast.value.show = false;
+        toast.value.timeout = null;
+    }, duration);
+}
+
+function hideToast() {
+    toast.value.show = false;
+    if (toast.value.timeout) clearTimeout(toast.value.timeout);
+}
+
+// Tangkap Flash Laravel & Custom Event
+function handleCustomToast(event) {
+    showToast(event.detail.type, event.detail.message);
+}
+
+onMounted(() => {
+    // Flash dari Laravel
+    if (page.props.flash?.success)
+        showToast('success', page.props.flash.success);
+    if (page.props.flash?.error) showToast('error', page.props.flash.error);
+
+    // Listener untuk toast custom
+    window.addEventListener('toast', handleCustomToast);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('toast', handleCustomToast);
+});
 </script>
 
 <template>
-<AdminLayout>
+    <!-- Toast Notification -->
+    <Transition name="slide-fade">
+        <div v-if="toast.show" class="toast-notification" :class="toast.type">
+            <div class="toast-content">
+                <span v-if="toast.type === 'success'" class="toast-icon"
+                    >✅</span
+                >
+                <span v-else-if="toast.type === 'error'" class="toast-icon"
+                    >❌</span
+                >
+                <span v-else-if="toast.type === 'info'" class="toast-icon"
+                    >ℹ️</span
+                >
+                <span v-else-if="toast.type === 'warning'" class="toast-icon"
+                    >⚠️</span
+                >
+                <span class="toast-message">{{ toast.message }}</span>
+                <button class="toast-close" @click="hideToast">×</button>
+            </div>
+        </div>
+    </Transition>
 
-  <div class="data-container">
+    <div class="data-container">
+        <!-- Header -->
+        <div class="header-section">
+            <div>
+                <h1 class="page-title">Kematian Bayi</h1>
+                <p class="page-subtitle">Kelola data kematian bayi posyandu</p>
+            </div>
 
-    <!-- Header -->
-    <div class="header-section">
-      <div>
-        <h1 class="page-title">Kematian Bayi</h1>
-        <p class="page-subtitle">Kelola data kematian bayi posyandu</p>
-      </div>
-
-      <Link href="/posyandu/bayi-wafat/create" class="btn-create">
-        + Tambah Data
-      </Link>
-    </div>
-
-    <!-- FILTER -->
-    <div class="filter-section">
-      <div class="filter-grid">
-
-        <div class="filter-item">
-          <label>Kecamatan</label>
-          <select class="filter-select"
-                  v-model="selectedKec"
-                  @change="applyFilter">
-            <option value="">Semua Kecamatan</option>
-            <option v-for="k in kecamatan"
-                    :key="k.id_kec"
-                    :value="k.id_kec">
-              {{ k.nama_kec }}
-            </option>
-          </select>
+            <Link href="/posyandu/bayi-wafat/create" class="btn-create">
+                + Tambah Data
+            </Link>
         </div>
 
-        <div class="filter-item">
-          <label>Kelurahan</label>
-          <select class="filter-select"
-                  v-model="selectedKel"
-                  :disabled="!selectedKec"
-                  @change="applyFilter">
-            <option value="">Semua Kelurahan</option>
-            <option v-for="k in kelurahanOptions"
-                    :key="k.value"
-                    :value="k.value">
-              {{ k.label }}
-            </option>
-          </select>
-        </div>
-
-               <div class="filter-item search-item">
-                    <label class="filter-label">Pencarian</label>
-                    <div class="search-wrapper">
-                        <i class="icon-search search-icon"></i>
-                        <input 
-                            type="text" 
-                            class="search-input" 
-                            v-model="searchText" 
-                            placeholder="Cari nama bayi..."
-                            @keyup.enter="applyFilter"
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label class="filter-label">KECAMATAN</label>
+                    <div class="select-wrapper">
+                        <select
+                            class="filter-select"
+                            v-model="selectedKec"
+                            @change="applyFilter"
                         >
-                        <button class="search-btn" @click="applyFilter">
-                            Cari
-                        </button>
+                            <option value="">Semua Kecamatan</option>
+                            <option
+                                v-for="k in kecamatan"
+                                :key="k.id_kec"
+                                :value="k.id_kec"
+                            >
+                                {{ k.nama_kec }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
                     </div>
                 </div>
-          </div>
-    </div>
 
-    <!-- TABLE -->
-    <div class="table-section">
-      <div v-if="rows.length === 0" class="empty-state">
-                <i class="icon-database empty-icon"></i>
-                <h3>Belum Ada Data Bayi</h3>
-                <p>Silakan tambahkan data bayi terlebih dahulu.</p>
-                <Link href="/posyandu/bayi-wafat/create" class="btn-create">
-                    Tambah Data Pertama
+                <div class="filter-item">
+                    <label class="filter-label">KELURAHAN</label>
+                    <div class="select-wrapper">
+                        <select
+                            class="filter-select"
+                            v-model="selectedKel"
+                            :disabled="!selectedKec"
+                            @change="applyFilter"
+                        >
+                            <option value="">Semua Kelurahan</option>
+                            <option
+                                v-for="k in kelurahanList"
+                                :key="k.id_kel"
+                                :value="k.id_kel"
+                            >
+                                {{ k.nama_kel }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
+                </div>
+
+                <div class="filter-item">
+                    <label class="filter-label">POSYANDU</label>
+                    <div class="select-wrapper">
+                        <select
+                            class="filter-select"
+                            v-model="selectedPos"
+                            :disabled="!selectedKel"
+                            @change="applyFilter"
+                        >
+                            <option value="">Semua Posyandu</option>
+                            <option
+                                v-for="p in posyanduList"
+                                :key="p.id_posyandu"
+                                :value="p.id_posyandu"
+                            >
+                                {{ p.nama_posyandu }}
+                            </option>
+                        </select>
+                        <i class="icon-chevron-down select-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-section">
+            <div v-if="rows.length === 0" class="empty-state">
+                <div class="empty-icon">
+                    <span>📊</span>
+                </div>
+                <h3 class="empty-title">Belum Ada Data Kematian Bayi</h3>
+                <p class="empty-description">
+                    Data kematian bayi belum tersedia. Silakan tambah data baru.
+                </p>
+                <Link
+                    href="/posyandu/bayi-wafat/create"
+                    class="btn-create empty-btn"
+                    @click="handleLinkClick"
+                >
+                    <span>+</span>
+                    <span>Tambah Data Pertama</span>
                 </Link>
             </div>
 
-      <DataTable :columns="columns"
-                 :rows="rows"
-                 :perPage="10">
+            <DataTable v-else :columns="columns" :rows="rows" :perPage="20">
+                <template #col-actions="{ row }">
+                    <div class="action-group">
+                        <Link :href="`/posyandu/bayi-wafat/${row.id_wafat}`">
+                            <span class="action-btn btn-show">
+                                <i class="icon-eye"></i>
+                            </span>
+                        </Link>
 
-        <template #col-actions="{ row }">
-          <div class="action-group">
+                        <Link
+                            :href="`/posyandu/bayi-wafat/${row.id_wafat}/edit`"
+                        >
+                            <span class="action-btn btn-edit">
+                                <i class="icon-pencil"></i>
+                            </span>
+                        </Link>
 
-            <Link :href="`/posyandu/bayi-wafat/${row.id_wafat}`">
-              <span class="action-btn btn-show">
-                <i class="icon-eye"></i>
-              </span>
-            </Link>
+                        <span
+                            class="action-btn btn-delete"
+                            @click="deleteRow(row)"
+                        >
+                            <i class="icon-trash"></i>
+                        </span>
+                    </div>
+                </template>
+            </DataTable>
+        </div>
 
-            <Link :href="`/posyandu/bayi-wafat/${row.id_wafat}/edit`">
-              <span class="action-btn btn-edit">
-                <i class="icon-pencil"></i>
-              </span>
-            </Link>
+        <!-- PAGINATION -->
+        <div class="pagination-section" v-if="props.data?.links?.length">
+            <div class="pagination-info">
+                Menampilkan {{ props.data.from }} - {{ props.data.to }} dari
+                {{ props.data.total }} data
+            </div>
 
-            <span class="action-btn btn-delete"
-                  @click="deleteRow(row)">
-              <i class="icon-trash"></i>
-            </span>
-
-          </div>
-        </template>
-
-      </DataTable>
-
+            <ul class="pagination-list">
+                <li
+                    v-for="(l, idx) in props.data.links"
+                    :key="idx"
+                    :class="{ active: l.active, disabled: !l.url }"
+                >
+                    <a
+                        href="#"
+                        @click.prevent="
+                            l.url &&
+                            router.visit(l.url, { preserveScroll: true })
+                        "
+                        v-html="l.label"
+                    >
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
 
-    <!-- PAGINATION -->
-    <div class="pagination-section"
-         v-if="props.data?.links?.length">
+    <!-- MODAL DELETE MODERN -->
+    <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-content">
+            <div class="modal-icon-wrapper">
+                <i class="icon-bin modal-icon"></i>
+            </div>
 
-      <div class="pagination-info">
-        Menampilkan {{ props.data.from }}
-        - {{ props.data.to }}
-        dari {{ props.data.total }} data
-      </div>
+            <h3 class="modal-title">Hapus Data Kematian Bayi?</h3>
 
-      <ul class="pagination-list">
-        <li v-for="(l, idx) in props.data.links"
-            :key="idx"
-            :class="{ active: l.active, disabled: !l.url }">
-          <a href="#"
-             @click.prevent="l.url && router.visit(l.url, { preserveScroll:true })"
-             v-html="l.label">
-          </a>
-        </li>
-      </ul>
+            <p class="modal-text">Anda akan menghapus data berikut:</p>
+
+            <div class="modal-highlight">
+                <strong>Nama Bayi: {{ selected.nama_bayi }}</strong>
+            </div>
+            <p class="modal-warning">
+                <i class="icon-exclamation-triangle"></i>
+                Data yang dihapus tidak dapat dikembalikan
+            </p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" @click="closeModal">
+                    Batal
+                </button>
+                <button
+                    class="modal-btn modal-btn-delete"
+                    @click="confirmDelete"
+                >
+                    Hapus
+                </button>
+            </div>
+        </div>
     </div>
-
-  </div>
-
-  <!-- MODAL DELETE MODERN -->
-  <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content">
-
-      <div class="modal-icon-wrapper">
-        <i class="icon-bin modal-icon"></i>
-      </div>
-
-      <h3 class="modal-title">Hapus Data Kematian Bayi?</h3>
-
-      <p class="modal-text">  
-        Anda akan menghapus data berikut:
-      </p>
-
-      <div class="modal-highlight">
-        <strong>Nama Bayi: {{ selected.nama_bayi }}</strong>
-      </div>
-      <p class="modal-warning">
-        <i class="icon-exclamation-triangle"></i>
-           Data yang dihapus tidak dapat dikembalikan
-      </p>
-      <div class="modal-actions">
-        <button class="modal-btn modal-btn-cancel" @click="closeModal">
-          Batal
-        </button>
-        <button class="modal-btn modal-btn-delete" @click="confirmDelete">
-          Hapus
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-</AdminLayout>
 </template>
 
 <style scoped>
@@ -284,7 +389,7 @@ function confirmDelete() {
     background: white;
     padding: 20px 24px;
     border-radius: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .header-left {
@@ -350,7 +455,7 @@ function confirmDelete() {
     border-radius: 16px;
     padding: 20px 24px;
     margin-bottom: 24px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .filter-grid {
@@ -519,7 +624,7 @@ function confirmDelete() {
     background: white;
     border-radius: 16px;
     padding: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     overflow-x: auto;
 }
 
@@ -631,7 +736,7 @@ function confirmDelete() {
     background: #cbd5e1;
     color: #1e293b;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-show:active {
@@ -693,6 +798,7 @@ function confirmDelete() {
     align-items: center;
     justify-content: center;
     margin: 0 auto 24px;
+    font-size: 40px;
 }
 
 .empty-icon i {
@@ -786,7 +892,7 @@ function confirmDelete() {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
@@ -800,13 +906,17 @@ function confirmDelete() {
     background: white;
     border-radius: 20px;
     padding: 32px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     animation: slideUp 0.3s ease;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideUp {
@@ -938,7 +1048,7 @@ function confirmDelete() {
     max-width: 400px;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     overflow: hidden;
     animation: slideInRight 0.3s ease;
     border-left: 4px solid;
@@ -1037,7 +1147,7 @@ function confirmDelete() {
     .filter-grid {
         grid-template-columns: 1fr 1fr;
     }
-    
+
     .search-item {
         grid-column: span 2;
     }
@@ -1047,40 +1157,58 @@ function confirmDelete() {
     .data-container {
         padding: 16px;
     }
-    
+
     .header-section {
         flex-direction: column;
         gap: 16px;
         align-items: start;
         padding: 16px;
     }
-    
+
     .header-right {
         width: 100%;
     }
-    
+
     .btn-create {
         width: 100%;
         justify-content: center;
     }
-    
+
     .filter-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .search-item {
         grid-column: span 1;
     }
-    
+
     .pagination-section {
         flex-direction: column;
         align-items: start;
     }
-    
+
     .modal-content {
         width: 90%;
         margin: 0 16px;
         padding: 24px;
     }
+}
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    color: white;
+    z-index: 9999;
+}
+.toast.success {
+    background-color: #4caf50;
+}
+.toast.error {
+    background-color: #f44336;
+}
+.toast.info {
+    background-color: #2196f3;
 }
 </style>

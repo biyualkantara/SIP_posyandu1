@@ -76,16 +76,15 @@ function submit() {
   if (!form.tgl_imun) return openError('Tanggal imunisasi wajib diisi')
 
   form.post('/posyandu/bayi-imun', {
-    preserveScroll: true,
-    onSuccess: () => {
-      openSuccess('Data imunisasi bayi berhasil disimpan')
-      setTimeout(() => router.visit('/posyandu/bayi-imun'), 700)
-    },
-    onError: (errors) => {
-      console.error('Error:', errors)
-      openError('Gagal menyimpan data')
-    }
-  })
+  onSuccess: () => {
+    // Kirim toast ke index
+    window.dispatchEvent(new CustomEvent('toast', {
+      detail: { type: 'success', message: 'Data imunisasi bayi berhasil disimpan!' }
+    }));
+
+    router.visit('/posyandu/bayi-imun', { preserveState: true })
+  }
+})
 }
 </script>
 
