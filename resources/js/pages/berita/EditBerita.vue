@@ -1,8 +1,6 @@
 <script setup>
-import AdminLayout from '@/layouts/AdminLayout.vue'
-import { Link, useForm } from '@inertiajs/vue3';
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import TipTapEditor from '@/components/TipTapEditor.vue';
+import { Link, useForm, router } from '@inertiajs/vue3';
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 
 const props = defineProps({
     berita: Object
@@ -15,33 +13,105 @@ const form = useForm({
     penulis: props.berita.penulis || '',
 })
 
+const editorInstance = ref(null)
+
+// State untuk menyimpan posisi scroll
+const scrollPosition = ref(0)
+
+const saveScrollPosition = () => {
+    scrollPosition.value = window.scrollY
+    sessionStorage.setItem('scrollPosition_berita', scrollPosition.value)
+}
+
+// Modal notifikasi
 const showModal = ref(false)
 const modalType = ref('success')
 const modalMessage = ref('')
 
 function openError(msg) {
-  modalType.value = 'error'
-  modalMessage.value = msg
-  showModal.value = true
+    modalType.value = 'error'
+    modalMessage.value = msg
+    showModal.value = true
 }
 
 function openSuccess(msg) {
-  modalType.value = 'success'
-  modalMessage.value = msg
-  showModal.value = true
+    modalType.value = 'success'
+    modalMessage.value = msg
+    showModal.value = true
 }
 
-onMounted(() => {
+onMounted(async () => {
     window.addEventListener('beforeunload', handleBeforeUnload)
+    
+    await nextTick()
+
+    const CKEDITOR = window.CKEDITOR
+    if (!CKEDITOR) {
+        console.error('CKEDITOR belum kebaca. Pastikan file ckeditor.js sudah dimuat di app.blade.php')
+        return
+    }
+
+    const textarea = document.getElementById('editor-full')
+    if (!textarea) {
+        console.error('Textarea #editor-full tidak ditemukan')
+        return
+    }
+
+    editorInstance.value = CKEDITOR.replace('editor-full', {
+        height: 420,
+        allowedContent: true,
+        toolbar: [
+            { name: 'document', items: ['Source', '-', 'Maximize', 'ShowBlocks'] },
+            { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] },
+            { name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll'] },
+            { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
+            { name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'SpecialChar'] },
+
+            '/',
+            { name: 'styles', items: ['Styles', 'Format'] },
+            { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] },
+            {
+                name: 'paragraph',
+                items: [
+                    'NumberedList',
+                    'BulletedList',
+                    '-',
+                    'Outdent',
+                    'Indent',
+                    '-',
+                    'Blockquote',
+                    '-',
+                    'JustifyLeft',
+                    'JustifyCenter',
+                    'JustifyRight',
+                    'JustifyBlock',
+                ],
+            },
+            { name: 'colors', items: ['TextColor', 'BGColor'] },
+        ],
+    })
+
+    // Set initial content
+    editorInstance.value.setData(form.isi)
+
+    editorInstance.value.on('change', () => {
+        form.isi = editorInstance.value.getData()
+    })
 })
 
 onBeforeUnmount(() => {
     window.removeEventListener('beforeunload', handleBeforeUnload)
+    if (editorInstance.value) {
+        editorInstance.value.destroy()
+        editorInstance.value = null
+    }
 })
 
 function handleBeforeUnload(event) {
-    event.preventDefault()
-    event.returnValue = ''
+    if (form.isDirty) {
+        event.preventDefault()
+        event.returnValue = ''
+    }
 }
 
 function submitForm() {
@@ -62,13 +132,17 @@ function submitForm() {
         return
     }
 
+    // Pastikan isi terupdate dari editor
+    if (editorInstance.value) {
+        form.isi = editorInstance.value.getData()
+    }
+
+    saveScrollPosition()
+    
     form.put(`/berita/${props.berita.id_berita}`, {
         preserveScroll: true,
         onSuccess: () => {
-            openSuccess('Data berita berhasil diperbarui')
-            setTimeout(() => {
-                window.location.href = '/berita'
-            }, 1000)
+            router.visit('/berita')
         },
         onError: (errors) => {
             console.error('Error:', errors)
@@ -78,84 +152,89 @@ function submitForm() {
 }
 </script>
 
-<template>  
-        <div class="page-wrapper">
-            <!-- Header -->
-            <div class="page-header">
-                <div>
-                    <h2 class="mb-1">Edit Berita</h2>
-                    <p class="text-muted">Edit data berita</p>
+<template>
+    <AdminLayout>
+        <div class="form-container">
+            <!-- Header Section -->
+            <div class="header-section">
+                <div class="header-left">
+                    <h1 class="page-title">Edit Berita</h1>
+                    <p class="page-subtitle">Edit data berita: {{ form.judul }}</p>
                 </div>
-                <Link href="/berita" class="btn btn-outline-secondary">
-                    <i class="icon-arrow-left me-2"></i>Kembali
-                </Link>
+                <div class="header-right">
+                    <Link href="/berita" class="btn-back">
+                        <span>←</span>
+                        <span>Kembali</span>
+                    </Link>
+                </div>
             </div>
 
-            <div class="main-card">
-                <div class="card-body">
-                    <form @submit.prevent="submitForm">
-                        <!-- Form Data -->
-                        <div class="data-card">
-                            <div class="data-header">
-                                <div>
-                                    <span class="badge bg-primary me-2">1</span>
-                                    <strong>Data Berita</strong>
-                                </div>
+            <!-- Form Section -->
+            <div class="form-section">
+                <form @submit.prevent="submitForm" class="custom-form">
+                    <div class="form-grid">
+                        <!-- Kolom Kiri -->
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label class="form-label">Judul Berita <span class="text-danger">*</span></label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    :class="{ 'is-invalid': form.errors.judul }"
+                                    v-model="form.judul"
+                                    placeholder="Masukkan judul berita"
+                                />
+                                <div v-if="form.errors.judul" class="invalid-feedback">{{ form.errors.judul }}</div>
                             </div>
 
-                            <div class="grid-2">
-                                <div class="field">
-                                    <label>Judul Berita <span class="text-danger">*</span></label>
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        v-model="form.judul"
-                                        placeholder="Masukkan judul berita"
-                                    />
-                                    <span v-if="form.errors.judul" class="error-text">{{ form.errors.judul }}</span>
-                                </div>
-
-                                <div class="field">
-                                    <label>Penulis <span class="text-danger">*</span></label>
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        v-model="form.penulis"
-                                        placeholder="Masukkan nama penulis"
-                                    />
-                                    <span v-if="form.errors.penulis" class="error-text">{{ form.errors.penulis }}</span>
-                                </div>
+                            <div class="form-group">
+                                <label class="form-label">Penulis <span class="text-danger">*</span></label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    :class="{ 'is-invalid': form.errors.penulis }"
+                                    v-model="form.penulis"
+                                    placeholder="Masukkan nama penulis"
+                                />
+                                <div v-if="form.errors.penulis" class="invalid-feedback">{{ form.errors.penulis }}</div>
                             </div>
+                        </div>
 
-                            <div class="field mt-3">
-                                <label>Ringkasan <span class="text-danger">*</span></label>
+                        <!-- Kolom Kanan -->
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label class="form-label">Ringkasan <span class="text-danger">*</span></label>
                                 <textarea 
                                     class="form-control" 
+                                    :class="{ 'is-invalid': form.errors.ringkasan }"
                                     v-model="form.ringkasan"
-                                    rows="3"
+                                    rows="4"
                                     placeholder="Masukkan ringkasan berita"
                                 ></textarea>
-                                <span v-if="form.errors.ringkasan" class="error-text">{{ form.errors.ringkasan }}</span>
-                            </div>
-
-                            <div class="field mt-3">
-                                <label>Isi Berita <span class="text-danger">*</span></label>
-                                <TipTapEditor v-model="form.isi" />
-                                <span v-if="form.errors.isi" class="error-text">{{ form.errors.isi }}</span>
+                                <div v-if="form.errors.ringkasan" class="invalid-feedback">{{ form.errors.ringkasan }}</div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-footer">
-                            <Link href="/berita" class="btn btn-outline-secondary">
-                                <i class="icon-close me-2"></i>Batal
-                            </Link>
-                            <button type="submit" class="btn btn-primary" :disabled="form.processing">
-                                <i class="icon-check me-2"></i>
-                                {{ form.processing ? 'Menyimpan...' : 'Ubah Data' }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Isi Berita (Full Width) -->
+                    <div class="form-group full-width mt-4">
+                        <label class="form-label">Isi Berita <span class="text-danger">*</span></label>
+                        <textarea name="editor-full" id="editor-full" rows="4" cols="4"></textarea>
+                        <div v-if="form.errors.isi" class="invalid-feedback">{{ form.errors.isi }}</div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" @click="router.visit('/berita')">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn-submit" :disabled="form.processing">
+                            <span v-if="form.processing">⏳</span>
+                            <span v-else>✓</span>
+                            <span>{{ form.processing ? 'Menyimpan...' : 'Update Berita' }}</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -173,177 +252,224 @@ function submitForm() {
                     ></i>
                     <h4 class="mt-3">{{ modalType === 'success' ? 'Berhasil!' : 'Gagal!' }}</h4>
                     <p class="text-muted">{{ modalMessage }}</p>
-                    <button class="btn btn-primary mt-3" @click="showModal = false">Tutup</button>
+                    <button class="btn-modal-close" @click="showModal = false">Tutup</button>
                 </div>
             </div>
         </div>
+    </AdminLayout>
 </template>
 
 <style scoped>
-.page-wrapper {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 24px 16px 40px;
+.form-container {
+    padding: 24px;
+    background: #f8fafc;
+    min-height: 100vh;
 }
 
-.page-header {
+/* Header Section */
+.header-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.page-header h2 {
+.header-left {
+    flex: 1;
+}
+
+.page-title {
     font-size: 24px;
-    font-weight: 600;
-    color: #2c3e50;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+}
+
+.page-subtitle {
+    font-size: 14px;
+    color: #64748b;
     margin: 0;
 }
 
-.page-header p {
-    color: #64748b;
-    margin: 4px 0 0 0;
+/* Button Back */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
 }
 
-.main-card {
+.btn-back:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Form Section */
+.form-section {
     background: white;
     border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
-    overflow: hidden;
+    padding: 32px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
-.card-body {
-    padding: 28px;
+.custom-form {
+    width: 100%;
 }
 
-.data-card {
-    border: 1px solid #eef1f4;
-    border-radius: 12px;
-    padding: 20px;
-    background: white;
-    transition: all 0.2s;
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
 }
 
-.data-card:hover {
-    border-color: #cbd5e0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-}
-
-.data-header {
+.form-column {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #eef1f4;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.field {
+.form-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.field label {
-    font-weight: 500;
-    font-size: 14px;
-    color: #4a5568;
-}
-
-.grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 16px;
-}
-
-.form-control {
-    height: 42px;
-    border-radius: 8px;
-    border: 1.5px solid #e5e7eb;
-    padding: 0 12px;
-    font-size: 14px;
-    transition: all 0.2s;
+.form-group.full-width {
     width: 100%;
 }
 
+.form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.form-control {
+    width: 100%;
+    height: 42px;
+    padding: 0 16px;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #1e293b;
+    transition: all 0.2s;
+}
+
 .form-control:focus {
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
     outline: none;
+    border-color: #1e293b;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+}
+
+.form-control.is-invalid {
+    border-color: #dc2626;
+    background: #fef2f2;
 }
 
 textarea.form-control {
     height: auto;
-    padding: 10px 12px;
+    padding: 12px 16px;
     resize: vertical;
 }
 
-.error-text {
-    color: #f56565;
+.invalid-feedback {
     font-size: 12px;
+    color: #dc2626;
     margin-top: 4px;
 }
 
-.form-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 28px;
-    padding-top: 24px;
-    border-top: 2px solid #f0f2f5;
+.text-danger {
+    color: #dc2626;
 }
 
-.btn {
-    padding: 10px 20px;
-    font-weight: 500;
-    border-radius: 8px;
-    transition: all 0.2s;
-    cursor: pointer;
-    border: none;
+.mt-4 {
+    margin-top: 24px;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #f1f5f9;
+}
+
+.btn-cancel {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    padding: 12px 24px;
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.btn-primary {
-    background: #4299e1;
+.btn-cancel:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 32px;
+    background: #1e293b;
     color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 150px;
+    justify-content: center;
 }
 
-.btn-primary:hover:not(:disabled) {
-    background: #3182ce;
-    transform: translateY(-1px);
+.btn-submit:hover:not(:disabled) {
+    background: #0f172a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
 }
 
-.btn-primary:disabled {
-    background: #a0aec0;
+.btn-submit:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-.btn-outline-secondary {
-    background: transparent;
-    border: 1.5px solid #718096;
-    color: #718096;
-}
-
-.btn-outline-secondary:hover {
-    background: #718096;
-    color: white;
-}
-
-.badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 500;
-}
-
+/* Modal */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: rgba(0,0,0,0.5);
     backdrop-filter: blur(4px);
     display: flex;
@@ -358,24 +484,85 @@ textarea.form-control {
     border-radius: 20px;
     max-width: 400px;
     width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.btn-modal-close {
+    padding: 10px 32px;
+    background: #1e293b;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 16px;
+}
+
+.btn-modal-close:hover {
+    background: #0f172a;
+    transform: translateY(-2px);
+}
+
+.text-success {
+    color: #10b981;
+}
+
+.text-danger {
+    color: #dc2626;
+}
+
+.text-muted {
+    color: #64748b;
+}
+
+.mt-3 {
+    margin-top: 16px;
+}
+
+:global(.cke) {
+    width: 100% !important;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
 }
 
 @media (max-width: 768px) {
-    .grid-2 {
-        grid-template-columns: 1fr;
+    .form-container {
+        padding: 16px;
     }
     
-    .page-header {
+    .header-section {
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
         align-items: start;
+        padding: 16px;
     }
     
-    .form-footer {
+    .header-right {
+        width: 100%;
+    }
+    
+    .btn-back {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .form-section {
+        padding: 20px;
+    }
+    
+    .form-actions {
         flex-direction: column-reverse;
     }
     
-    .form-footer .btn {
+    .btn-cancel, .btn-submit {
         width: 100%;
         justify-content: center;
     }
