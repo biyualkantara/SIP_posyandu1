@@ -1,11 +1,18 @@
 <script setup>
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 import DataTable from '@/components/ui/DataTable.vue';
 import { ref, computed, onMounted } from 'vue';
 
 const props = defineProps({
-    berita: Array,
-    filter: Object
+    berita: {
+        type: [Object, Array],
+        default: () => ({})
+    },
+    filters: {
+        type: Object,
+        default: () => ({})
+    }
 })
 
 // State untuk menyimpan posisi scroll
@@ -35,15 +42,27 @@ const handleLinkClick = () => {
 
 onMounted(() => {
     restoreScrollPosition()
+    // Debug: lihat data di console
+    console.log('Props berita:', props.berita)
 })
 
-const rows = computed(() => props.berita ?? [])
+// Perbaikan: Mengakses data dengan benar
+const rows = computed(() => {
+    if (props.berita?.data) {
+        return props.berita.data
+    }
+    if (Array.isArray(props.berita)) {
+        return props.berita
+    }
+    return []
+})
 
 const columns = [
     { key: "id_berita", label: "ID", sortable: true },
     { key: "judul", label: "Judul", sortable: true },
     { key: "ringkasan", label: "Ringkasan", sortable: true },
     { key: "penulis", label: "Penulis", sortable: true },
+    { key: "kategori", label: "Kategori", sortable: true },
     { key: "tanggal_waktu", label: "Tanggal", sortable: true },
     { key: "actions", label: "Aksi", sortable: false }
 ];
@@ -96,7 +115,7 @@ const getButtonClass = (type) => {
     const baseClass = 'action-btn'
     switch(type) {
         case 'show':
-            return `${baseClass} btn-show`  // Tambahkan case untuk show
+            return `${baseClass} btn-show`
         case 'edit':
             return `${baseClass} btn-edit`
         case 'delete':
@@ -105,10 +124,23 @@ const getButtonClass = (type) => {
             return baseClass
     }
 }
+
+// Fungsi untuk badge kategori
+const getCategoryBadgeClass = (kategori) => {
+    switch(kategori?.toLowerCase()) {
+        case 'penting':
+            return 'badge-penting'
+        case 'kegiatan':
+            return 'badge-kegiatan'
+        case 'kesehatan':
+            return 'badge-kesehatan'
+        default:
+            return 'badge-info'
+    }
+}
 </script>
 
 <template>
-    <AdminLayout>
         <div class="data-container">
             <!-- Header Section -->
             <div class="header-section">
@@ -130,6 +162,12 @@ const getButtonClass = (type) => {
 
             <!-- Table Section -->
             <div class="table-section">
+                <!-- Debug info - hapus setelah selesai -->
+                <div v-if="rows.length === 0" class="debug-info" style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
+                    <p><strong>Debug:</strong> Tidak ada data. Cek console browser.</p>
+                    <p>Total dari controller: {{ props.berita?.total || 0 }}</p>
+                </div>
+
                 <!-- Empty State -->
                 <div v-if="rows.length === 0" class="empty-state">
                     <div class="empty-icon">
@@ -163,6 +201,13 @@ const getButtonClass = (type) => {
                         <span class="penulis-badge">{{ row.penulis || '-' }}</span>
                     </template>
 
+                    <!-- Template untuk kategori -->
+                    <template #col-kategori="{ row }">
+                        <span :class="['category-badge', getCategoryBadgeClass(row.kategori)]">
+                            {{ row.kategori || 'Info' }}
+                        </span>
+                    </template>
+
                     <template #col-tanggal_waktu="{ row }">
                         <span class="tanggal-badge">{{ formatDate(row.tanggal_waktu) }}</span>
                     </template>
@@ -175,7 +220,7 @@ const getButtonClass = (type) => {
                                 @click="handleLinkClick"
                             >
                                 <span :class="getButtonClass('show')" title="Lihat Berita">
-                                    <i class="icon-eye"></i>
+                                    👁️
                                 </span>
                             </Link>
 
@@ -185,7 +230,7 @@ const getButtonClass = (type) => {
                                 @click="handleLinkClick"
                             >
                                 <span :class="getButtonClass('edit')" title="Edit Berita">
-                                    <i class="icon-pencil"></i>
+                                    ✏️
                                 </span>
                             </Link>
 
@@ -195,14 +240,14 @@ const getButtonClass = (type) => {
                                 title="Hapus Berita"
                                 @click="deleteRow(row)"
                             >
-                                <i class="icon-trash"></i>
+                                🗑️
                             </span>
                         </div>
                     </template>
                 </DataTable>
 
                 <!-- Pagination -->
-                <div class="pagination-section" v-if="props.berita?.links?.length && rows.length > 0">
+                <div class="pagination-section" v-if="props.berita?.links && rows.length > 0">
                     <div class="pagination-info">
                         Menampilkan {{ props.berita.from || 0 }} - {{ props.berita.to || 0 }} 
                         dari {{ props.berita.total || 0 }} data
@@ -233,7 +278,7 @@ const getButtonClass = (type) => {
         <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
             <div class="modal-content">
                 <div class="modal-icon-wrapper">
-                    <i class="icon-bin modal-icon"></i>
+                    🗑️
                 </div>
                 <h3 class="modal-title">Hapus Berita?</h3>
                 <p class="modal-text">Anda akan menghapus berita:</p>
@@ -254,6 +299,15 @@ const getButtonClass = (type) => {
                     </div>
 
                     <div class="modal-info-item">
+                        <span class="modal-info-label">Kategori</span>
+                        <div class="modal-info-value">
+                            <span :class="['category-badge', getCategoryBadgeClass(selected.kategori)]">
+                                {{ selected.kategori || 'Info' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="modal-info-item">
                         <span class="modal-info-label">Tanggal</span>
                         <div class="modal-info-value">
                             {{ formatDate(selected.tanggal_waktu) }}
@@ -262,23 +316,19 @@ const getButtonClass = (type) => {
                 </div>
 
                 <p class="modal-warning">
-                    <i class="icon-exclamation-triangle"></i>
-                    Data yang dihapus tidak dapat dikembalikan
+                    ⚠️ Data yang dihapus tidak dapat dikembalikan
                 </p>
 
                 <div class="modal-actions">
                     <button class="modal-btn modal-btn-cancel" @click="closeModal">
-                        <i class="icon-close"></i>
-                        Batal
+                        ✕ Batal
                     </button>
                     <button class="modal-btn modal-btn-delete" @click="confirmDelete">
-                        <i class="icon-trash"></i>
-                        Hapus
+                        🗑️ Hapus
                     </button>
                 </div>
             </div>
         </div>
-    </AdminLayout>
 </template>
 
 <style scoped>
@@ -392,6 +442,36 @@ const getButtonClass = (type) => {
     font-size: 12px;
     font-weight: 500;
     white-space: nowrap;
+}
+
+/* Category Badge */
+.category-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-info {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.badge-penting {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-kegiatan {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.badge-kesehatan {
+    background: #dcfce7;
+    color: #166534;
 }
 
 /* Tanggal Badge */
@@ -604,11 +684,7 @@ const getButtonClass = (type) => {
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
-}
-
-.modal-icon {
     font-size: 40px;
-    color: #dc2626;
 }
 
 .modal-title {

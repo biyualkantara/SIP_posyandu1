@@ -1,8 +1,7 @@
 <template>
-  <AdminLayout>
     <div class="dash-container">
       <div class="dashboard-wrapper">
-        <!-- LEFT -->
+        <!-- LEFT SECTION -->
         <section class="dashboard-left">
           <div class="dashboard-welcome">
             <div class="welcome-image-wrapper">
@@ -21,77 +20,127 @@
           </div>
         </section>
 
-        <!-- RIGHT -->
+        <!-- RIGHT SECTION -->
         <aside class="dashboard-right">
-          <div class="dashboard-card stats-card">
-            <div class="card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2v20M17 5H9.5M17 12h-5M17 19h-5" stroke-linecap="round" />
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-              </svg>
-            </div>
-            <h3>Posyandu Aktif</h3>
-            <div class="card-number">100</div>
-            <p class="card-sub">
-              <span class="trend-up">↑ 12%</span> dari bulan lalu
-            </p>
+          <!-- Stats Cards Grid -->
+          <div class="stats-grid">
+            <!-- Card Posyandu dengan Link -->
+            <Link href="/posyandu/data-umum" class="dashboard-card stats-card">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20M17 5H9.5M17 12h-5M17 19h-5" stroke-linecap="round" />
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                </svg>
+              </div>
+              <h3>Posyandu Aktif</h3>
+              <div class="card-number">{{ jumlahPosyandu }}</div>
+              <p class="card-sub">
+                <span class="trend-badge" :class="{ 'trend-up': trendPersentase > 0, 'trend-down': trendPersentase < 0 }">
+                  {{ trendPersentase > 0 ? '↑' : '↓' }} {{ Math.abs(trendPersentase) }}%
+                </span>
+                dari bulan lalu
+              </p>
+            </Link>
+
+            <!-- Card Berita dengan Link -->
+            <Link href="/berita" class="dashboard-card stats-card">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" />
+                  <rect x="2" y="3" width="20" height="18" rx="2" />
+                </svg>
+              </div>
+              <h3>Total Berita</h3>
+              <div class="card-number">{{ jumlahBerita }}</div>
+              <p class="card-sub">
+                <span v-if="trendBerita !== undefined" class="trend-badge" :class="{ 'trend-up': trendBerita > 0, 'trend-down': trendBerita < 0 }">
+                  {{ trendBerita > 0 ? '↑' : '↓' }} {{ Math.abs(trendBerita) }}%
+                </span>
+                <span v-else class="trend-badge">📊</span>
+                total publikasi
+              </p>
+            </Link>
           </div>
 
+          <!-- Section Berita -->
           <div class="dashboard-berita">
             <div class="berita-header">
               <h3>Berita Terbaru</h3>
-              <a href="#" class="lihat-semua">Lihat semua →</a>
+              <Link href="/berita" class="lihat-semua">
+                Lihat semua →
+              </Link>
             </div>
+            
             <div class="berita-list">
-              <div class="berita-item">
-                <div class="berita-badge">Info</div>
-                <h4>Posyandu Melati Raih Penghargaan</h4>
-                <div class="berita-meta">
-                  <span class="penulis">Admin Dinkes</span>
-                  <span class="tanggal">12 Mar 2025</span>
+              <div v-for="item in beritaTerbaru" :key="item.id" class="berita-item">
+                <div class="berita-badge" :class="getBadgeClass(item.kategori)">
+                  {{ item.kategori }}
                 </div>
-                <p class="berita-excerpt">Program inovasi layanan ibu hamil berhasil menurunkan angka stunting...</p>
-              </div>
-              
-              <div class="berita-item">
-                <div class="berita-badge">Kegiatan</div>
-                <h4>Jadwal Imunisasi Nasional</h4>
+                <h4>{{ item.judul }}</h4>
                 <div class="berita-meta">
-                  <span class="penulis">Pengelola SIP</span>
-                  <span class="tanggal">10 Mar 2025</span>
+                  <span class="penulis">{{ item.penulis }}</span>
+                  <span class="tanggal">{{ item.tanggal }}</span>
                 </div>
-                <p class="berita-excerpt">Pelaksanaan imunisasi serentak di seluruh posyandu kecamatan...</p>
-              </div>
-              
-              <div class="berita-item">
-                <div class="berita-badge">Penting</div>
-                <h4>Update Aplikasi eSIP</h4>
-                <div class="berita-meta">
-                  <span class="penulis">Tim IT</span>
-                  <span class="tanggal">8 Mar 2025</span>
-                </div>
-                <p class="berita-excerpt">Fitur baru rekapitulasi data dan export laporan telah tersedia...</p>
+                <p class="berita-excerpt">{{ item.ringkasan }}</p>
               </div>
 
-              <div class="berita-item">
-                <div class="berita-badge">Kegiatan</div>
-                <h4>Pelatihan Kader Posyandu</h4>
-                <div class="berita-meta">
-                  <span class="penulis">Dinkes Kota</span>
-                  <span class="tanggal">5 Mar 2025</span>
-                </div>
-                <p class="berita-excerpt">Pendaftaran dibuka untuk 50 kader dari berbagai kelurahan...</p>
+              <!-- Empty State -->
+              <div v-if="beritaTerbaru.length === 0" class="berita-empty">
+                <div class="empty-icon">📰</div>
+                <p>Belum ada berita</p>
+                <Link href="/berita/create" class="btn-tambah-berita">
+                  + Tambah Berita
+                </Link>
               </div>
             </div>
           </div>
         </aside>
       </div>
     </div>
-  </AdminLayout>
 </template>
 
 <script setup>
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Link } from '@inertiajs/vue3';
 import { onMounted, onBeforeUnmount } from "vue";
+
+// Props dari controller
+defineProps({
+  jumlahPosyandu: {
+    type: Number,
+    default: 0
+  },
+  trendPersentase: {
+    type: Number,
+    default: 0
+  },
+  jumlahBerita: {  // Tambahkan ini
+    type: Number,
+    default: 0
+  },
+  trendBerita: {   // Tambahkan ini (opsional)
+    type: Number,
+    default: 0
+  },
+  beritaTerbaru: {
+    type: Array,
+    default: () => []
+  }
+})
+
+// Fungsi untuk mendapatkan class badge berdasarkan kategori
+const getBadgeClass = (kategori) => {
+  switch(kategori?.toLowerCase()) {
+    case 'penting':
+      return 'badge-penting'
+    case 'kegiatan':
+      return 'badge-kegiatan'
+    case 'kesehatan':
+      return 'badge-kesehatan'
+    default:
+      return 'badge-info'
+  }
+}
 
 onMounted(() => document.body.classList.add("esip-dashboard-page"));
 onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
@@ -144,25 +193,29 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
    TOKENS - Warna baru yang lebih segar
 ========================= */
 :global(:root){
-  --primary-soft: #e3f2fd;     /* Biru muda lembut */
-  --primary-light: #bbdefb;     /* Biru lebih terang */
-  --primary-main: #2196f3;      /* Biru utama */
-  --primary-dark: #1976d2;      /* Biru gelap */
+  --primary-soft: #e3f2fd;
+  --primary-light: #bbdefb;
+  --primary-main: #2196f3;
+  --primary-dark: #1976d2;
   
-  --accent-soft: #fff3e0;       /* Oranye muda */
-  --accent-light: #ffe0b2;      /* Oranye lebih terang */
-  --accent-main: #ff9800;       /* Oranye utama */
+  --accent-soft: #fff3e0;
+  --accent-light: #ffe0b2;
+  --accent-main: #ff9800;
   
-  --success-soft: #e8f5e8;      /* Hijau muda */
-  --success-light: #c8e6c9;     /* Hijau lebih terang */
-  --success-main: #4caf50;      /* Hijau utama */
+  --success-soft: #e8f5e8;
+  --success-light: #c8e6c9;
+  --success-main: #4caf50;
   
-  --info-soft: #e1f5fe;         /* Biru info */
-  --warning-soft: #fff9c4;      /* Kuning warning */
+  --danger-soft: #fee2e2;
+  --danger-light: #fecaca;
+  --danger-main: #dc2626;
   
-  --text-primary: #1a237e;      /* Teks utama gelap */
-  --text-secondary: #455a64;    /* Teks sekunder */
-  --text-muted: #78909c;        /* Teks redup */
+  --info-soft: #e1f5fe;
+  --warning-soft: #fff9c4;
+  
+  --text-primary: #1a237e;
+  --text-secondary: #455a64;
+  --text-muted: #78909c;
   
   --bg-gradient: linear-gradient(145deg, #ffffff 0%, #f8fafd 100%);
   --shadow-sm: 0 4px 12px rgba(33, 150, 243, 0.08);
@@ -201,8 +254,16 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
   height: 100%;
 }
 
+/* Stats Grid - untuk menampung 2 card */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
 /* =========================
-   WELCOME CARD - Dengan gambar radius
+   WELCOME CARD
 ========================= */
 .dashboard-welcome{
   background: linear-gradient(135deg, #e8f4fd 0%, #d4e9fa 100%);
@@ -230,7 +291,6 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
   pointer-events: none;
 }
 
-/* Image wrapper dengan radius */
 .welcome-image-wrapper {
   flex: 0 0 auto;
   width: 280px;
@@ -329,17 +389,21 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
   background: var(--primary-main);
 }
 
+/* Card Stats */
 .dashboard-card {
   background: linear-gradient(135deg, #ffffff, #fff9f0);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  padding: 28px;
+  padding: 24px 20px;
   position: relative;
   overflow: hidden;
   transition: var(--transition);
   border: 1px solid rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(4px);
   flex-shrink: 0;
+  text-decoration: none;
+  cursor: pointer;
+  display: block;
 }
 
 .dashboard-card:hover {
@@ -359,26 +423,26 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
 }
 
 .card-icon {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   background: linear-gradient(135deg, var(--primary-soft), var(--primary-light));
-  border-radius: 18px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   color: var(--primary-dark);
   box-shadow: 0 6px 12px rgba(33,150,243,0.2);
 }
 
 .card-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
 }
 
 .dashboard-card h3 {
-  margin: 0 0 8px;
-  font-size: 18px;
+  margin: 0 0 4px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -386,30 +450,38 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
 }
 
 .card-number {
-  margin: 8px 0 12px;
-  font-size: 56px;
+  margin: 4px 0 8px;
+  font-size: 40px;
   font-weight: 800;
   line-height: 1;
   color: var(--text-primary);
-  letter-spacing: -2px;
+  letter-spacing: -1px;
 }
 
 .card-sub {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.trend-up {
-  background: var(--success-soft);
-  color: var(--success-main);
+.trend-badge {
   padding: 4px 8px;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
+}
+
+.trend-up {
+  background: var(--success-soft);
+  color: var(--success-main);
+}
+
+.trend-down {
+  background: var(--danger-soft);
+  color: var(--danger-main);
 }
 
 /* =========================
@@ -501,13 +573,31 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
 .berita-badge {
   display: inline-block;
   padding: 4px 12px;
-  background: var(--primary-soft);
-  color: var(--primary-dark);
   border-radius: 30px;
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 12px;
   letter-spacing: 0.3px;
+}
+
+.badge-info {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.badge-penting {
+  background: var(--danger-soft);
+  color: var(--danger-main);
+}
+
+.badge-kegiatan {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-kesehatan {
+  background: #dcfce7;
+  color: #166534;
 }
 
 .berita-item h4 {
@@ -549,6 +639,44 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
   color: var(--text-secondary);
 }
 
+/* Empty State */
+.berita-empty {
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8fafc;
+  border-radius: 18px;
+  color: var(--text-muted);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.berita-empty p {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+}
+
+.btn-tambah-berita {
+  display: inline-block;
+  padding: 10px 20px;
+  background: var(--primary-main);
+  color: white;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.btn-tambah-berita:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
 /* =========================
    RESPONSIVE BREAKPOINTS
 ========================= */
@@ -578,6 +706,11 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
     gap: 24px;
     max-height: none;
     overflow-y: visible;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
   
   .dashboard-berita {
@@ -651,11 +784,16 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
   }
   
   .dashboard-card {
-    padding: 24px;
+    padding: 20px;
   }
   
   .card-number {
-    font-size: 42px;
+    font-size: 36px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
   
   .dashboard-berita {
@@ -704,18 +842,27 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
   }
   
   .card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
   }
   
   .card-icon svg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
   
   .card-number {
-    font-size: 36px;
+    font-size: 32px;
+  }
+  
+  .dashboard-card h3 {
+    font-size: 13px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
   
   .dashboard-berita {
@@ -740,7 +887,7 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
   }
   
   .card-number {
-    font-size: 32px;
+    font-size: 28px;
   }
   
   .dashboard-berita {
@@ -764,7 +911,8 @@ onBeforeUnmount(() => document.body.classList.remove("esip-dashboard-page"));
   .dashboard-card:hover,
   .berita-item:hover,
   .lihat-semua:hover,
-  .welcome-image-wrapper:hover {
+  .welcome-image-wrapper:hover,
+  .btn-tambah-berita:hover {
     transform: none;
   }
   

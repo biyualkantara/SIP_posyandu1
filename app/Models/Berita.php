@@ -11,17 +11,21 @@ class Berita extends Model
 
     protected $table = 'berita';
     protected $primaryKey = 'id_berita';
-    
+    public $incrementing = true;
+    protected $keyType = 'int';
+    public $timestamps = false;
+
     protected $fillable = [
         'judul',
         'ringkasan',
         'isi',
         'penulis',
         'kategori',
+        'tanggal_waktu'
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'tanggal_waktu' => 'datetime',
+        'id_berita' => 'integer'
     ];
 }

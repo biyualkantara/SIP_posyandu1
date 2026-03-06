@@ -5,12 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Berita;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 class BeritaController extends Controller
 {
     public function index()
     {
-        $berita = Berita::latest('tanggal_waktu')->paginate(10);
+        // Ambil semua berita
+        $berita = Berita::orderBy('tanggal_waktu', 'desc')->paginate(10);
+        
+        // Log untuk debugging
+        Log::info('Data berita:', [
+            'total' => $berita->total(),
+            'data' => $berita->toArray()
+        ]);
         
         return Inertia::render('berita/Berita', [
             'berita' => $berita,
@@ -33,10 +41,11 @@ class BeritaController extends Controller
             'kategori' => 'nullable|string|max:50',
         ]);
 
-        // Set default kategori jika tidak diisi
         if (empty($validated['kategori'])) {
             $validated['kategori'] = $this->detectKategori($validated['judul'], $validated['ringkasan']);
         }
+
+        $validated['tanggal_waktu'] = now();
 
         Berita::create($validated);
 
@@ -47,7 +56,6 @@ class BeritaController extends Controller
     public function show($id)
     {
         $berita = Berita::findOrFail($id);
-
         return Inertia::render('berita/Show', [
             'berita' => $berita
         ]);
@@ -56,7 +64,6 @@ class BeritaController extends Controller
     public function edit($id)
     {
         $berita = Berita::findOrFail($id);
-        
         return Inertia::render('berita/EditBerita', [
             'berita' => $berita,
         ]);
@@ -65,7 +72,6 @@ class BeritaController extends Controller
     public function update(Request $request, $id)
     {
         $berita = Berita::findOrFail($id);
-
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
             'ringkasan' => 'required|string|max:500',
@@ -75,23 +81,16 @@ class BeritaController extends Controller
         ]);
 
         $berita->update($validated);
-
-        return redirect()->route('berita.index')
-            ->with('success', 'Berita berhasil diubah.');
+        return redirect()->route('berita.index')->with('success', 'Berita berhasil diubah.');
     }
 
     public function destroy($id)
     {
         $berita = Berita::findOrFail($id);
         $berita->delete();
-
-        return redirect()->route('berita.index')
-            ->with('success', 'Berita berhasil dihapus.');
+        return redirect()->route('berita.index')->with('success', 'Berita berhasil dihapus.');
     }
 
-    /**
-     * Deteksi kategori berdasarkan judul/ringkasan
-     */
     private function detectKategori($judul, $ringkasan)
     {
         $text = strtolower($judul . ' ' . $ringkasan);
@@ -99,15 +98,12 @@ class BeritaController extends Controller
         if (str_contains($text, 'penting') || str_contains($text, 'urgent') || str_contains($text, 'peringatan')) {
             return 'Penting';
         }
-        
         if (str_contains($text, 'kegiatan') || str_contains($text, 'acara') || str_contains($text, 'jadwal')) {
             return 'Kegiatan';
         }
-        
         if (str_contains($text, 'imunisasi') || str_contains($text, 'vaksin') || str_contains($text, 'kesehatan')) {
             return 'Kesehatan';
         }
-        
         return 'Info';
     }
 }
