@@ -220,7 +220,7 @@ const getCategoryBadgeClass = (kategori) => {
                                 @click="handleLinkClick"
                             >
                                 <span :class="getButtonClass('show')" title="Lihat Berita">
-                                    👁️
+                                   <i class="icon-eye"></i>
                                 </span>
                             </Link>
 
@@ -230,7 +230,7 @@ const getCategoryBadgeClass = (kategori) => {
                                 @click="handleLinkClick"
                             >
                                 <span :class="getButtonClass('edit')" title="Edit Berita">
-                                    ✏️
+                                    <i class="icon-pencil"></i>
                                 </span>
                             </Link>
 
@@ -240,7 +240,7 @@ const getCategoryBadgeClass = (kategori) => {
                                 title="Hapus Berita"
                                 @click="deleteRow(row)"
                             >
-                                🗑️
+                                <i class="icon-trash"></i>
                             </span>
                         </div>
                     </template>
