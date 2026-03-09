@@ -54,6 +54,7 @@ createInertiaApp({
                 'auth/loginlanding',
                 'landingpage/jelajahedukasi',
                 'landingpage/halamanberita',
+                'landingpage/halamandaftarberita',
                 'landingpage/halamandaftarposyandu',
                 
 
