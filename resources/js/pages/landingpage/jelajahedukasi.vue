@@ -145,7 +145,7 @@ const items = ref([
     title: "Pentingnya Imunisasi Dasar Untuk Anak",
     searchTitle: "imunisasi anak",
     type: "artikel",
-    img: "/storage/jelajahedukasi/periksa.png",
+    img: "/storage/edukasi_page/periksa.png",
     href: "#",
   },
   {
@@ -153,7 +153,7 @@ const items = ref([
     title: "Rekomendasi Menu untuk MP-ASI",
     searchTitle: "mpasi menu",
     type: "berita",
-    img: "/storage/jelajahedukasi/makanan.png",
+    img: "/storage/edukasi_page/makanan.png",
     href: "#",
   },
   {
@@ -161,7 +161,7 @@ const items = ref([
     title: "Cara memberikan MP-ASI Pertama kali",
     searchTitle: "cara mpasi video",
     type: "video",
-    img: "/storage/jelajahedukasi/bayi.png",
+    img: "/storage/edukasi_page/bayi.png",
     href: "#",
   },
   {
@@ -169,7 +169,7 @@ const items = ref([
     title: "Cegah stunting dengan pola makan seimbang",
     searchTitle: "stunting pola makan",
     type: "video",
-    img: "/storage/jelajahedukasi/makanan.png",
+    img: "/storage/edukasi_page/makanan.png",
     href: "#",
   },
   {
@@ -177,7 +177,7 @@ const items = ref([
     title: "Panduan Pencegahan Stunting Anak usia 0 sampai 5 tahun",
     searchTitle: "panduan stunting anak",
     type: "artikel",
-    img: "/storage/jelajahedukasi/imunisasi.png",
+    img: "/storage/edukasi_page/imunisasi.png",
     href: "#",
   },
   {
@@ -185,7 +185,7 @@ const items = ref([
     title: "Pencegahan Stunting pada Ibu Hamil untuk Janin",
     searchTitle: "pencegahan stunting ibu hamil",
     type: "artikel",
-    img: "/storage/jelajahedukasi/bumil.png",
+    img: "/storage/edukasi_page/bumil.png",
     href: "#",
   },
 ]);
