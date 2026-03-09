@@ -8,46 +8,48 @@ const namaUser =
   page.props.auth?.user?.nama ||
   page.props.auth?.user?.username ||
   'User'
-const navbarOpen = ref(false)
+const mobileMenuOpen = ref(false)
 const isDesktop = ref(true)
 const dropdownOpen = ref(false)
 
-function toggleSidebar() {
+// Fungsi untuk toggle sidebar (memanggil dari sidebar component)
+const toggleSidebar = () => {
+
+  if (window.innerWidth <= 768) {
+    document.body.classList.toggle('sidebar-mobile-open')
+    return
+  }
+
   document.body.classList.toggle('sidebar-xs')
+
+  const isCollapsed =
+    document.body.classList.contains('sidebar-xs')
+
+  localStorage.setItem('sidebarCollapsed', isCollapsed)
 }
 
 function updateIsDesktop() {
   isDesktop.value = window.innerWidth >= 768
-  if (isDesktop.value) navbarOpen.value = false
+  if (isDesktop.value) mobileMenuOpen.value = false
 }
 
-function closeMobileIfClickLink(e) {
-  if (!isDesktop.value) {
-    const el = e.target.closest('a,button')
-    if (el) navbarOpen.value = false
-  }
+function toggleMobileMenu() {
+  mobileMenuOpen.value = !mobileMenuOpen.value
 }
 
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
 }
 
-// Fungsi untuk menutup dropdown
 function closeDropdown() {
   dropdownOpen.value = false
 }
 
-// Click outside untuk close dropdown
 function handleClickOutside(event) {
   const dropdown = document.querySelector('.dropdown-container')
   if (dropdown && !dropdown.contains(event.target)) {
     dropdownOpen.value = false
   }
-}
-
-// Tutup dropdown saat navigasi
-function handleNavigation() {
-  closeDropdown()
 }
 
 onMounted(() => {
@@ -63,61 +65,57 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="navbar navbar-default header-highlight esip-navbar">
+  <div class="navbar navbar-default header-highlight">
+    <!-- Bagian kiri (logo saja) -->
     <div class="navbar-header">
-      <a class="navbar-brand esip-navbar-brand" href="#">
+      <Link href="/dashboard" class="navbar-brand">
         <img
           src="https://drive.cimahikota.go.id/s/7bGKxX4ytTT2Wrq/download"
           alt="Logo"
         />
-        <span class="esip-brand-text">eSIP Kota Cimahi</span>
-      </a>
+        <span class="brand-text">eSIP Kota Cimahi</span>
+      </Link>
 
-      <ul class="nav navbar-nav visible-xs-block">
-        <li>
-          <a href="#" @click.prevent="navbarOpen = !navbarOpen">
-            <i class="icon-tree5"></i>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="esip-sidebar-toggle" @click.prevent="toggleSidebar">
-            <i class="icon-paragraph-justify3"></i>
-          </a>
-        </li>
-      </ul>
+      <!-- Mobile buttons -->
+      <div class="mobile-buttons visible-xs-block">
+        <button class="mobile-btn" @click="toggleMobileMenu">
+          <i class="icon-menu7"></i>
+        </button>
+        <button class="mobile-btn" @click="toggleSidebar">
+          <i class="icon-paragraph-justify3"></i>
+        </button>
+      </div>
     </div>
 
-    <div
-      id="navbar-mobile"
-      class="navbar-collapse"
-      :class="{
-        collapse: !isDesktop && !navbarOpen,
-        in: !isDesktop && navbarOpen
-      }"
-      @click="closeMobileIfClickLink"
+    <!-- Bagian kanan navbar -->
+    <div 
+      class="navbar-right-section"
+      :class="{ 'mobile-open': mobileMenuOpen }"
     >
-      <!-- LEFT -->
-      <ul class="nav navbar-nav">
-        <li class="hidden-xs">
-          <a href="#" class="esip-sidebar-toggle" @click.prevent="toggleSidebar">
-            <i class="icon-paragraph-justify3"></i>
-          </a>
-        </li>
-      </ul>
-      <span class="label bg-success" style="margin-top: 17px; margin-left: 10px;">Online</span>
-      
-      <!-- RIGHT - DROPDOWN YANG DIPERBAIKI -->
-      <ul class="nav navbar-nav navbar-right">
-        <li class="dropdown-container" :class="{ open: dropdownOpen }">
-          <a class="dropdown-toggle" @click.prevent="toggleDropdown">
+      <!-- Left menu dengan icon toggle -->
+      <div class="navbar-left">
+        <!-- Tombol toggle untuk desktop (GARIS 3) -->
+        <button class="sidebar-toggle-btn hidden-xs" @click="toggleSidebar">
+          <i class="icon-menu7"></i>
+        </button>
+        <span class="status-badge bg-success">Online</span>
+      </div>
+
+      <!-- Right menu dengan dropdown -->
+      <div class="navbar-right">
+        <div class="dropdown-container" :class="{ open: dropdownOpen }">
+          <button class="dropdown-toggle" @click="toggleDropdown">
             <span class="user-name">{{ namaUser }}</span>
             <i class="caret" :class="{ rotated: dropdownOpen }"></i>
-          </a>
+          </button>
 
           <transition name="dropdown">
-            <ul class="dropdown-menu dropdown-menu-right" v-if="dropdownOpen">
+            <ul class="dropdown-menu" v-if="dropdownOpen">
               <li class="dropdown-header">
                 <div class="user-info">
+                  <div class="user-avatar">
+                    <i class="icon-user"></i>
+                  </div>
                   <div class="user-details">
                     <span class="user-fullname">{{ namaUser }}</span>
                     <span class="user-email">{{ page.props.auth?.user?.email || 'user@example.com' }}</span>
@@ -150,147 +148,218 @@ onBeforeUnmount(() => {
               </li>
             </ul>
           </transition>
-        </li>
-      </ul>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.esip-navbar-brand{
-  display:flex !important;
-  align-items:center !important;
-  gap:10px !important;
-  padding: 0 14.6px !important;
-  height: 50px !important;
-}
-.esip-navbar-brand img{
-  height:34px !important;
-}
-.esip-brand-text{
-  font-size:18px !important;
-  font-weight:900 !important;
-  color:#17b7c6 !important;
-  white-space:nowrap !important;
+:root {
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-duration: 0.3s;
 }
 
-:global(body.sidebar-main-resized) .esip-navbar-brand .esip-brand-text{
-  display:none !important;
+.navbar {
+  min-height: 50px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  position: relative;
+  z-index: 3000;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  width: 100%;
+  flex-shrink: 0;
 }
 
-/* rapih navbar */
-:global(.esip-navbar){
-  min-height:50px;
-}
-:global(.esip-navbar .navbar-nav > li > a){
-  height:50px;
-  line-height:50px;
-  padding-top:0 !important;
-  padding-bottom:0 !important;
-}
-:global(.esip-navbar .navbar-text){
-  height:50px;
-  line-height:50px;
-  margin:0 10px;
+.navbar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 280px;
+  padding-left: 15px;
+  padding-right: 10px;
+  transition: all var(--transition-duration) var(--transition-timing);
+  background: #fff;
+  flex-shrink: 0;
 }
 
-:global(.esip-navbar .esip-sidebar-toggle i){
-  display:inline-block !important;
-  visibility:visible !important;
-}
-.esip-navbar-brand {
+.navbar-brand {
   display: flex;
   align-items: center;
   gap: 10px;
+  text-decoration: none;
+  padding: 0;
+  height: 50px;
+  overflow: hidden;
+  transition: opacity .25s ease, transform .25s ease;
 }
 
-body.sidebar-xs .esip-brand-text {
-  display: none !important;
+.navbar-brand img {
+  height: 34px;
+  width: auto;
 }
 
-body.sidebar-xs .esip-navbar-brand img {
-  display: block !important;
+.brand-text {
+  font-size: 18px;
+  font-weight: 900;
+  color: #17b7c6;
+  white-space: nowrap;
 }
 
-body.sidebar-xs .sidebar-main .sidebar-header,
-body.sidebar-xs .sidebar-main .sidebar-logo,
-body.sidebar-xs .sidebar-main .sidebar-brand {
-  display: none !important;
+/* Mobile buttons */
+.mobile-buttons {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-items: center;
 }
 
-.esip-navbar-brand img {
-  height: 30px !important;
-  width: auto !important;
-  max-width: none !important;
-  object-fit: contain !important;
+.mobile-btn {
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0;
+  cursor: pointer;
+  color: #333;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ===== DROPDOWN STYLES YANG DIPERBAIKI ===== */
+.mobile-btn i {
+  font-size: 18px;
+  display: block;
+  line-height: 1;
+}
 
-/* Dropdown Container */
+.mobile-btn:hover {
+  background: #f5f5f5;
+}
+
+/* Tombol toggle sidebar (garis 3) */
+.sidebar-toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 0 10px;
+  height: 50px;
+  cursor: pointer;
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin-right: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #f5f5f5;
+}
+
+/* Bagian kanan navbar */
+.navbar-right-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+}
+
+/* Navbar left */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 3px;
+  color: #fff;
+}
+
+.bg-success {
+  background: #4caf50;
+}
+
+/* Navbar right */
+.navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Dropdown */
 .dropdown-container {
   position: relative;
 }
 
-.dropdown-container.open .dropdown-toggle {
-  background-color: #f5f5f5;
-}
-
-/* Dropdown Toggle */
 .dropdown-toggle {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  cursor: pointer !important;
-  padding: 0 15px !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 0 15px;
+  height: 50px;
+  cursor: pointer;
+  color: #333;
   transition: all 0.2s ease;
 }
 
 .dropdown-toggle:hover {
-  background-color: #f8f8f8 !important;
+  background: #f5f5f5;
 }
 
 .user-name {
   font-weight: 600;
-  color: #333;
   max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Caret Animation */
 .caret {
   transition: transform 0.3s ease;
-  border-top-color: #777;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid #333;
 }
 
 .caret.rotated {
   transform: rotate(180deg);
 }
 
-/* Dropdown Menu */
+/* Dropdown menu */
 .dropdown-menu {
-  position: absolute !important;
-  top: 100% !important;
-  right: 0 !important;
-  left: auto !important;
-  min-width: 260px !important;
-  margin-top: 5px !important;
-  padding: 8px 0 !important;
-  background: white !important;
-  border: none !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
-  z-index: 1000 !important;
-  list-style: none !important;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 260px;
+  margin: 5px 0 0;
+  padding: 8px 0;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,.15);
+  z-index: 1000;
+  list-style: none;
 }
 
-/* Dropdown Header */
 .dropdown-header {
-  padding: 16px !important;
-  background: linear-gradient(135deg, #f9f9f9 0%, #f5f5f5 100%) !important;
-  border-bottom: 1px solid #eee !important;
+  padding: 15px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eee;
 }
 
 .user-info {
@@ -300,120 +369,205 @@ body.sidebar-xs .sidebar-main .sidebar-brand {
 }
 
 .user-avatar {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 40px;
+  height: 40px;
+  background: #17b7c6;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .user-details {
-  display: flex;
-  flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .user-fullname {
-  font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   color: #333;
-  line-height: 1.4;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-email {
   font-size: 12px;
-  color: #888;
-  margin-top: 2px;
+  color: #666;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Divider */
 .divider {
-  height: 1px !important;
-  background: #eee !important;
-  margin: 8px 0 !important;
-  padding: 0 !important;
+  height: 1px;
+  background: #eee;
+  margin: 8px 0;
 }
 
-/* Dropdown Items */
 .dropdown-item {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  padding: 10px 20px !important;
-  color: #333 !important;
-  text-decoration: none !important;
-  transition: all 0.2s ease !important;
-  width: 100% !important;
-  border: none !important;
-  background: none !important;
-  text-align: left !important;
-  font-size: 14px !important;
-  cursor: pointer !important;
-  line-height: normal !important;
-}
-
-.dropdown-item i {
-  font-size: 18px !important;
-  color: #666 !important;
-  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  width: 100%;
+  border: none;
+  background: none;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 .dropdown-item:hover {
-  background-color: #f8f8f8 !important;
+  background: #f8f9fa;
 }
 
-.dropdown-item:hover i {
-  color: #333 !important;
+.dropdown-item i {
+  font-size: 18px;
+  width: 20px;
+  color: #666;
 }
 
 .dropdown-item.text-danger {
-  color: #dc3545 !important;
+  color: #dc3545;
 }
 
 .dropdown-item.text-danger i {
-  color: #dc3545 !important;
+  color: #dc3545;
 }
 
-.dropdown-item.text-danger:hover {
-  background-color: #fff5f5 !important;
-}
-
-/* Dropdown Animation */
-.dropdown-enter-active {
-  animation: dropdownFade 0.2s ease;
-}
-
+/* Animations */
+.dropdown-enter-active,
 .dropdown-leave-active {
-  animation: dropdownFade 0.2s ease reverse;
+  transition: all 0.2s ease;
 }
 
-@keyframes dropdownFade {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Sidebar collapsed states */
+body.sidebar-xs .navbar-header {
+  width: 76px;
+  padding-left: 0;
+  padding-right: 0;
+  justify-content: center;
+}
+
+body.sidebar-xs .brand-text {
+  display: none;
+}
+
+body.sidebar-xs .navbar-brand {
+  opacity: 0;
+  transform: scale(.9);
+}
+
+/* Tombol toggle tidak terpengaruh sidebar collapsed */
+.sidebar-toggle-btn {
+  /* style sudah di atas */
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .dropdown-menu {
-    position: fixed !important;
-    top: auto !important;
-    right: 10px !important;
-    left: 10px !important;
-    width: auto !important;
-    max-width: none !important;
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
   }
-  
-  .user-name {
-    max-width: 100px;
+
+  .navbar-header {
+    width: 100%;
+    padding: 0 12px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all var(--transition-duration) var(--transition-timing);
+  }
+
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 50px;
+  }
+
+  .navbar-brand img {
+    height: 30px;
+  }
+
+  .brand-text {
+    font-size: 16px;
+    white-space: nowrap;
+  }
+
+  .sidebar-toggle-btn {
+    display: none;
+  }
+
+  .navbar-right-section {
+    display: none;
+    flex-direction: column;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    padding: 10px 15px;
+    max-height: calc(100vh - 50px);
+    overflow-y: auto;
+    width: 100%;
+  }
+
+  .navbar-right-section.mobile-open {
+    display: flex;
+  }
+
+  .navbar-left,
+  .navbar-right {
+    width: 100%;
+  }
+
+  .navbar-left {
+    margin-bottom: 10px;
+    justify-content: flex-start;
+  }
+
+  .dropdown-container {
+    width: 100%;
+  }
+
+  .dropdown-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    margin-top: 5px;
+  }
+
+  body.sidebar-xs .navbar-header {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  body.sidebar-xs .navbar-brand {
+    display: flex;
+    opacity: 1;
+    transform: none;
+  }
+
+  body.sidebar-xs .brand-text {
+    display: inline-block;
   }
 }
 </style>

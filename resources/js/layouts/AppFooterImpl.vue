@@ -6,57 +6,97 @@ import logoeSIP from '../../images/eSIP.png'
 <template>
     <footer class="footer-layout">
         <div class="footer-left">
-            <img :src="logoCimahi" class="footer-logo">
+            <img :src="logoCimahi" class="footer-logo" alt="Logo Cimahi">
             <span class="footer-text">DP3AP2KB</span>
         </div>
 
-        <img :src="logoeSIP" class="footer-esip">
+        <img :src="logoeSIP" class="footer-esip" alt="eSIP Logo">
     </footer>
 </template>
 
 <style scoped>
 .footer-layout {
-    /* position: fixed; */
-    bottom: 0;
-    left: 0;
-    width: 100%;
-  /* tinggi footer + jarak aman */
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    /* Gunakan padding dengan unit rem agar proporsional terhadap ukuran font */
-    padding: 0.8rem 1.2rem;   /* contoh, sesuaikan */
-    
-    border-top: 1px solid gainsboro;
+    padding: 0.8rem 1.5rem;
+    border-top: 1px solid #e0e0e0;
     background: #fff;
-
-    /* Hindari height tetap, gunakan min-height */
-    min-height: 70px;
-    
+    min-height: 60px;
     box-sizing: border-box;
-    
-    /* Agar konten tidak menempel ke tepi saat zoom sangat besar */
+    flex-wrap: wrap;
     gap: 1rem;
-    flex-wrap: wrap;          /* jika layar sempit, item turun ke bawah */
 }
 
 .footer-left {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .footer-logo {
-    height: 45px;
+    height: 40px;
+    width: auto;
+    object-fit: contain;
 }
 
 .footer-esip {
-    height: 45px;
+    height: 40px;
+    width: auto;
+    object-fit: contain;
 }
 
 .footer-text {
-    font-size: 20px;
+    font-size: 1.1rem;
     font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-layout {
+        padding: 0.8rem 1rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .footer-left {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .footer-esip {
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-layout {
+        min-height: 50px;
+        padding: 0.6rem;
+    }
+    
+    .footer-logo,
+    .footer-esip {
+        height: 30px;
+    }
+    
+    .footer-text {
+        font-size: 0.9rem;
+    }
+}
+
+/* Untuk layar sangat kecil */
+@media (max-width: 360px) {
+    .footer-left {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .footer-text {
+        font-size: 0.8rem;
+    }
 }
 </style>

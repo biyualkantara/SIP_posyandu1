@@ -1,14 +1,68 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const page = usePage()
 const user = page.props.auth?.user
 
 const openIndex = ref(null)
-const toggle = i => {
-  openIndex.value = openIndex.value === i ? null : i
+const isCollapsed = ref(false)
+
+// Cek state sidebar dari localStorage
+onMounted(() => {
+  const saved = localStorage.getItem('sidebarCollapsed') === 'true'
+  isCollapsed.value = saved
+
+  if (saved) {
+    document.body.classList.add('sidebar-xs')
+  } else {
+    document.body.classList.remove('sidebar-xs')
+  }
+
+  // Sinkron jika navbar toggle dipencet
+  const observer = new MutationObserver(() => {
+    const collapsed = document.body.classList.contains('sidebar-xs')
+    isCollapsed.value = collapsed
+  })
+
+  observer.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
+})
+
+const toggleSidebar = () => {
+  isCollapsed.value = !isCollapsed.value
+
+  if (isCollapsed.value) {
+    document.body.classList.add('sidebar-xs')
+    openIndex.value = null
+  } else {
+    document.body.classList.remove('sidebar-xs')
+  }
+
+  localStorage.setItem('sidebarCollapsed', isCollapsed.value)
 }
+
+const toggleSubmenu = (index) => {
+  if (isCollapsed.value) {
+    isCollapsed.value = false
+    document.body.classList.remove('sidebar-xs')
+    localStorage.setItem('sidebarCollapsed', false)
+
+    openIndex.value = index
+    return
+  }
+
+  openIndex.value = openIndex.value === index ? null : index
+}
+
+// Watch untuk collapse state
+watch(isCollapsed, (newVal) => {
+  if (newVal) {
+    openIndex.value = null
+  }
+})
 
 /* LABEL ROLE */
 const roleLabel = computed(() => {
@@ -28,7 +82,6 @@ const sidebarItems = computed(() => {
       children: [
         { label: 'Data Posyandu', path: '/posyandu/data-umum' },
         { label: 'Data Kehadiran Kader', path: '/posyandu/kehadiran-kader' }
-
       ]
     },
 
@@ -79,10 +132,8 @@ const sidebarItems = computed(() => {
         { label: 'Daftar Potensi Stunting', path: '/sipintar/stunting' }
       ]
     }
-
   ]
 
-  /* MENU OPERATOR → HANYA SUPERADMIN */
   if (user?.role === 'superadmin') {
     items.push({
       icon: 'icon-user-plus',
@@ -93,12 +144,17 @@ const sidebarItems = computed(() => {
 
   return items
 })
+
+// Ekspose toggleSidebar ke komponen lain jika diperlukan
+defineExpose({
+  toggleSidebar
+})
 </script>
 
 <template>
   <div class="sidebar sidebar-dark sidebar-main">
-    <div class="sidebar-content" style="margin-top:15px">
-
+    
+    <div class="sidebar-content">
       <!-- USER BOX -->
       <div class="sidebar-user">
         <div class="media">
@@ -118,58 +174,471 @@ const sidebarItems = computed(() => {
         </div>
       </div>
 
-      <p style="color:lightslategray;margin:10px 5px">Menu</p>
+      <p class="sidebar-menu-label" v-if="!isCollapsed">MENU</p>
 
-      <ul class="navigation navigation-main navigation-accordion">
-        <li v-for="(item,i) in sidebarItems" :key="i">
-          <Link v-if="!item.children" :href="item.path">
+      <ul class="navigation">
+        <li v-for="(item, i) in sidebarItems" :key="i">
+          <!-- Link tanpa children -->
+          <Link 
+            v-if="!item.children" 
+            :href="item.path" 
+            class="nav-link"
+            :class="{ 'justify-center': isCollapsed }"
+          >
             <i :class="item.icon"></i>
-            <span>{{ item.label }}</span>
+            <span class="nav-text" v-if="!isCollapsed">{{ item.label }}</span>
           </Link>
 
-          <a v-else href="#" @click.prevent="toggle(i)">
-            <i :class="item.icon"></i>
-            <span>{{ item.label }}</span>
-            <span class="arrow"></span>
-          </a>
+          <!-- Link dengan children -->
+          <div v-else class="nav-item has-submenu">
+            <a 
+              href="#" 
+              @click.prevent="toggleSubmenu(i)" 
+              class="nav-link"
+              :class="{ 
+                'justify-center': isCollapsed,
+                'active': openIndex === i 
+              }"
+            >
+              <i :class="item.icon"></i>
+              <span class="nav-text" v-if="!isCollapsed">{{ item.label }}</span>
+              <span class="arrow" v-if="!isCollapsed" :class="{ 'arrow-down': openIndex === i }"></span>
+            </a>
 
-          <ul v-if="item.children && openIndex === i" class="navigation navigation-level-2">
-            <li v-for="c in item.children" :key="c.path">
-              <Link :href="c.path">{{ c.label }}</Link>
-            </li>
-          </ul>
+            <!-- Submenu dengan transisi -->
+           <transition name="slide">
+              <ul v-if="openIndex === i" class="nav-submenu">
+                <li v-for="c in item.children" :key="c.path">
+                  <Link :href="c.path" class="nav-link-sub">
+                    {{ c.label }}
+                  </Link>
+                </li>
+              </ul>
+            </transition>
+          </div>
         </li>
       </ul>
-
     </div>
   </div>
 </template>
 
 <style scoped>
-.sidebar-user {
-  padding: 10px;
+:root {
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-duration: 0.3s;
+}
+
+.sidebar {
+  width: 260px;
+  height: 100%;
+  background: #1e2b37;
+  color: #fff;
+  transition: width var(--transition-duration) var(--transition-timing),
+              transform var(--transition-duration) var(--transition-timing);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 2px 0 5px rgba(0,0,0,.1);
+}
+
+.nav-text,
+.sidebar-user .media-body,
+.sidebar-menu-label {
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.sidebar-header {
+  padding: 10px 15px;
   border-bottom: 1px solid rgba(255,255,255,.1);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(255,255,255,.1);
+  color: #fff;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 20px;
+}
+
+/* Scrollbar styling */
+.sidebar-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: rgba(255,255,255,.05);
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.2);
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,.3);
+}
+
+.sidebar-user {
+  padding: 20px 15px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  margin-bottom: 10px;
+}
+
+.sidebar-user .media {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar-user .media-left {
+  flex-shrink: 0;
+}
+
+.sidebar-user .media-body {
+  flex: 1;
+  min-width: 0;
+  transition: opacity 0.2s ease;
 }
 
 .sidebar-user .media-heading {
   color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-user .text-muted {
   color: #9ca3af;
+  font-size: 12px;
 }
 
-.navigation > li > a {
-  font-size: 14px;
+.sidebar-menu-label {
+  color: #9ca3af;
+  margin: 10px 15px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   font-weight: 500;
 }
 
-.navigation-level-2 > li > a {
-  padding-left: 52px;
+.navigation {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  color: rgba(255,255,255,.8);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  gap: 12px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+
+.nav-link:hover {
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  border-left-color: #17b7c6;
+}
+
+.nav-link.active {
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  border-left-color: #17b7c6;
+}
+
+.nav-link.justify-center {
+  justify-content: center;
+  padding: 15px 0;
+}
+
+.nav-link i {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-text {
+  flex: 1;
   font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .arrow {
-  float: right;
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.arrow::before {
+  content: '▶';
+  font-family: 'icomoon';
+  display: inline-block;
+}
+
+.arrow-down::before {
+  transform: rotate(90deg);
+}
+
+/* Submenu styling yang lebih rapi */
+.nav-submenu {
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+  background: rgba(0, 0, 0, 0.25);
+  border-left: 2px solid #17b7c6;
+  border-radius: 0 4px 4px 0;
+}
+
+.nav-link-sub {
+  display: block;
+  padding: 10px 15px 10px 47px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.nav-link-sub:before {
+  content: "•";
+  position: absolute;
+  left: 32px;
+  color: #17b7c6;
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.nav-link-sub:hover {
+  background: rgba(23, 183, 198, 0.15);
+  color: #fff;
+  padding-left: 52px;
+}
+
+.nav-link-sub:hover:before {
+  opacity: 1;
+  color: #fff;
+}
+
+/* Active state untuk submenu */
+.nav-link-sub.router-link-active,
+.nav-link-sub.active {
+  background: rgba(23, 183, 198, 0.2);
+  color: #fff;
+  font-weight: 500;
+  border-left: 2px solid #17b7c6;
+}
+
+/* Menu aktif */
+.nav-link.router-link-active,
+.nav-link.active {
+  background: rgba(23, 183, 198, 0.2);
+  color: #fff;
+  border-left-color: #17b7c6;
+}
+
+.nav-link.router-link-active i,
+.nav-link.active i {
+  color: #17b7c6;
+}
+
+/* Animasi slide yang lebih halus */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.25s ease-in-out;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* HOVER SUBMENU SAAT SIDEBAR COLLAPSED (DESKTOP) */
+body.sidebar-xs .sidebar .nav-item {
+  position: relative;
+}
+
+body.sidebar-xs .sidebar .nav-submenu {
+  position: absolute;
+  left: 56px;
+  top: 0;
+  min-width: 220px;
+  background: #1e2b37;
+  border-radius: 6px;
+  padding: 8px 0;
+  box-shadow: 0 10px 25px rgba(0,0,0,.25);
+  z-index: 9999;
+  border-left: none;
+  display: none;
+}
+
+body.sidebar-xs .sidebar .nav-item:hover .nav-submenu {
+  display: block !important;
+}
+
+body.sidebar-xs .nav-text,
+body.sidebar-xs .sidebar-user .media-body,
+body.sidebar-xs .sidebar-menu-label {
+  opacity: 0;
+  transform: translateX(-5px);
+}
+
+body.sidebar-xs .nav-link {
+  justify-content: center;
+  padding: 14px 0 !important;
+}
+
+body.sidebar-xs .nav-link i {
+  margin: 0 !important;
+  width: auto;
+  font-size: 18px;
+}
+
+body.sidebar-xs .navigation li {
+  display: flex;
+  justify-content: center;
+}
+
+body.sidebar-xs .sidebar-user {
+  padding: 18px 0;
+  text-align: center;
+}
+
+body.sidebar-xs .sidebar-user .media {
+  justify-content: center;
+}
+
+body.sidebar-xs .sidebar-user .media-left {
+  margin: 0;
+}
+
+/* ===== RESPONSIVE MOBILE - FIX ===== */
+@media (max-width: 768px) {
+  /* Sidebar default - tersembunyi */
+  .sidebar {
+    position: fixed !important;
+    top: 50px !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: 0 !important;
+    width: 280px !important;
+    height: calc(100vh - 50px) !important;
+    background: #1e2b37 !important;
+    transform: translateX(-100%) !important;
+    transition: transform var(--transition-duration) var(--transition-timing) !important;
+    z-index: 9999 !important;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.3) !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Sidebar saat class sidebar-mobile-open aktif */
+  body.sidebar-mobile-open .sidebar {
+    transform: translateX(0) !important;
+  }
+
+  /* Overlay gelap */
+  body.sidebar-mobile-open::before {
+    content: "" !important;
+    position: fixed !important;
+    top: 50px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 9998 !important;
+    pointer-events: auto !important;
+    transition: opacity var(--transition-duration) var(--transition-timing) !important;
+  }
+
+  /* Di mobile, semua text tampil normal */
+  .sidebar .media-body,
+  .sidebar .sidebar-menu-label,
+  .sidebar .nav-text,
+  .sidebar .arrow {
+    display: block !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .sidebar .nav-link {
+    justify-content: flex-start !important;
+    padding: 12px 15px !important;
+  }
+
+  .sidebar .nav-link i {
+    margin-right: 12px !important;
+    font-size: 16px !important;
+  }
+
+  .sidebar .sidebar-user .media-left {
+    margin: 0 !important;
+  }
+
+  .sidebar .sidebar-user {
+    padding: 20px 15px !important;
+    text-align: left !important;
+  }
+
+  .sidebar .sidebar-user .media {
+    justify-content: flex-start !important;
+  }
+
+  /* Submenu normal di mobile */
+  .nav-submenu {
+    position: static !important;
+    box-shadow: none !important;
+    display: block !important;
+    border-left: 2px solid #17b7c6 !important;
+  }
+
+  /* Matikan efek hover submenu di mobile */
+  body.sidebar-xs .sidebar .nav-item:hover .nav-submenu {
+    display: none !important;
+  }
+
+  /* Abaikan sidebar-xs di mobile */
+  body.sidebar-xs .sidebar .nav-text,
+  body.sidebar-xs .sidebar .sidebar-menu-label,
+  body.sidebar-xs .sidebar .arrow {
+    display: block !important;
+    opacity: 1 !important;
+  }
+
+  body.sidebar-xs .sidebar .nav-link {
+    justify-content: flex-start !important;
+    padding: 12px 15px !important;
+  }
+
+  body.sidebar-xs .sidebar .nav-link i {
+    margin-right: 12px !important;
+  }
+
+  body.sidebar-xs .sidebar .sidebar-user {
+    padding: 20px 15px !important;
+  }
 }
 </style>
