@@ -2,22 +2,30 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Berita extends Model
 {
-    protected $table = 'berita';
+    use HasFactory;
 
-    // pimary key
+    protected $table = 'berita';
     protected $primaryKey = 'id_berita';
+    public $incrementing = true;
+    protected $keyType = 'int';
+    public $timestamps = false;
 
     protected $fillable = [
         'judul',
         'ringkasan',
         'isi',
         'penulis',
-        'tanggal_waktu',
+        'kategori',
+        'tanggal_waktu'
     ];
 
-    public $timestamps = false;
+    protected $casts = [
+        'tanggal_waktu' => 'datetime',
+        'id_berita' => 'integer'
+    ];
 }

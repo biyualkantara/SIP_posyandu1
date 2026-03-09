@@ -7,6 +7,7 @@ const form = useForm({
     ringkasan: '',
     isi: '',
     penulis: '',
+    kategori: 'Info' // Tambah default kategori
 })
 
 const editorInstance = ref(null)
@@ -108,6 +109,7 @@ function handleBeforeUnload(event) {
 }
 
 function submitForm() {
+    // Validasi form
     if (!form.judul) {
         openError('Judul berita wajib diisi')
         return
@@ -132,14 +134,22 @@ function submitForm() {
 
     saveScrollPosition()
     
+    // Kirim data ke server
     form.post('/berita', {
         preserveScroll: true,
         onSuccess: () => {
-            router.visit('/berita')
+            openSuccess('Berita berhasil ditambahkan!')
+            setTimeout(() => {
+                router.visit('/berita')
+            }, 1000)
         },
         onError: (errors) => {
             console.error('Error:', errors)
-            openError('Gagal menyimpan data')
+            let errorMsg = 'Gagal menyimpan data'
+            if (typeof errors === 'object') {
+                errorMsg = Object.values(errors).join(', ')
+            }
+            openError(errorMsg)
         }
     })
 }
@@ -202,9 +212,10 @@ function submitForm() {
                                     :class="{ 'is-invalid': form.errors.ringkasan }"
                                     v-model="form.ringkasan"
                                     rows="4"
-                                    placeholder="Masukkan ringkasan berita"
+                                    placeholder="Masukkan ringkasan berita (maks 500 karakter)"
                                 ></textarea>
                                 <div v-if="form.errors.ringkasan" class="invalid-feedback">{{ form.errors.ringkasan }}</div>
+                                <small class="text-muted">{{ form.ringkasan.length }}/500 karakter</small>
                             </div>
                         </div>
                     </div>
@@ -235,17 +246,14 @@ function submitForm() {
         <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
             <div class="modal-card">
                 <div class="text-center">
-                    <i 
-                        class="icon" 
-                        :class="{
-                            'icon-check-circle text-success': modalType === 'success',
-                            'icon-exclamation-circle text-danger': modalType === 'error'
-                        }"
-                        style="font-size: 48px;"
-                    ></i>
+                    <div :class="modalType === 'success' ? 'success-icon' : 'error-icon'">
+                        {{ modalType === 'success' ? '✓' : '✗' }}
+                    </div>
                     <h4 class="mt-3">{{ modalType === 'success' ? 'Berhasil!' : 'Gagal!' }}</h4>
                     <p class="text-muted">{{ modalMessage }}</p>
-                    <button class="btn-modal-close" @click="showModal = false">Tutup</button>
+                    <button class="btn-modal-close" @click="showModal = false">
+                        Tutup
+                    </button>
                 </div>
             </div>
         </div>
@@ -253,7 +261,6 @@ function submitForm() {
 </template>
 
 <style scoped>
-/* Style sama dengan editberita.vue */
 .form-container {
     padding: 24px;
     background: #f8fafc;
@@ -396,8 +403,18 @@ textarea.form-control {
     color: #dc2626;
 }
 
+.text-muted {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
 .mt-4 {
     margin-top: 24px;
+}
+
+.mt-3 {
+    margin-top: 16px;
 }
 
 /* Form Actions */
@@ -481,6 +498,32 @@ textarea.form-control {
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
+.success-icon {
+    width: 60px;
+    height: 60px;
+    background: #10b981;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto;
+}
+
+.error-icon {
+    width: 60px;
+    height: 60px;
+    background: #dc2626;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto;
+}
+
 .btn-modal-close {
     padding: 10px 32px;
     background: #1e293b;
@@ -499,24 +542,27 @@ textarea.form-control {
     transform: translateY(-2px);
 }
 
-.text-success {
-    color: #10b981;
-}
-
-.text-danger {
-    color: #dc2626;
-}
-
-.text-muted {
-    color: #64748b;
-}
-
-.mt-3 {
-    margin-top: 16px;
-}
-
+/* CKEditor */
 :global(.cke) {
     width: 100% !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+}
+
+:global(.cke_inner) {
+    border-radius: 10px !important;
+}
+
+:global(.cke_top) {
+    background: #f8fafc !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    padding: 8px !important;
+}
+
+:global(.cke_bottom) {
+    background: #f8fafc !important;
+    border-top: 2px solid #e2e8f0 !important;
+    padding: 8px !important;
 }
 
 /* Responsive */

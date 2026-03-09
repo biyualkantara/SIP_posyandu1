@@ -107,15 +107,9 @@ class BayiBiodataController extends Controller
         $kelurahan = DB::table('klrhn')->select('id_kel','id_kec','nama_kel')->get()->groupBy('id_kec');
         $posyandu  = DB::table('duspy')->select('id_posyandu','id_kel','nama_posyandu')->get()->groupBy('id_kel');
 
-        // Ambil ID ibu yang sudah memiliki bayi
-        $usedWuspus = DB::table('bayi')
-            ->pluck('id_wuspus')
-            ->unique()
-            ->toArray();
-
-        // Ambil ibu yang BELUM memiliki bayi
+        // Ambil semua ibu dengan status Aktif
         $wuspus = DB::table('wuspus')
-            ->whereNotIn('id_wuspus', $usedWuspus) // Filter yang belum punya bayi
+            ->where('status', 'Aktif')
             ->select('id_wuspus', 'nama_wuspus', 'nik_wuspus', 'id_posyandu')
             ->orderBy('nama_wuspus')
             ->get()
@@ -190,20 +184,39 @@ class BayiBiodataController extends Controller
 
     public function edit($id)
     {
-        $row = DB::table('bayi')->where('id_bayi',$id)->first();
-        abort_if(!$row,404);
+        // Ambil data bayi beserta relasinya (kecamatan, kelurahan, posyandu, ibu)
+        $row = DB::table('bayi as b')
+            ->leftJoin('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
+            ->leftJoin('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
+            ->leftJoin('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
+            ->leftJoin('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
+            ->where('b.id_bayi', $id)
+            ->select([
+                'b.*',
+                'w.nik_wuspus',
+                'w.nama_wuspus',
+                'w.id_posyandu',
+                'd.nama_posyandu',
+                'd.id_kel',
+                'kel.nama_kel',
+                'kel.id_kec',
+                'kec.nama_kec',
+            ])
+            ->first();
 
-        $kecamatan = DB::table('kcmtn')->select('id_kec','nama_kec')->orderBy('nama_kec')->get();
-        $kelurahan = DB::table('klrhn')->select('id_kel','id_kec','nama_kel')->orderBy('nama_kel')->get()->groupBy('id_kec');
-        $posyandu  = DB::table('duspy')->select('id_posyandu','id_kel','nama_posyandu')->orderBy('nama_posyandu')->get()->groupBy('id_kel');
-        $wuspus    = DB::table('wuspus')->select('id_wuspus','id_posyandu','nik_wuspus','nama_wuspus')->orderBy('nama_wuspus')->get()->groupBy('id_posyandu');
+        abort_if(!$row, 404);
 
-        return Inertia::render('bayi/biodata/Edit',[
-            'row'=>$row,
-            'kecamatan'=>$kecamatan,
-            'kelurahan'=>$kelurahan,
-            'posyandu'=>$posyandu,
-            'wuspus'=>$wuspus,
+        $kecamatan = DB::table('kcmtn')->select('id_kec', 'nama_kec')->orderBy('nama_kec')->get();
+        $kelurahan = DB::table('klrhn')->select('id_kel', 'id_kec', 'nama_kel')->orderBy('nama_kel')->get()->groupBy('id_kec');
+        $posyandu  = DB::table('duspy')->select('id_posyandu', 'id_kel', 'nama_posyandu')->orderBy('nama_posyandu')->get()->groupBy('id_kel');
+        $wuspus    = DB::table('wuspus')->select('id_wuspus', 'id_posyandu', 'nik_wuspus', 'nama_wuspus')->orderBy('nama_wuspus')->get()->groupBy('id_posyandu');
+
+        return Inertia::render('bayi/biodata/Edit', [
+            'row' => $row, // Sekarang row punya nama_kec, nama_kel, nama_posyandu, nama_wuspus
+            'kecamatan' => $kecamatan,
+            'kelurahan' => $kelurahan,
+            'posyandu' => $posyandu,
+            'wuspus' => $wuspus,
         ]);
     }
 
