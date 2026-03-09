@@ -46,6 +46,12 @@ Route::get('/berita-posyandu', function () {
     ]);
 });
 
+Route::get('/halamanberita', function () {
+    return Inertia::render('landingpage/halamandaftarberita', [
+        'berita' => Berita::orderByDesc('tanggal_waktu')->get(),
+    ]);
+});
+
 Route::get('/halaman-posyandu', fn () => Inertia::render('landingpage/halamandaftarposyandu'));
 Route::get('/jelajah-edukasi', fn () => Inertia::render('landingpage/jelajahedukasi'));
 Route::get('/testing', fn () => Inertia::render('testing'));
