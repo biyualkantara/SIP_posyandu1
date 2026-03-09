@@ -13,10 +13,9 @@ class BayiPnb extends Model
         'id_bayi',
         'tgl_pnb',
         'berat',
-        'tb',
         'hasil',
         'pmt',
-        'ket',
+        'keterangan',
     ];
 
     public $timestamps = false;
