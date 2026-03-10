@@ -45,6 +45,11 @@
                 {{ truncateText(item.ringkasan, 100) }}
               </div>
 
+              <!-- Tombol Baca Selengkapnya -->
+              <Link :href="`/berita-detail/${item.id_berita}`" class="read-more-btn">
+                Baca Selengkapnya
+                <span class="arrow">→</span>
+              </Link>
             </div>
           </div>
         </div>
