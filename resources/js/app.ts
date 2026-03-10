@@ -55,6 +55,7 @@ createInertiaApp({
                 'landingpage/jelajahedukasi',
                 'landingpage/halamanberita',
                 'landingpage/halamandaftarberita',
+                'landingpage/detailberita', //aku nambahin ini jadi ilang layout adminnya
                 'landingpage/halamandaftarposyandu',
                 
 
