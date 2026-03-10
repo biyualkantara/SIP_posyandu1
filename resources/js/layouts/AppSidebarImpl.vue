@@ -1,12 +1,59 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3'
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 
 const page = usePage()
 const user = page.props.auth?.user
 
 const openIndex = ref(null)
 const isCollapsed = ref(false)
+const mobileMenuOpen = ref(false)
+const isAnimating = ref(false)
+
+// Fungsi untuk menutup sidebar di mobile dengan animasi
+const closeMobileSidebar = () => {
+  if (!mobileMenuOpen.value || isAnimating.value) return
+  
+  isAnimating.value = true
+  mobileMenuOpen.value = false
+  document.body.classList.remove('sidebar-mobile-open')
+  
+  // Beri tahu navbar bahwa sidebar ditutup
+  window.dispatchEvent(new CustomEvent('sidebar-closed'))
+  
+  // Hapus status animasi setelah selesai
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 300) // Sesuaikan dengan durasi transisi
+}
+
+// Fungsi untuk membuka sidebar mobile dengan animasi
+const openMobileSidebar = () => {
+  if (mobileMenuOpen.value || isAnimating.value) return
+  
+  isAnimating.value = true
+  mobileMenuOpen.value = true
+  document.body.classList.add('sidebar-mobile-open')
+  
+  // Beri tahu navbar untuk menutup menu mobile-nya
+  window.dispatchEvent(new CustomEvent('close-navbar-mobile-menu'))
+  
+  // Hapus status animasi setelah selesai
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 300) // Sesuaikan dengan durasi transisi
+}
+
+// Fungsi untuk toggle sidebar mobile dengan animasi
+const toggleMobileSidebar = () => {
+  if (isAnimating.value) return
+  
+  if (mobileMenuOpen.value) {
+    closeMobileSidebar()
+  } else {
+    openMobileSidebar()
+  }
+}
 
 // Cek state sidebar dari localStorage
 onMounted(() => {
@@ -29,9 +76,25 @@ onMounted(() => {
     attributes: true,
     attributeFilter: ['class']
   })
+
+  // Listen untuk event dari navbar
+  window.addEventListener('toggle-mobile-sidebar', toggleMobileSidebar)
+  window.addEventListener('close-mobile-sidebar', closeMobileSidebar)
+  window.addEventListener('navbar-mobile-opened', closeMobileSidebar)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('toggle-mobile-sidebar', toggleMobileSidebar)
+  window.removeEventListener('close-mobile-sidebar', closeMobileSidebar)
+  window.removeEventListener('navbar-mobile-opened', closeMobileSidebar)
 })
 
 const toggleSidebar = () => {
+  if (window.innerWidth <= 768) {
+    toggleMobileSidebar()
+    return
+  }
+
   isCollapsed.value = !isCollapsed.value
 
   if (isCollapsed.value) {
@@ -45,6 +108,12 @@ const toggleSidebar = () => {
 }
 
 const toggleSubmenu = (index) => {
+  if (window.innerWidth <= 768) {
+    // Di mobile, toggle submenu dengan animasi
+    openIndex.value = openIndex.value === index ? null : index
+    return
+  }
+
   if (isCollapsed.value) {
     isCollapsed.value = false
     document.body.classList.remove('sidebar-xs')
@@ -64,14 +133,14 @@ watch(isCollapsed, (newVal) => {
   }
 })
 
-/* LABEL ROLE */
+// LABEL ROLE
 const roleLabel = computed(() => {
   if (user?.role === 'superadmin') return 'Super Admin'
   if (user?.role === 'admin') return 'Admin'
   return 'Kader'
 })
 
-/* MENU SIDEBAR */
+// MENU SIDEBAR
 const sidebarItems = computed(() => {
   const items = [
     { icon: 'icon-home', label: 'Dashboard', path: '/dashboard' },
@@ -145,15 +214,15 @@ const sidebarItems = computed(() => {
   return items
 })
 
-// Ekspose toggleSidebar ke komponen lain jika diperlukan
+// Ekspose fungsi ke komponen lain
 defineExpose({
-  toggleSidebar
+  toggleSidebar,
+  closeMobileSidebar
 })
 </script>
 
 <template>
   <div class="sidebar sidebar-dark sidebar-main">
-    
     <div class="sidebar-content">
       <!-- USER BOX -->
       <div class="sidebar-user">
@@ -184,6 +253,7 @@ defineExpose({
             :href="item.path" 
             class="nav-link"
             :class="{ 'justify-center': isCollapsed }"
+            @click="closeMobileSidebar"
           >
             <i :class="item.icon"></i>
             <span class="nav-text" v-if="!isCollapsed">{{ item.label }}</span>
@@ -205,11 +275,11 @@ defineExpose({
               <span class="arrow" v-if="!isCollapsed" :class="{ 'arrow-down': openIndex === i }"></span>
             </a>
 
-            <!-- Submenu dengan transisi -->
-           <transition name="slide">
+            <!-- Submenu dengan transisi yang lebih smooth -->
+            <transition name="slide-submenu">
               <ul v-if="openIndex === i" class="nav-submenu">
                 <li v-for="c in item.children" :key="c.path">
-                  <Link :href="c.path" class="nav-link-sub">
+                  <Link :href="c.path" class="nav-link-sub" @click="closeMobileSidebar">
                     {{ c.label }}
                   </Link>
                 </li>
@@ -244,7 +314,8 @@ defineExpose({
 .nav-text,
 .sidebar-user .media-body,
 .sidebar-menu-label {
-  transition: opacity .2s ease, transform .2s ease;
+  transition: opacity var(--transition-duration) var(--transition-timing),
+              transform var(--transition-duration) var(--transition-timing);
 }
 
 .sidebar-header {
@@ -303,7 +374,7 @@ defineExpose({
 .sidebar-user .media-body {
   flex: 1;
   min-width: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-duration) var(--transition-timing);
 }
 
 .sidebar-user .media-heading {
@@ -328,6 +399,10 @@ defineExpose({
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 500;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--transition-duration) var(--transition-timing),
+              transform var(--transition-duration) var(--transition-timing);
 }
 
 .navigation {
@@ -346,7 +421,7 @@ defineExpose({
   padding: 12px 15px;
   color: rgba(255,255,255,.8);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-duration) var(--transition-timing);
   gap: 12px;
   cursor: pointer;
   border-left: 3px solid transparent;
@@ -373,6 +448,7 @@ defineExpose({
   font-size: 16px;
   width: 20px;
   text-align: center;
+  transition: font-size var(--transition-duration) var(--transition-timing);
 }
 
 .nav-text {
@@ -380,24 +456,29 @@ defineExpose({
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--transition-duration) var(--transition-timing),
+              transform var(--transition-duration) var(--transition-timing);
 }
 
 .arrow {
   font-size: 12px;
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-duration) var(--transition-timing);
 }
 
 .arrow::before {
   content: '▶';
   font-family: 'icomoon';
   display: inline-block;
+  transition: transform var(--transition-duration) var(--transition-timing);
 }
 
 .arrow-down::before {
   transform: rotate(90deg);
 }
 
-/* Submenu styling yang lebih rapi */
+/* Submenu styling dengan animasi yang lebih smooth */
 .nav-submenu {
   list-style: none;
   padding: 8px 0;
@@ -405,6 +486,29 @@ defineExpose({
   background: rgba(0, 0, 0, 0.25);
   border-left: 2px solid #17b7c6;
   border-radius: 0 4px 4px 0;
+  transform-origin: top;
+}
+
+/* Animasi slide yang lebih halus untuk submenu */
+.slide-submenu-enter-active,
+.slide-submenu-leave-active {
+  transition: all 0.25s ease-in-out;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.slide-submenu-enter-from,
+.slide-submenu-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-submenu-enter-to,
+.slide-submenu-leave-from {
+  max-height: 300px;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .nav-link-sub {
@@ -413,7 +517,7 @@ defineExpose({
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   font-size: 13px;
-  transition: all 0.2s ease;
+  transition: all var(--transition-duration) var(--transition-timing);
   white-space: nowrap;
   position: relative;
 }
@@ -425,6 +529,8 @@ defineExpose({
   color: #17b7c6;
   opacity: 0.7;
   font-size: 14px;
+  transition: opacity var(--transition-duration) var(--transition-timing),
+              color var(--transition-duration) var(--transition-timing);
 }
 
 .nav-link-sub:hover {
@@ -460,21 +566,6 @@ defineExpose({
   color: #17b7c6;
 }
 
-/* Animasi slide yang lebih halus */
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.25s ease-in-out;
-  max-height: 300px;
-  overflow: hidden;
-}
-
-.slide-enter-from,
-.slide-leave-to {
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
 /* HOVER SUBMENU SAAT SIDEBAR COLLAPSED (DESKTOP) */
 body.sidebar-xs .sidebar .nav-item {
   position: relative;
@@ -492,6 +583,18 @@ body.sidebar-xs .sidebar .nav-submenu {
   z-index: 9999;
   border-left: none;
   display: none;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 body.sidebar-xs .sidebar .nav-item:hover .nav-submenu {
@@ -503,6 +606,8 @@ body.sidebar-xs .sidebar-user .media-body,
 body.sidebar-xs .sidebar-menu-label {
   opacity: 0;
   transform: translateX(-5px);
+  transition: opacity var(--transition-duration) var(--transition-timing),
+              transform var(--transition-duration) var(--transition-timing);
 }
 
 body.sidebar-xs .nav-link {
@@ -514,6 +619,7 @@ body.sidebar-xs .nav-link i {
   margin: 0 !important;
   width: auto;
   font-size: 18px;
+  transition: font-size var(--transition-duration) var(--transition-timing);
 }
 
 body.sidebar-xs .navigation li {
@@ -534,20 +640,20 @@ body.sidebar-xs .sidebar-user .media-left {
   margin: 0;
 }
 
-/* ===== RESPONSIVE MOBILE - FIX ===== */
+/* ===== RESPONSIVE MOBILE - FIX DENGAN ANIMASI SMOOTH ===== */
 @media (max-width: 768px) {
-  /* Sidebar default - tersembunyi */
+  /* Sidebar default - tersembunyi dengan animasi */
   .sidebar {
     position: fixed !important;
-    top: 50px !important;
+    top: 76px !important;
     left: 0 !important;
     right: auto !important;
     bottom: 0 !important;
     width: 280px !important;
-    height: calc(100vh - 50px) !important;
+    height: calc(100vh - 76px) !important;
     background: #1e2b37 !important;
     transform: translateX(-100%) !important;
-    transition: transform var(--transition-duration) var(--transition-timing) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     z-index: 9999 !important;
     box-shadow: 2px 0 10px rgba(0,0,0,0.3) !important;
     display: block !important;
@@ -555,12 +661,12 @@ body.sidebar-xs .sidebar-user .media-left {
     opacity: 1 !important;
   }
 
-  /* Sidebar saat class sidebar-mobile-open aktif */
+  /* Sidebar saat class sidebar-mobile-open aktif - animasi slide in */
   body.sidebar-mobile-open .sidebar {
     transform: translateX(0) !important;
   }
 
-  /* Overlay gelap */
+  /* Overlay gelap dengan animasi fade */
   body.sidebar-mobile-open::before {
     content: "" !important;
     position: fixed !important;
@@ -571,10 +677,34 @@ body.sidebar-xs .sidebar-user .media-left {
     background: rgba(0, 0, 0, 0.5) !important;
     z-index: 9998 !important;
     pointer-events: auto !important;
-    transition: opacity var(--transition-duration) var(--transition-timing) !important;
+    animation: fadeInOverlay 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
 
-  /* Di mobile, semua text tampil normal */
+  @keyframes fadeInOverlay {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Animasi fade out untuk overlay saat sidebar ditutup */
+  body:not(.sidebar-mobile-open)::before {
+    animation: fadeOutOverlay 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    opacity: 0;
+  }
+
+  @keyframes fadeOutOverlay {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Di mobile, semua text tampil normal dengan animasi */
   .sidebar .media-body,
   .sidebar .sidebar-menu-label,
   .sidebar .nav-text,
@@ -587,6 +717,12 @@ body.sidebar-xs .sidebar-user .media-left {
   .sidebar .nav-link {
     justify-content: flex-start !important;
     padding: 12px 15px !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .sidebar .nav-link:hover {
+    background: rgba(255,255,255,.1);
+    transform: translateX(5px);
   }
 
   .sidebar .nav-link i {
@@ -607,12 +743,24 @@ body.sidebar-xs .sidebar-user .media-left {
     justify-content: flex-start !important;
   }
 
-  /* Submenu normal di mobile */
+  /* Submenu normal di mobile dengan animasi */
   .nav-submenu {
     position: static !important;
     box-shadow: none !important;
     display: block !important;
     border-left: 2px solid #17b7c6 !important;
+    animation: slideDown 0.25s ease !important;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* Matikan efek hover submenu di mobile */
