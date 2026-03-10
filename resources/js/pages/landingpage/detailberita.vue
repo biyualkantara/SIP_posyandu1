@@ -7,10 +7,10 @@
         <!-- Header dengan button back (style sama seperti halamandaftarberita) -->
         <div class="page-header">
           <div class="back-button-container">
-            <Link href="/halamanberita" class="back-button">
+            <button class="btn-back" @click="goBack">
               <span class="back-arrow">←</span>
               <span>Kembali</span>
-            </Link>
+            </button>
           </div>
           <h2 class="news-heading">Detail Berita</h2>
         </div>
@@ -79,6 +79,10 @@ import AppFooterImpl from "@/layouts/AppFooterImpl.vue";
 const props = defineProps({
   berita: { type: Object, default: null },
 });
+
+const goBack = () => {
+  window.history.back()
+};
 
 // State untuk back to top
 const showBackToTop = ref(false);
@@ -182,7 +186,7 @@ onBeforeUnmount(() => {
   top: 60px;
 }
 
-.back-button {
+.btn-back {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -195,9 +199,11 @@ onBeforeUnmount(() => {
   font-weight: 500;
   transition: all 0.3s ease;
   border: 1px solid #e2e8f0;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.back-button:hover {
+.btn-back:hover {
   background: #e2e8f0;
   color: #1e293b;
   transform: translateX(-3px);
@@ -217,9 +223,6 @@ onBeforeUnmount(() => {
   margin: 10px 0 10px;
 }
 
-/* =========================
-   DETAIL CARD (disederhanakan)
-   ========================= */
 .detail-card {
   background: white;
   border-radius: 12px;
@@ -340,9 +343,6 @@ onBeforeUnmount(() => {
   text-decoration: underline;
 }
 
-/* =========================
-   EMPTY STATE (sama seperti halamandaftarberita)
-   ========================= */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -390,9 +390,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* =========================
-   BACK TO TOP BUTTON (sama seperti halamandaftarberita)
-   ========================= */
 .back-to-top {
   position: fixed;
   bottom: 30px;
@@ -419,9 +416,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 8px 20px rgba(0, 166, 214, 0.4);
 }
 
-/* =========================
-   RESPONSIVE (sama seperti halamandaftarberita)
-   ========================= */
 @media (max-width: 992px) {
   .news-heading {
     font-size: 28px;
