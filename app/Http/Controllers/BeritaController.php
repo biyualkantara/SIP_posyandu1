@@ -61,6 +61,15 @@ class BeritaController extends Controller
         ]);
     }
 
+    public function detail($id)
+    {
+        $berita = Berita::findOrFail($id);
+
+        return Inertia::render('landingpage/detailberita', [
+            'berita' => $berita
+        ]);
+    }
+
     public function edit($id)
     {
         $berita = Berita::findOrFail($id);
