@@ -68,7 +68,7 @@
               </div>
 
               <!-- Tombol Baca Selengkapnya -->
-              <Link :href="`/berita/${item.id_berita}`" class="read-more-btn">
+              <Link :href="`/berita-detail/${item.id_berita}`" class="read-more-btn">
                 Baca Selengkapnya
                 <span class="arrow">→</span>
               </Link>
