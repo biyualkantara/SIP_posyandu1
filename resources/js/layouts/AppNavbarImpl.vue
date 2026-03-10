@@ -11,12 +11,60 @@ const namaUser =
 const mobileMenuOpen = ref(false)
 const isDesktop = ref(true)
 const dropdownOpen = ref(false)
+const isAnimating = ref(false)
+
+// Fungsi untuk menutup menu mobile navbar dengan animasi
+const closeMobileMenu = () => {
+  if (!mobileMenuOpen.value || isAnimating.value) return
+  
+  isAnimating.value = true
+  mobileMenuOpen.value = false
+  
+  // Hapus status animasi setelah selesai
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 300) // Sesuaikan dengan durasi transisi
+}
+
+// Fungsi untuk membuka menu mobile navbar dengan animasi
+const openMobileMenu = () => {
+  if (mobileMenuOpen.value || isAnimating.value) return
+  
+  isAnimating.value = true
+  mobileMenuOpen.value = true
+  // Beri tahu sidebar untuk menutup
+  window.dispatchEvent(new CustomEvent('close-mobile-sidebar'))
+  
+  // Hapus status animasi setelah selesai
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 300) // Sesuaikan dengan durasi transisi
+}
+
+// Fungsi untuk toggle menu mobile navbar dengan animasi
+const toggleMobileMenu = () => {
+  if (isAnimating.value) return
+  
+  if (mobileMenuOpen.value) {
+    closeMobileMenu()
+  } else {
+    openMobileMenu()
+  }
+}
 
 // Fungsi untuk toggle sidebar (memanggil dari sidebar component)
 const toggleSidebar = () => {
-
   if (window.innerWidth <= 768) {
-    document.body.classList.toggle('sidebar-mobile-open')
+    // Tutup menu mobile navbar dulu
+    closeMobileMenu()
+    
+    // Trigger event untuk toggle sidebar mobile
+    window.dispatchEvent(new CustomEvent('toggle-mobile-sidebar'))
+    
+    // Tutup dropdown navbar dengan animasi
+    if (dropdownOpen.value) {
+      dropdownOpen.value = false
+    }
     return
   }
 
@@ -28,17 +76,15 @@ const toggleSidebar = () => {
   localStorage.setItem('sidebarCollapsed', isCollapsed)
 }
 
-function updateIsDesktop() {
-  isDesktop.value = window.innerWidth >= 768
-  if (isDesktop.value) mobileMenuOpen.value = false
-}
-
-function toggleMobileMenu() {
-  mobileMenuOpen.value = !mobileMenuOpen.value
-}
-
+// Fungsi untuk toggle dropdown dengan animasi
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
+  
+  // Jika membuka dropdown, tutup sidebar di mobile
+  if (dropdownOpen.value && window.innerWidth <= 768) {
+    window.dispatchEvent(new CustomEvent('close-mobile-sidebar'))
+    closeMobileMenu()
+  }
 }
 
 function closeDropdown() {
@@ -52,15 +98,29 @@ function handleClickOutside(event) {
   }
 }
 
+function updateIsDesktop() {
+  isDesktop.value = window.innerWidth >= 768
+  if (isDesktop.value) {
+    mobileMenuOpen.value = false
+  }
+}
+
+// Listen untuk event dari sidebar
 onMounted(() => {
   updateIsDesktop()
   window.addEventListener('resize', updateIsDesktop)
   document.addEventListener('click', handleClickOutside)
+  
+  // Listen untuk event dari sidebar
+  window.addEventListener('close-navbar-mobile-menu', closeMobileMenu)
+  window.addEventListener('sidebar-opened', closeMobileMenu)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateIsDesktop)
-  document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('close-navbar-mobile-menu', closeMobileMenu)
+  window.removeEventListener('sidebar-opened', closeMobileMenu)
 })
 </script>
 
@@ -88,69 +148,72 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Bagian kanan navbar -->
-    <div 
-      class="navbar-right-section"
-      :class="{ 'mobile-open': mobileMenuOpen }"
-    >
-      <!-- Left menu dengan icon toggle -->
-      <div class="navbar-left">
-        <!-- Tombol toggle untuk desktop (GARIS 3) -->
-        <button class="sidebar-toggle-btn hidden-xs" @click="toggleSidebar">
-          <i class="icon-menu7"></i>
-        </button>
-        <span class="status-badge bg-success">Online</span>
-      </div>
-
-      <!-- Right menu dengan dropdown -->
-      <div class="navbar-right">
-        <div class="dropdown-container" :class="{ open: dropdownOpen }">
-          <button class="dropdown-toggle" @click="toggleDropdown">
-            <span class="user-name">{{ namaUser }}</span>
-            <i class="caret" :class="{ rotated: dropdownOpen }"></i>
+    <transition name="mobile-menu">
+      <div 
+        v-if="mobileMenuOpen || isDesktop"
+        class="navbar-right-section"
+        :class="{ 'mobile-open': mobileMenuOpen }"
+      >
+        <!-- Left menu dengan icon toggle -->
+        <div class="navbar-left">
+          <!-- Tombol toggle untuk desktop (GARIS 3) -->
+          <button class="sidebar-toggle-btn hidden-xs" @click="toggleSidebar">
+            <i class="icon-menu7"></i>
           </button>
+          <span class="status-badge bg-success">Online</span>
+        </div>
 
-          <transition name="dropdown">
-            <ul class="dropdown-menu" v-if="dropdownOpen">
-              <li class="dropdown-header">
-                <div class="user-info">
-                  <div class="user-avatar">
+        <!-- Right menu dengan dropdown -->
+        <div class="navbar-right">
+          <div class="dropdown-container" :class="{ open: dropdownOpen }">
+            <button class="dropdown-toggle" @click="toggleDropdown">
+              <span class="user-name">{{ namaUser }}</span>
+              <i class="caret" :class="{ rotated: dropdownOpen }"></i>
+            </button>
+
+            <transition name="dropdown">
+              <ul class="dropdown-menu" v-if="dropdownOpen">
+                <li class="dropdown-header">
+                  <div class="user-info">
+                    <div class="user-avatar">
+                      <i class="icon-user"></i>
+                    </div>
+                    <div class="user-details">
+                      <span class="user-fullname">{{ namaUser }}</span>
+                      <span class="user-email">{{ page.props.auth?.user?.email || 'user@example.com' }}</span>
+                    </div>
+                  </div>
+                </li>
+                <li class="divider"></li>
+                <li>
+                  <Link 
+                    href="/profile" 
+                    class="dropdown-item"
+                    @click="closeDropdown"
+                  >
                     <i class="icon-user"></i>
-                  </div>
-                  <div class="user-details">
-                    <span class="user-fullname">{{ namaUser }}</span>
-                    <span class="user-email">{{ page.props.auth?.user?.email || 'user@example.com' }}</span>
-                  </div>
-                </div>
-              </li>
-              <li class="divider"></li>
-              <li>
-                <Link 
-                  href="/profile" 
-                  class="dropdown-item"
-                  @click="closeDropdown"
-                >
-                  <i class="icon-user"></i>
-                  <span>Profil Saya</span>
-                </Link>
-              </li>
-              <li class="divider"></li>
-              <li>
-                <Link 
-                  href="/logout" 
-                  method="post" 
-                  as="button" 
-                  class="dropdown-item text-danger"
-                  @click="closeDropdown"
-                >
-                  <i class="icon-switch2"></i>
-                  <span>Logout</span>
-                </Link>
-              </li>
-            </ul>
-          </transition>
+                    <span>Profil Saya</span>
+                  </Link>
+                </li>
+                <li class="divider"></li>
+                <li>
+                  <Link 
+                    href="/logout" 
+                    method="post" 
+                    as="button" 
+                    class="dropdown-item text-danger"
+                    @click="closeDropdown"
+                  >
+                    <i class="icon-switch2"></i>
+                    <span>Logout</span>
+                  </Link>
+                </li>
+              </ul>
+            </transition>
+          </div>
         </div>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
@@ -194,7 +257,7 @@ onBeforeUnmount(() => {
   padding: 0;
   height: 50px;
   overflow: hidden;
-  transition: opacity .25s ease, transform .25s ease;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .navbar-brand img {
@@ -241,6 +304,11 @@ onBeforeUnmount(() => {
 
 .mobile-btn:hover {
   background: #f5f5f5;
+  transform: scale(1.05);
+}
+
+.mobile-btn:active {
+  transform: scale(0.95);
 }
 
 /* Tombol toggle sidebar (garis 3) */
@@ -262,6 +330,11 @@ onBeforeUnmount(() => {
 
 .sidebar-toggle-btn:hover {
   background: #f5f5f5;
+  transform: scale(1.05);
+}
+
+.sidebar-toggle-btn:active {
+  transform: scale(0.95);
 }
 
 /* Bagian kanan navbar */
@@ -271,6 +344,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 15px;
+  transition: opacity 0.3s ease;
 }
 
 /* Navbar left */
@@ -287,6 +361,11 @@ onBeforeUnmount(() => {
   font-weight: 600;
   border-radius: 3px;
   color: #fff;
+  transition: transform 0.2s ease;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
 }
 
 .bg-success {
@@ -330,7 +409,7 @@ onBeforeUnmount(() => {
 }
 
 .caret {
-  transition: transform 0.3s ease;
+  transition: transform 0.3s var(--transition-timing);
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 4px solid #333;
@@ -340,7 +419,7 @@ onBeforeUnmount(() => {
   transform: rotate(180deg);
 }
 
-/* Dropdown menu */
+/* Dropdown menu dengan animasi */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -354,6 +433,24 @@ onBeforeUnmount(() => {
   box-shadow: 0 5px 20px rgba(0,0,0,.15);
   z-index: 1000;
   list-style: none;
+  transform-origin: top right;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s var(--transition-timing);
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: scale(0.95) translateY(-10px);
+}
+
+.dropdown-enter-to,
+.dropdown-leave-from {
+  opacity: 1;
+  transform: scale(1) translateY(0);
 }
 
 .dropdown-header {
@@ -378,6 +475,11 @@ onBeforeUnmount(() => {
   justify-content: center;
   color: white;
   font-size: 20px;
+  transition: transform 0.2s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
 }
 
 .user-details {
@@ -426,12 +528,18 @@ onBeforeUnmount(() => {
 
 .dropdown-item:hover {
   background: #f8f9fa;
+  transform: translateX(5px);
 }
 
 .dropdown-item i {
   font-size: 18px;
   width: 20px;
   color: #666;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-item:hover i {
+  transform: scale(1.1);
 }
 
 .dropdown-item.text-danger {
@@ -440,18 +548,6 @@ onBeforeUnmount(() => {
 
 .dropdown-item.text-danger i {
   color: #dc3545;
-}
-
-/* Animations */
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all 0.2s ease;
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
 
 /* Sidebar collapsed states */
@@ -474,6 +570,28 @@ body.sidebar-xs .navbar-brand {
 /* Tombol toggle tidak terpengaruh sidebar collapsed */
 .sidebar-toggle-btn {
   /* style sudah di atas */
+}
+
+/* Animasi untuk mobile menu */
+.mobile-menu-enter-active,
+.mobile-menu-leave-active {
+  transition: all 0.3s var(--transition-timing);
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.mobile-menu-enter-from,
+.mobile-menu-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.mobile-menu-enter-to,
+.mobile-menu-leave-from {
+  opacity: 1;
+  max-height: 300px;
+  transform: translateY(0);
 }
 
 /* Responsive */
@@ -515,18 +633,13 @@ body.sidebar-xs .navbar-brand {
   }
 
   .navbar-right-section {
-    display: none;
+    display: flex;
     flex-direction: column;
     background: #fff;
     border-top: 1px solid #ddd;
     padding: 10px 15px;
-    max-height: calc(100vh - 50px);
-    overflow-y: auto;
     width: 100%;
-  }
-
-  .navbar-right-section.mobile-open {
-    display: flex;
+    transform-origin: top;
   }
 
   .navbar-left,
@@ -553,6 +666,18 @@ body.sidebar-xs .navbar-brand {
     width: 100%;
     box-shadow: none;
     margin-top: 5px;
+    animation: slideDown 0.2s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   body.sidebar-xs .navbar-header {
@@ -568,6 +693,27 @@ body.sidebar-xs .navbar-brand {
 
   body.sidebar-xs .brand-text {
     display: inline-block;
+  }
+
+  .mobile-menu-enter-active,
+  .mobile-menu-leave-active {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 300px;
+    overflow: hidden;
+  }
+
+  .mobile-menu-enter-from,
+  .mobile-menu-leave-to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-20px);
+  }
+
+  .mobile-menu-enter-to,
+  .mobile-menu-leave-from {
+    opacity: 1;
+    max-height: 300px;
+    transform: translateY(0);
   }
 }
 </style>
