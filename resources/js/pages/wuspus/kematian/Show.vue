@@ -1,4 +1,5 @@
 <script setup>
+import AdminLayout from '@/layouts/AdminLayout.vue'
 import { Link } from '@inertiajs/vue3'
 
 const props = defineProps({
@@ -11,50 +12,55 @@ const props = defineProps({
     <div class="bg-white p-4 main-container">
       <div class="header-flex mb-3">
         <h2>Detail Kematian WUS/PUS</h2>
-        <Link href="/posyandu/wuspus-kematian" class="btn btn-secondary">← Kembali</Link>
+        <Link href="/posyandu/wuspus-kematian" class="btn-back">
+          <span>←</span>
+          <span>Kembali</span>
+        </Link>
       </div>
 
       <hr>
 
-      <div class="row">
-        <div class="col-lg-4 mb-3">
-          <label>ID WUS/PUS</label>
-          <input class="form-control" :value="row.id_wuspus" disabled>
-        </div>
+      <div class="detail-card">
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">ID WUS/PUS</span>
+            <span class="detail-value">{{ row.id_wuspus }}</span>
+          </div>
 
-        <div class="col-lg-4 mb-3">
-          <label>NIK</label>
-          <input class="form-control" :value="row.nik_wuspus" disabled>
-        </div>
+          <div class="detail-item">
+            <span class="detail-label">NIK</span>
+            <span class="detail-value">{{ row.nik_wuspus }}</span>
+          </div>
 
-        <div class="col-lg-4 mb-3">
-          <label>Nama</label>
-          <input class="form-control" :value="row.nama_wuspus" disabled>
-        </div>
+          <div class="detail-item">
+            <span class="detail-label">Nama</span>
+            <span class="detail-value">{{ row.nama_wuspus }}</span>
+          </div>
 
-        <div class="col-lg-6 mb-3">
-          <label>Posyandu</label>
-          <input class="form-control" :value="row.nama_posyandu" disabled>
-        </div>
+          <div class="detail-item">
+            <span class="detail-label">Posyandu</span>
+            <span class="detail-value">{{ row.nama_posyandu }}</span>
+          </div>
 
-        <div class="col-lg-6 mb-3">
-          <label>Kelurahan</label>
-          <input class="form-control" :value="row.nama_kel" disabled>
-        </div>
+          <div class="detail-item">
+            <span class="detail-label">Kelurahan</span>
+            <span class="detail-value">{{ row.nama_kel }}</span>
+          </div>
 
-        <div class="col-lg-6 mb-3">
-          <label>Kecamatan</label>
-          <input class="form-control" :value="row.nama_kec" disabled>
-        </div>
+          <div class="detail-item">
+            <span class="detail-label">Kecamatan</span>
+            <span class="detail-value">{{ row.nama_kec }}</span>
+          </div>
 
-        <div class="col-lg-6 mb-3">
-          <label>Status</label>
-          <input class="form-control text-danger fw-bold" value="MENINGGAL" disabled>
-        </div>
+          <div class="detail-item">
+            <span class="detail-label">Status</span>
+            <span class="detail-value status-meninggal">MENINGGAL</span>
+          </div>
 
-        <div class="col-lg-12 mb-3">
-          <label>Keterangan</label>
-          <textarea class="form-control" rows="3" :value="row.ket" disabled></textarea>
+          <div class="detail-item full-width">
+            <span class="detail-label">Keterangan</span>
+            <span class="detail-value">{{ row.ket || '-' }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -62,6 +68,111 @@ const props = defineProps({
 </template>
 
 <style scoped>
-.main-container{min-height:100vh}
-.header-flex{display:flex;justify-content:space-between;align-items:center}
+.main-container {
+  min-height: 100vh;
+}
+
+.header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Button Back */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-back:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  transform: translateY(-2px);
+}
+
+.btn-back:active {
+  background: #cbd5e1;
+  transform: translateY(0);
+}
+
+.detail-card {
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 24px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px 24px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.detail-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.detail-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1e293b;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #eef1f4;
+}
+
+.status-meninggal {
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .detail-card {
+    padding: 16px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .header-flex {
+    flex-direction: column;
+    gap: 12px;
+    align-items: start;
+  }
+  
+  .btn-back {
+    width: 100%;
+    justify-content: center;
+  }
+}
 </style>
