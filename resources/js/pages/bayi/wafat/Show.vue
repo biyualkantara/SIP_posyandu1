@@ -10,8 +10,11 @@ const props = defineProps({
 <template>
   <div class="bg-white p-4 main-container">
     <div class="header-flex mb-3">
-      <h2>Detail Kematian Bayi</h2>
-      <Link href="/posyandu/bayi-wafat" class="btn btn-secondary">← Kembali</Link>
+      <h2>Detail Penimbangan Bayi</h2>
+      <Link href="/posyandu/bayi-pnb" class="btn-back">
+        <span>←</span>
+        <span>Kembali</span>
+      </Link>
     </div>
 
     <hr>
@@ -28,10 +31,6 @@ const props = defineProps({
           <div class="detail-item">
             <span class="detail-label">Nama Ibu (WUS/PUS)</span>
             <span class="detail-value">{{ row.nama_wuspus || '-' }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">NIK Ibu</span>
-            <span class="detail-value">{{ row.nik_wuspus || '-' }}</span>
           </div>
         </div>
       </div>
@@ -59,13 +58,25 @@ const props = defineProps({
 
       <hr class="separator">
 
-      <!-- Data Kematian -->
+      <!-- Data Penimbangan -->
       <div class="detail-section">
-        <h4 class="section-title">Data Kematian</h4>
+        <h4 class="section-title">Data Penimbangan</h4>
         <div class="detail-grid">
           <div class="detail-item">
-            <span class="detail-label">Tanggal Kematian</span>
-            <span class="detail-value">{{ row.tgl_kematian || '-' }}</span>
+            <span class="detail-label">Tanggal Penimbangan</span>
+            <span class="detail-value">{{ row.tgl_pnb || '-' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Berat (kg)</span>
+            <span class="detail-value">{{ row.berat ?? '-' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Tinggi (cm)</span>
+            <span class="detail-value">{{ row.tb ?? '-' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Hasil</span>
+            <span class="detail-value">{{ row.hasil || '-' }}</span>
           </div>
         </div>
       </div>
@@ -92,6 +103,34 @@ const props = defineProps({
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Button Back - Sama dengan file edit */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-back:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  transform: translateY(-2px);
+}
+
+.btn-back:active {
+  background: #cbd5e1;
+  transform: translateY(0);
 }
 
 .detail-card {
@@ -176,6 +215,11 @@ const props = defineProps({
     flex-direction: column;
     gap: 12px;
     align-items: start;
+  }
+  
+  .btn-back {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

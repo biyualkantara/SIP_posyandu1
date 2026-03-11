@@ -8,11 +8,13 @@ const props = defineProps({
 </script>
 
 <template>
-
     <div class="bg-white p-4 main-container">
       <div class="header-flex mb-3">
         <h2>Detail WUS / PUS</h2>
-        <Link href="/posyandu/wuspus" class="btn btn-secondary">← Kembali</Link>
+        <Link href="/posyandu/wuspus" class="btn-back">
+          <span>←</span>
+          <span>Kembali</span>
+        </Link>
       </div>
 
       <hr>
@@ -136,7 +138,6 @@ const props = defineProps({
 
       </div>
     </div>
-
 </template>
 
 <style scoped>
@@ -148,6 +149,34 @@ const props = defineProps({
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Button Back */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-back:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  transform: translateY(-2px);
+}
+
+.btn-back:active {
+  background: #cbd5e1;
+  transform: translateY(0);
 }
 
 .detail-card {
@@ -225,6 +254,11 @@ const props = defineProps({
     flex-direction: column;
     gap: 12px;
     align-items: start;
+  }
+  
+  .btn-back {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>
