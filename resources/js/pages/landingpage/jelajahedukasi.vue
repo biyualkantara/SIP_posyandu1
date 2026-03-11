@@ -110,7 +110,7 @@
 
                     <img :src="item.img" :alt="item.title" />
 
-                    <Link :href="item.href" class="btn-aksi">
+                    <Link :href="`/edukasi-detail/${item.id}`" class="btn-aksi">
                         {{ ctaText(item.type) }}
                     </Link>
                 </div>
@@ -164,7 +164,7 @@ const items = ref([
         searchTitle: 'mpasi menu',
         type: 'berita',
         img: '/storage/edukasi_page/makanan2.png',
-        href: '#',
+        href: '/edukasi-detail',
     },
     {
         id: 3,
@@ -172,7 +172,7 @@ const items = ref([
         searchTitle: 'cara mpasi video',
         type: 'video',
         img: '/storage/edukasi_page/bayi2.png',
-        href: '#',
+        href: '/edukasi-detail',
     },
     {
         id: 4,
@@ -180,7 +180,7 @@ const items = ref([
         searchTitle: 'stunting pola makan',
         type: 'video',
         img: '/storage/edukasi_page/makanan2.png',
-        href: '#',
+        href: '/edukasi-detail',
     },
     {
         id: 5,
@@ -188,7 +188,7 @@ const items = ref([
         searchTitle: 'panduan stunting anak',
         type: 'artikel',
         img: '/storage/edukasi_page/imunisasi2.png',
-        href: '#',
+        href: '/edukasi-detail',
     },
     {
         id: 6,
@@ -196,7 +196,7 @@ const items = ref([
         searchTitle: 'pencegahan stunting ibu hamil',
         type: 'artikel',
         img: '/storage/edukasi_page/bumil2.png',
-        href: '#',
+        href: '/edukasi-detail',
     },
 ]);
 
@@ -238,292 +238,352 @@ onBeforeUnmount(() => document.body.classList.remove('esip-edukasi-body'));
 
 <style scoped>
 /* =========================
-   LIMITLESS OVERRIDE (aman)
-   ========================= */
-:global(body.esip-edukasi-body .content) {
-    padding: 0 !important;
-}
-:global(body.esip-edukasi-body .page-container),
-:global(body.esip-edukasi-body .page-content),
-:global(body.esip-edukasi-body .content-wrapper),
-:global(body.esip-edukasi-body .content) {
-    background: transparent !important;
-    background-image: none !important;
-}
-
-/* =========================
-   PAGE BASE (tetap mirip)
+   PAGE BASE
    ========================= */
 .esip-edukasi-page {
     min-height: 100vh;
-    background: #bdd7ec;
-    padding: 18px 0 60px;
+    padding: 25px 0 70px;
+
+    background: linear-gradient(135deg,#cfe7ff,#e9f4ff);
+
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* back */
-.btn-back {
-    margin: 18px 25px;
-}
-.btn-back a {
-    font-size: 14px;
-    text-decoration: none;
-    background: #f1f1f1;
-    padding: 7px 18px;
-    border-radius: 999px;
-    color: #3d3d3d;
-    font-weight: 700;
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14); /* Limitless feel */
-    border: 1px solid rgba(0, 0, 0, 0.06);
+/* =========================
+   BACK BUTTON
+   ========================= */
+.btn-back{
+    margin:20px 25px;
 }
 
-/* title */
-.judul-section {
-    padding: 8px 16px 0;
-}
-.judul-page {
-    font-size: 44px;
-    font-weight: 900;
-    text-shadow: 3px 4px rgba(0, 0, 0, 0.25);
-    margin: 0;
-}
-.subjudul {
-    font-size: 18px;
-    margin-top: 6px;
-    font-weight: 600;
-    color: rgba(0, 0, 0, 0.72);
+.btn-back a{
+    font-size:14px;
+    text-decoration:none;
+    background:#ffffff;
+    padding:8px 18px;
+    border-radius:50px;
+    color:#444;
+    font-weight:700;
+
+    box-shadow:0 6px 14px rgba(0,0,0,0.12);
+    transition:all .25s;
 }
 
-/* search */
-.search-container {
-    display: flex;
-    justify-content: center;
-    margin: 20px auto;
-    gap: 12px;
-    padding: 0 16px;
+.btn-back a:hover{
+    transform:translateY(-2px);
 }
-.search-container input {
-    width: min(420px, 100%);
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    outline: none;
-    background: #fff;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+
+/* =========================
+   HEADER
+   ========================= */
+.judul-section{
+    padding:10px 16px 0;
 }
-.search-container input:focus {
-    border-color: rgba(140, 154, 210, 0.9);
+
+.judul-page{
+    font-size:42px;
+    font-weight:900;
+    margin:0;
+    color:#1c2b4a;
+}
+
+.subjudul{
+    font-size:17px;
+    margin-top:6px;
+    color:#5b6a8a;
+}
+
+/* =========================
+   SEARCH
+   ========================= */
+.search-container{
+    display:flex;
+    justify-content:center;
+    margin:28px auto;
+    gap:10px;
+    padding:0 16px;
+}
+
+.search-container input{
+    width:min(420px,100%);
+    padding:13px 15px;
+
+    border-radius:12px;
+    border:none;
+    outline:none;
+
+    background:#fff;
+
+    box-shadow:0 6px 14px rgba(0,0,0,0.12);
+}
+
+.search-container input:focus{
     box-shadow:
-        0 0 0 3px rgba(140, 154, 210, 0.22),
-        0 8px 16px rgba(0, 0, 0, 0.12);
-}
-.search-container button {
-    padding: 12px 16px;
-    border-radius: 10px;
-    background: #f8e889;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    font-weight: 900;
-    cursor: pointer;
-    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.16);
-    font-size: 14px;
+        0 0 0 3px rgba(120,150,255,.3),
+        0 6px 14px rgba(0,0,0,0.12);
 }
 
-/* kategori */
-.kategori-wrapper {
-    display: flex;
-    justify-content: center;
-    gap: 18px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-    padding: 0 16px;
-}
-.btn-kategori {
-    background: #f9e88a;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-weight: 900;
-    font-size: 15px;
-    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.14);
-    text-decoration: none;
-    color: #3f3f3f;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
-}
-.btn-kategori:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 22px rgba(0, 0, 0, 0.18);
-}
-.btn-kategori.active {
-    background: #ffe15b;
-    outline: 2px solid rgba(0, 0, 0, 0.08);
+.search-container button{
+    padding:13px 18px;
+    border-radius:12px;
+    background:#ffd95b;
+    border:none;
+    cursor:pointer;
+
+    font-weight:900;
+
+    box-shadow:0 6px 14px rgba(0,0,0,0.14);
+    transition:.2s;
 }
 
-/* grid cards */
-.konten-edukasi {
-    width: min(1200px, 100%);
-    margin: 30px auto;
-    padding: 0 16px;
-
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 26px;
+.search-container button:hover{
+    transform:translateY(-2px);
 }
 
-/* card: Limitless panel feel */
-.card-edukasi {
-    background: #fff;
-    border-radius: 12px;
-    padding: 22px;
-    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.16);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    text-align: center;
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}
-.card-edukasi:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
+/* =========================
+   FILTER KATEGORI
+   ========================= */
+.kategori-wrapper{
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    padding:0 16px;
 }
 
-.card-edukasi h3 {
-    font-size: 16px;
-    font-weight: 900;
-    color: #222;
-    margin: 4px 0 6px;
-    line-height: 1.35;
+.btn-kategori{
+    background:#ffffff;
+    padding:9px 18px;
+    border-radius:30px;
+    font-weight:700;
+    font-size:14px;
+
+    text-decoration:none;
+    color:#3d3d3d;
+
+    box-shadow:0 5px 12px rgba(0,0,0,0.12);
+
+    transition:all .25s;
 }
 
-.card-edukasi img {
-    width: 80%;
-    height: 140px;
-    object-fit: contain;
+.btn-kategori:hover{
+    transform:translateY(-2px);
 }
 
-/* badge */
-.badge {
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-weight: 900;
-    color: #fff;
-    align-self: flex-start;
-}
-.badge-video {
-    background: #ff6c4e;
-}
-.badge-artikel {
-    background: #3a8be7;
-}
-.badge-berita {
-    background: #2fb430;
+.btn-kategori.active{
+    background:#ffd95b;
 }
 
-/* button aksi */
-.btn-aksi {
-    width: 100%;
-    text-align: center;
-    background: #f8e889;
-    padding: 10px 18px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: #3f3f3f;
-    font-weight: 900;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.14);
-    transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
-}
-.btn-aksi:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 22px rgba(0, 0, 0, 0.18);
+/* =========================
+   GRID CONTENT
+   ========================= */
+.konten-edukasi{
+    width:min(1200px,100%);
+    margin:35px auto;
+    padding:0 16px;
+
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:26px;
 }
 
-/* empty */
-.empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    font-weight: 800;
-    color: rgba(0, 0, 0, 0.65);
-    border-radius: 12px;
-    padding: 18px;
-    background: #fff;
-    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.16);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+/* =========================
+   CARD EDUKASI
+   ========================= */
+.card-edukasi{
+
+    background:#ffffff;
+
+    border-radius:16px;
+
+    padding:22px;
+
+    text-align:center;
+
+    box-shadow:0 12px 25px rgba(0,0,0,0.12);
+
+    transition:all .25s;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
 }
 
-/* WA box */
-.wa-box {
-    width: min(1200px, 100%);
-    margin: 38px auto 0;
-    padding: 18px 22px;
-    border-radius: 12px;
-    background: #f0b87a;
-    font-weight: 700;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-
-    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.16);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-}
-.wa-text {
-    margin: 0;
-}
-.btn-wa {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: #25d366;
-    padding: 10px 18px;
-    border-radius: 999px;
-    text-decoration: none;
-    color: #fff;
-    font-weight: 900;
-    transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease,
-        opacity 0.15s ease;
-    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.16);
-}
-.btn-wa:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 22px rgba(0, 0, 0, 0.18);
+.card-edukasi:hover{
+    transform:translateY(-6px);
+    box-shadow:0 18px 35px rgba(0,0,0,0.18);
 }
 
-/* responsive */
-@media (max-width: 992px) {
-    .konten-edukasi {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .judul-page {
-        font-size: 34px;
-    }
+.card-edukasi h3{
+    font-size:16px;
+    font-weight:800;
+    line-height:1.4;
 }
 
-@media (max-width: 600px) {
-    .konten-edukasi {
-        grid-template-columns: 1fr;
-    }
-    .judul-page {
-        font-size: 28px;
-    }
-    .subjudul {
-        font-size: 14px;
-    }
-    .wa-box {
-        flex-direction: column;
-        text-align: center;
-    }
+/* =========================
+   IMAGE
+   ========================= */
+.card-edukasi img{
+    width:85%;
+    height:150px;
+    object-fit:contain;
+}
+
+/* =========================
+   BADGE
+   ========================= */
+.badge{
+    font-size:11px;
+    padding:6px 12px;
+    border-radius:20px;
+    font-weight:800;
+    color:#fff;
+    align-self:flex-start;
+}
+
+.badge-video{
+    background:#ff5b5b;
+}
+
+.badge-artikel{
+    background:#3a86ff;
+}
+
+.badge-berita{
+    background:#2dbd63;
+}
+
+/* =========================
+   BUTTON AKSI
+   ========================= */
+.btn-aksi{
+    width:100%;
+    text-align:center;
+
+    background:#ffd95b;
+
+    padding:10px 16px;
+
+    border-radius:10px;
+
+    text-decoration:none;
+
+    color:#333;
+
+    font-weight:800;
+
+    transition:all .25s;
+
+    box-shadow:0 6px 14px rgba(0,0,0,0.14);
+}
+
+.btn-aksi:hover{
+    transform:translateY(-2px);
+}
+
+/* =========================
+   EMPTY
+   ========================= */
+.empty{
+    grid-column:1/-1;
+
+    background:#fff;
+
+    padding:20px;
+
+    border-radius:12px;
+
+    text-align:center;
+
+    font-weight:700;
+
+    box-shadow:0 10px 20px rgba(0,0,0,0.12);
+}
+
+/* =========================
+   WA BOX
+   ========================= */
+.wa-box{
+
+    width:min(1200px,100%);
+    margin:40px auto 0;
+
+    padding:18px 24px;
+
+    border-radius:14px;
+
+    background:#ffe7c8;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,0.12);
+}
+
+.btn-wa{
+
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+
+    background:#25d366;
+
+    padding:10px 18px;
+
+    border-radius:30px;
+
+    color:#fff;
+
+    font-weight:800;
+
+    text-decoration:none;
+
+    transition:.25s;
+
+    box-shadow:0 8px 18px rgba(0,0,0,0.15);
+}
+
+.btn-wa:hover{
+    transform:translateY(-2px);
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media(max-width:992px){
+
+.konten-edukasi{
+grid-template-columns:repeat(2,1fr);
+}
+
+.judul-page{
+font-size:32px;
+}
+
+}
+
+@media(max-width:600px){
+
+.konten-edukasi{
+grid-template-columns:1fr;
+}
+
+.judul-page{
+font-size:26px;
+}
+
+.subjudul{
+font-size:14px;
+}
+
+.wa-box{
+flex-direction:column;
+text-align:center;
+}
+
 }
 </style>

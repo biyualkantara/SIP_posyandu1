@@ -55,9 +55,9 @@ createInertiaApp({
                 'landingpage/jelajahedukasi',
                 'landingpage/halamanberita',
                 'landingpage/halamandaftarberita',
-                'landingpage/detailberita', //aku nambahin ini jadi ilang layout adminnya
+                'landingpage/detailberita',
                 'landingpage/halamandaftarposyandu',
-                
+                'landingpage/edukasidetail',
 
             ];
 
@@ -67,7 +67,6 @@ createInertiaApp({
                 module.default.layout = AdminLayout;
             }
         });
-
         return page;
     },
 
