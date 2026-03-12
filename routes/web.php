@@ -51,9 +51,15 @@ Route::get('/halamanberita', function () {
         'berita' => Berita::orderByDesc('tanggal_waktu')->get(),
     ]);
 });
+
 Route::get('/berita-detail/{id}', [BeritaController::class, 'detail'])
     ->name('berita.detail');
-Route::get('/halaman-posyandu', fn () => Inertia::render('landingpage/halamandaftarposyandu'));
+
+// ===== HALAMAN POSYANDU (PUBLIC) - MENGGUNAKAN CONTROLLER =====
+Route::get('/halaman-posyandu', [DuspyController::class, 'landingIndex'])
+    ->name('landing.posyandu');
+// ===== ===== ===== =====
+
 Route::get('/jelajah-edukasi', fn () => Inertia::render('landingpage/jelajahedukasi'));
 Route::get('/testing', fn () => Inertia::render('testing'));
 
@@ -62,6 +68,7 @@ Route::get('/edukasi-detail/{id}', function ($id) {
         'id' => $id
     ]);
 });
+
 /*
 |--------------------------------------------------------------------------
 | AUTH
@@ -74,8 +81,6 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class,'logout']);
-
-
 
 /*
 |--------------------------------------------------------------------------

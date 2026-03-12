@@ -9,8 +9,12 @@ use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+
 class DuspyController extends Controller
 {
+    /**
+     * Display a listing of the resource for admin page.
+     */
     public function index(Request $request)
     {
         $kecamatan = DB::table('kcmtn')
@@ -58,6 +62,53 @@ class DuspyController extends Controller
                 'q'   => $request->q ?? '',
             ],
         ]);
+    }
+
+    /**
+     * NEW METHOD: Display a listing for landing page (public)
+     */
+    public function landingIndex(Request $request)
+    {
+        // Ambil semua data posyandu untuk landing page
+        $posyandu = Duspy::with(['kelurahan.kecamatan'])
+            ->orderBy('nama_posyandu')
+            ->get()
+            ->map(function ($item) {
+                // Format data sesuai kebutuhan tampilan landing page
+                return [
+                    'id' => $item->id_posyandu,
+                    'nama' => $item->nama_posyandu,
+                    'status' => $this->determineStatus($item), // Tentukan status aktif/pasif
+                    'alamat' => $item->alamat_posyandu,
+                    'kecamatan' => $item->kelurahan->kecamatan->nama_kec ?? '-',
+                    'kelurahan' => $item->kelurahan->nama_kel ?? '-',
+                    'pj_umum' => $item->pj_umum,
+                    'kader_aktif' => $item->kader_aktif,
+                    'strata' => $item->strata_psy,
+                ];
+            });
+
+        return Inertia::render('landingpage/halamandaftarposyandu', [
+            'posyandu' => $posyandu
+        ]);
+    }
+
+    /**
+     * Helper method to determine status (Aktif/Pasif)
+     * You can customize this logic based on your business rules
+     */
+    private function determineStatus($item)
+    {
+        // Logika penentuan status - sesuaikan dengan kebutuhan
+        // Contoh: jika strata_psy ada dan kader_aktif > 0 maka Aktif
+        if ($item->strata_psy && $item->kader_aktif > 0) {
+            return 'Aktif';
+        }
+        
+        // Bisa juga berdasarkan field status jika ada di tabel
+        // if ($item->status) return $item->status;
+        
+        return 'Pasif';
     }
 
     public function create()
@@ -177,30 +228,6 @@ class DuspyController extends Controller
             ->with('success', 'Data berhasil diperbarui.');
     }
 
-   /* public function exportPdf()
-    {
-        $items = Duspy::with(['kelurahan.kecamatan'])
-            ->orderBy('nama_posyandu')
-            ->get();
-
-        $html = view('pdf.duspy', [
-            'items' => $items
-        ])->render();
-
-        $options = new Options();
-        $options->set('defaultFont', 'DejaVu Sans');
-        $options->set('isRemoteEnabled', true);
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'landscape');
-        $dompdf->render();
-
-        return response($dompdf->output(), 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition'=> 'attachment; filename="data_posyandu.pdf"',
-        ]);
-    }*/
     public function destroy($id)
     {
         Duspy::findOrFail($id)->delete();
