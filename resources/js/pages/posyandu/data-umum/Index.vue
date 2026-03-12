@@ -302,7 +302,7 @@ const formatValue = (value) => {
             </div>
         </div>
 
-        <!-- FILTER SECTION - DIPERBAIKI -->
+        <!-- FILTER SECTION -->
         <div class="filter-section">
             <h6 class="filter-section-title">Filter Data</h6>
             <div class="filter-grid-2">
