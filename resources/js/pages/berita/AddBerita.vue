@@ -135,23 +135,9 @@ function submitForm() {
     saveScrollPosition()
     
     // Kirim data ke server
-    form.post('/berita', {
-        preserveScroll: true,
-        onSuccess: () => {
-            openSuccess('Berita berhasil ditambahkan!')
-            setTimeout(() => {
-                router.visit('/berita')
-            }, 1000)
-        },
-        onError: (errors) => {
-            console.error('Error:', errors)
-            let errorMsg = 'Gagal menyimpan data'
-            if (typeof errors === 'object') {
-                errorMsg = Object.values(errors).join(', ')
-            }
-            openError(errorMsg)
-        }
-    })
+   form.post('/berita', {
+    preserveScroll: true
+})
 }
 </script>
 
@@ -591,7 +577,52 @@ select.form-control {
     border-top: 2px solid #e2e8f0 !important;
     padding: 8px !important;
 }
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: white;
+    border-radius: 8px;
+    padding: 14px 18px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
 
+.toast-notification.success {
+    border-left: 5px solid #22c55e;
+}
+
+.toast-notification.error {
+    border-left: 5px solid #ef4444;
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+}
+/*animasi nya */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all .3s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(40px);
+}
 /* Responsive */
 @media (max-width: 992px) {
     .form-grid {

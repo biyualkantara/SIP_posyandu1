@@ -139,16 +139,7 @@ function submitForm() {
 
     saveScrollPosition()
     
-    form.put(`/berita/${props.berita.id_berita}`, {
-        preserveScroll: true,
-        onSuccess: () => {
-            router.visit('/berita')
-        },
-        onError: (errors) => {
-            console.error('Error:', errors)
-            openError('Gagal menyimpan data')
-        }
-    })
+    form.put(`/berita/${props.berita.id_berita}`)
 }
 </script>
 
@@ -524,7 +515,52 @@ textarea.form-control {
 :global(.cke) {
     width: 100% !important;
 }
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: white;
+    border-radius: 8px;
+    padding: 14px 18px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
 
+.toast-notification.success {
+    border-left: 5px solid #22c55e;
+}
+
+.toast-notification.error {
+    border-left: 5px solid #ef4444;
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+}
+/*animasi nya */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all .3s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(40px);
+}
 /* Responsive */
 @media (max-width: 992px) {
     .form-grid {
@@ -567,4 +603,6 @@ textarea.form-control {
         justify-content: center;
     }
 }
+
+
 </style>

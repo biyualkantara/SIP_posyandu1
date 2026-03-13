@@ -299,22 +299,17 @@ const getHasilClass = (hasil) => {
 <template>
   <AdminLayout>
     <!-- Toast Notification -->
-    <Transition name="slide-fade">
-        <div v-if="toast.show" class="toast-notification" :class="toast.type">
-            <div class="toast-content">
-                <i 
-                    class="icon" 
-                    :class="{
-                        'icon-check-circle': toast.type === 'success',
-                        'icon-exclamation-circle': toast.type === 'error',
-                        'icon-info-circle': toast.type === 'info',
-                        'icon-exclamation-triangle': toast.type === 'warning'
-                    }"
-                ></i>
-                <span class="toast-message">{{ toast.message }}</span>
-                <button class="toast-close" @click="hideToast">×</button>
+     <Transition name="slide-fade">
+            <div v-if="toast.show" class="toast-notification" :class="toast.type">
+                <div class="toast-content">
+                    <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+                    <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+                    <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+                    <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+                    <span class="toast-message">{{ toast.message }}</span>
+                    <button class="toast-close" @click="hideToast">×</button>
+                </div>
             </div>
-        </div>
     </Transition>
 
     <div class="data-container">
