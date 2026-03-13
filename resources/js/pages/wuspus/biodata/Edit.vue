@@ -125,6 +125,9 @@ watch(selectedPos, (val) => {
 })
 
 function submitForm() {
+  form.tinggi_ibu = parseInt(form.tinggi_ibu)
+  form.tinggi_ayah = parseInt(form.tinggi_ayah)
+  
   if (!selectedKec.value) {
     openError('Kecamatan wajib dipilih')
     return
@@ -295,7 +298,7 @@ function submitForm() {
                   <input 
                     type="number" 
                     class="form-input" 
-                    v-model="form.tinggi_ibu"
+                    v-model.number="form.tinggi_ibu"
                     placeholder="Contoh: 155"
                   />
                 </div>
@@ -305,7 +308,7 @@ function submitForm() {
                   <input 
                     type="number" 
                     class="form-input" 
-                    v-model="form.tinggi_ayah"
+                    v-model.number="form.tinggi_ayah"
                     placeholder="Contoh: 165"
                   />
                 </div>
