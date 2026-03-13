@@ -464,7 +464,7 @@ const filteredRows = computed(() => {
       r.alamat?.toLowerCase().includes(searchLower) ||
       r.status?.toLowerCase().includes(searchLower)
     )
-  }
+  } 
   
   // Filter by status
   if (filters.status) {
