@@ -78,9 +78,13 @@
                 <label class="filter-label">Kecamatan</label>
                 <select v-model="filters.kecamatan" class="filter-select" @change="applyFilter">
                   <option value="">Semua Kecamatan</option>
-                  <option value="Cimahi Tengah">Cimahi Tengah</option>
-                  <option value="Cimahi Utara">Cimahi Utara</option>
-                  <option value="Cimahi Selatan">Cimahi Selatan</option>
+                  <option 
+                    v-for="kecamatan in daftarKecamatan" 
+                    :key="kecamatan" 
+                    :value="kecamatan"
+                  >
+                    {{ kecamatan }}
+                  </option>
                 </select>
               </div>
 
@@ -376,7 +380,7 @@ const props = defineProps({
   }
 })
 
-// Data state - PAKAI DATA DARI SERVER (TANPA HARDCODED)
+// Data state - PAKAI DATA DARI SERVER
 const rows = ref(props.posyandu)
 
 // Body class untuk styling
@@ -451,6 +455,17 @@ const filters = reactive({
 // Pagination
 const page = ref(1)
 const perPage = 5
+
+// Computed: daftar kecamatan UNIK dari database (OTOMATIS)
+const daftarKecamatan = computed(() => {
+  // Ambil semua nilai kecamatan, filter yang tidak kosong, dan buat unik
+  const kecamatanList = rows.value
+    .map(r => r.kecamatan)
+    .filter(kec => kec && kec.trim() !== '')
+  
+  // Buat Set untuk menghilangkan duplikat, lalu jadi array dan sortir
+  return [...new Set(kecamatanList)].sort()
+})
 
 // Computed: filtered rows
 const filteredRows = computed(() => {
@@ -980,7 +995,7 @@ function closeModal() {
   font-size: 13px;
 }
 
-/* Action Buttons - Sama seperti di penimbangan */
+/* Action Buttons */
 .action-group {
     display: flex;
     gap: 8px;

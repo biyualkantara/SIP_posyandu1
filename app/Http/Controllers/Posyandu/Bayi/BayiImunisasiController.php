@@ -216,7 +216,7 @@ class BayiImunisasiController extends Controller
     // Ambil data imunisasi beserta relasinya
     $row = DB::table('bayi_imun as bi')
         ->join('bayi as b', 'b.id_bayi', '=', 'bi.id_bayi')
-        ->join('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')  // Join ke wuspus
+        ->join('wuspus as w', 'w.id_wuspus', '=', 'b.id_wuspus')
         ->join('duspy as d', 'd.id_posyandu', '=', 'w.id_posyandu')
         ->join('klrhn as kel', 'kel.id_kel', '=', 'd.id_kel')
         ->join('kcmtn as kec', 'kec.id_kec', '=', 'kel.id_kec')
@@ -225,9 +225,9 @@ class BayiImunisasiController extends Controller
             'bi.*',
             'b.id_bayi',
             'b.nama_bayi',
-            'w.id_wuspus',        // Tambah ID ibu
-            'w.nama_wuspus',      // Tambah nama ibu
-            'w.nik_wuspus',        // Tambah NIK ibu
+            'w.id_wuspus',
+            'w.nama_wuspus',
+            'w.nik_wuspus',
             'w.id_posyandu',
             'd.nama_posyandu',
             'kel.id_kel',
@@ -251,7 +251,12 @@ class BayiImunisasiController extends Controller
         ->get()
         ->groupBy('id_posyandu');
 
-    $imun = DB::table('imunisasi')->select('id_imun', 'jns_imun')->orderBy('jns_imun')->get();
+    // ✅ FILTER: Hanya imunisasi untuk Bayi (sama seperti di create)
+    $imun = DB::table('imunisasi')
+        ->where('imun_untuk', 'Bayi')  // Tambahkan filter ini!
+        ->select('id_imun', 'jns_imun')
+        ->orderBy('jns_imun')
+        ->get();
 
     return Inertia::render('bayi/imunisasi/Edit', [
         'row' => $row,
@@ -259,7 +264,7 @@ class BayiImunisasiController extends Controller
         'kelurahan' => $kelurahan,
         'posyandu' => $posyandu,
         'bayi' => $bayi,
-        'imun' => $imun
+        'imun' => $imun 
     ]);
 }
 

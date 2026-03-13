@@ -1,6 +1,6 @@
 <script setup>
 import AdminLayout from '@/layouts/AdminLayout.vue'
-import { Link, useForm } from "@inertiajs/vue3"
+import { Link, useForm, router } from "@inertiajs/vue3"  // Tambah router
 import { ref } from "vue"
 import VueSelect from "vue3-select-component"
 
@@ -101,8 +101,13 @@ function submitForm() {
     onSuccess: () => {
       hideToast()
       openSuccess('Data imunisasi bayi berhasil diperbarui')
+      
+      // Redirect dengan Inertia, bukan window.location
       setTimeout(() => {
-        window.location.href = '/posyandu/bayi-imun'
+        router.visit('/posyandu/bayi-imun', {
+          preserveScroll: true,
+          // Flash message dari controller akan otomatis terbaca di index.vue
+        })
       }, 1000)
     },
     onError: (errors) => {
