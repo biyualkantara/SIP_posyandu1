@@ -3,7 +3,6 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import DataTable from '@/components/ui/DataTable.vue'
 
-
 // Props dari server
 const props = defineProps({
   data: Object,
@@ -13,91 +12,9 @@ const props = defineProps({
   filter: Object
 })
 
-// Untuk tabel
-const rows = computed(() => props.data?.data ?? [])
-const columns = [
-  { key: 'id_bayi_imun', label: 'ID', sortable: true },
-  { key: 'nama_bayi', label: 'Nama Bayi', sortable: true },
-  { key: 'nama_posyandu', label: 'Posyandu', sortable: true },
-  { key: 'jns_imun', label: 'Imunisasi', sortable: true },
-  { key: 'tgl_imun', label: 'Tgl Imun', sortable: true },
-  { key: 'actions', label: 'Aksi', sortable: false },
-]
-
-// Filter
-const selectedKec = ref(props.filter?.kec ?? '')
-const selectedKel = ref(props.filter?.kel ?? '')
-const selectedPos = ref(props.filter?.pos ?? '')
-const searchText  = ref(props.filter?.q ?? '')
-
-const kelurahanList = computed(() => selectedKec.value ? (props.kelurahan?.[selectedKec.value] ?? []) : [])
-const posyanduList = computed(() => selectedKel.value ? (props.posyandu?.[selectedKel.value] ?? []) : [])
-
-// Watch filter
-watch(selectedKec, () => { selectedKel.value=''; selectedPos.value='' })
-watch(selectedKel, () => { selectedPos.value='' })
-
-function applyFilter() {
-  saveScrollPosition()
-  router.get('/posyandu/bayi-imun', {
-    kec: selectedKec.value || '',
-    kel: selectedKel.value || '',
-    pos: selectedPos.value || '',
-    q:   searchText.value || '',
-  }, { 
-    preserveState: true, 
-    preserveScroll: true,
-    replace: true,
-    onSuccess: () => {
-      showToast('info', 'Filter diterapkan')
-      restoreScrollPosition()
-    }
-  })
-}
-const scrollPosition = ref(0)
-
-function saveScrollPosition() {
-  scrollPosition.value = window.scrollY
-  sessionStorage.setItem('scrollPosition', scrollPosition.value)
-}
-
-function restoreScrollPosition() {
-  const saved = sessionStorage.getItem('scrollPosition')
-  if (saved) {
-    setTimeout(() => {
-      window.scrollTo({ top: parseInt(saved), behavior: 'smooth' })
-      sessionStorage.removeItem('scrollPosition')
-    }, 100)
-  }
-}
-
-// Modal Delete
-const modalOpen = ref(false)
-const selected = ref({})
-
-function deleteRow(row){
-  selected.value = row
-  modalOpen.value = true
-}
-
-function closeModal(){
-  modalOpen.value = false
-  selected.value = {}
-}
-
-function confirmDelete() {
-  router.delete(`/posyandu/bayi-imun/${selected.value.id_bayi_imun}`, {
-    preserveScroll: true,
-    onSuccess: () => {
-      closeModal()
-      showToast('success', 'Data imunisasi bayi berhasil dihapus!')
-      router.reload({ only: ['data'] })
-    },
-    onError: () => {
-      showToast('error', 'Gagal menghapus data.')
-    }
-  })
-}
+// Ambil flash message dari Inertia
+const page = usePage()
+const flash = computed(() => page.props.flash)
 
 // Toast Notification
 const toast = ref({
@@ -128,18 +45,146 @@ function hideToast() {
   }
 }
 
-// Global listener (misal dari halaman create/edit)
-onMounted(() => {
-  window.addEventListener('toast', e => {
-    showToast(e.detail.type, e.detail.message)
-  })
+// Scroll position
+const scrollPosition = ref(0)
+
+function saveScrollPosition() {
+  scrollPosition.value = window.scrollY
+  sessionStorage.setItem('scrollPosition', scrollPosition.value)
+}
+
+function restoreScrollPosition() {
+  const saved = sessionStorage.getItem('scrollPosition')
+  if (saved) {
+    setTimeout(() => {
+      window.scrollTo({ top: parseInt(saved), behavior: 'smooth' })
+      sessionStorage.removeItem('scrollPosition')
+    }, 100)
+  }
+}
+
+// Untuk tabel
+const rows = computed(() => props.data?.data ?? [])
+const columns = [
+  { key: 'id_bayi_imun', label: 'ID', sortable: true },
+  { key: 'nama_bayi', label: 'Nama Bayi', sortable: true },
+  { key: 'nama_posyandu', label: 'Posyandu', sortable: true },
+  { key: 'jns_imun', label: 'Imunisasi', sortable: true },
+  { key: 'tgl_imun', label: 'Tgl Imun', sortable: true },
+  { key: 'actions', label: 'Aksi', sortable: false },
+]
+
+// Filter
+const selectedKec = ref(props.filter?.kec ?? '')
+const selectedKel = ref(props.filter?.kel ?? '')
+const selectedPos = ref(props.filter?.pos ?? '')
+const searchText  = ref(props.filter?.q ?? '')
+
+const kelurahanList = computed(() => selectedKec.value ? (props.kelurahan?.[selectedKec.value] ?? []) : [])
+const posyanduList = computed(() => selectedKel.value ? (props.posyandu?.[selectedKel.value] ?? []) : [])
+
+// Watch filter
+watch(selectedKec, () => { 
+  selectedKel.value = ''; 
+  selectedPos.value = '' 
 })
 
+watch(selectedKel, () => { 
+  selectedPos.value = '' 
+})
+
+function applyFilter() {
+  saveScrollPosition()
+  router.get('/posyandu/bayi-imun', {
+    kec: selectedKec.value || '',
+    kel: selectedKel.value || '',
+    pos: selectedPos.value || '',
+    q:   searchText.value || '',
+  }, { 
+    preserveState: true, 
+    preserveScroll: true,
+    replace: true,
+    onSuccess: () => {
+      showToast('info', 'Filter diterapkan')
+      restoreScrollPosition()
+    }
+  })
+}
+
+// Modal Delete
+const modalOpen = ref(false)
+const selected = ref({})
+
+function deleteRow(row){
+  selected.value = row
+  modalOpen.value = true
+}
+
+function closeModal(){
+  modalOpen.value = false
+  selected.value = {}
+}
+
+function confirmDelete() {
+  router.delete(`/posyandu/bayi-imun/${selected.value.id_bayi_imun}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      closeModal()
+      showToast('success', 'Data imunisasi bayi berhasil dihapus!')
+      router.reload({ only: ['data'] })
+    },
+    onError: () => {
+      showToast('error', 'Gagal menghapus data.')
+    }
+  })
+}
+
+// Handle link click
+function handleLinkClick() {
+  saveScrollPosition()
+}
+
+// Lifecycle
+onMounted(() => {
+  // Tangkap flash message dari server
+  if (flash.value?.success) {
+    showToast('success', flash.value.success)
+  } else if (flash.value?.error) {
+    showToast('error', flash.value.error)
+  } else if (flash.value?.info) {
+    showToast('info', flash.value.info)
+  }
+
+  // Listener untuk custom event toast
+  window.addEventListener('toast', (e) => {
+    showToast(e.detail.type, e.detail.message)
+  })
+
+  restoreScrollPosition()
+
+  // Cleanup
+  return () => {
+    window.removeEventListener('toast', () => {})
+    if (toast.value.timeout) {
+      clearTimeout(toast.value.timeout)
+    }
+  }
+})
+
+// Watch flash message untuk perubahan
+watch(flash, (newFlash) => {
+  if (newFlash?.success) {
+    showToast('success', newFlash.success)
+  } else if (newFlash?.error) {
+    showToast('error', newFlash.error)
+  } else if (newFlash?.info) {
+    showToast('info', newFlash.info)
+  }
+}, { deep: true })
 </script>
 
 <template>
- 
-    <!-- Toast Notification -->
+  <!-- Toast Notification -->
   <Transition name="slide-fade">
     <div v-if="toast.show" class="toast-notification" :class="toast.type">
       <div class="toast-content">
@@ -154,7 +199,6 @@ onMounted(() => {
   </Transition>
 
   <div class="data-container">
-
     <!-- Header -->
     <div class="header-section">
       <div>
@@ -162,158 +206,130 @@ onMounted(() => {
         <p class="page-subtitle">Kelola data imunisasi bayi posyandu</p>
       </div>
 
-      <Link href="/posyandu/bayi-imun/create" class="btn-create">
+      <Link href="/posyandu/bayi-imun/create" class="btn-create" @click="handleLinkClick">
         + Tambah Imunisasi
       </Link>
     </div>
 
-   <!-- Filter Section -->
-        <div class="filter-section">
-            <div class="filter-grid">
-                <div class="filter-item">
-                    <label class="filter-label">KECAMATAN</label>
-                    <div class="select-wrapper">
-                        <select class="filter-select" v-model="selectedKec" @change="applyFilter">
-                            <option value="">Semua Kecamatan</option>
-                            <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
-                                {{ k.nama_kec }}
-                            </option>
-                        </select>
-                        <i class="icon-chevron-down select-icon"></i>
-                    </div>
-                </div>
-
-                <div class="filter-item">
-                    <label class="filter-label">KELURAHAN</label>
-                    <div class="select-wrapper">
-                        <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
-                            <option value="">Semua Kelurahan</option>
-                            <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
-                                {{ k.nama_kel }}
-                            </option>
-                        </select>
-                        <i class="icon-chevron-down select-icon"></i>
-                    </div>
-                </div>
-
-                <div class="filter-item">
-                    <label class="filter-label">POSYANDU</label>
-                    <div class="select-wrapper">
-                        <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
-                            <option value="">Semua Posyandu</option>
-                            <option v-for="p in posyanduList" :key="p.id_posyandu" :value="p.id_posyandu">
-                                {{ p.nama_posyandu }}
-                            </option>
-                        </select>
-                        <i class="icon-chevron-down select-icon"></i>
-                    </div>
-                </div>
-            </div>
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <div class="filter-grid">
+        <div class="filter-item">
+          <label class="filter-label">KECAMATAN</label>
+          <div class="select-wrapper">
+            <select class="filter-select" v-model="selectedKec" @change="applyFilter">
+              <option value="">Semua Kecamatan</option>
+              <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
+                {{ k.nama_kec }}
+              </option>
+            </select>
+            <i class="icon-chevron-down select-icon"></i>
+          </div>
         </div>
 
+        <div class="filter-item">
+          <label class="filter-label">KELURAHAN</label>
+          <div class="select-wrapper">
+            <select class="filter-select" v-model="selectedKel" :disabled="!selectedKec" @change="applyFilter">
+              <option value="">Semua Kelurahan</option>
+              <option v-for="k in kelurahanList" :key="k.id_kel" :value="k.id_kel">
+                {{ k.nama_kel }}
+              </option>
+            </select>
+            <i class="icon-chevron-down select-icon"></i>
+          </div>
+        </div>
+
+        <div class="filter-item">
+          <label class="filter-label">POSYANDU</label>
+          <div class="select-wrapper">
+            <select class="filter-select" v-model="selectedPos" :disabled="!selectedKel" @change="applyFilter">
+              <option value="">Semua Posyandu</option>
+              <option v-for="p in posyanduList" :key="p.id_posyandu" :value="p.id_posyandu">
+                {{ p.nama_posyandu }}
+              </option>
+            </select>
+            <i class="icon-chevron-down select-icon"></i>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- TABLE -->
     <div class="table-section">
-            <div v-if="rows.length === 0" class="empty-state">
-                <div class="empty-icon">
-                <span>📊</span>
-                </div>
-                <h3 class="empty-title">Belum Ada Data Imunisasi Bayi</h3>
-                <p class="empty-description">Data imunisasi bayi belum tersedia. Silakan tambah data baru.</p>
-                <Link href="/posyandu/bayi-imun/create" class="btn-create empty-btn" @click="handleLinkClick">
-                <span>+</span>
-                <span>Tambah Data Pertama</span>
-                </Link>
-            </div>
+      <div v-if="rows.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <span>📊</span>
+        </div>
+        <h3 class="empty-title">Belum Ada Data Imunisasi Bayi</h3>
+        <p class="empty-description">Data imunisasi bayi belum tersedia. Silakan tambah data baru.</p>
+        <Link href="/posyandu/bayi-imun/create" class="btn-create empty-btn" @click="handleLinkClick">
+          <span>+</span>
+          <span>Tambah Data Pertama</span>
+        </Link>
+      </div>
 
       <DataTable v-else :columns="columns" :rows="rows" :perPage="20">
-        
-
         <template #col-actions="{ row }">
           <div class="action-group">
-
-            <Link :href="`/posyandu/bayi-imun/${row.id_bayi_imun}`">
+            <Link :href="`/posyandu/bayi-imun/${row.id_bayi_imun}`" @click="handleLinkClick">
               <span class="action-btn btn-show">
                 <i class="icon-eye"></i>
               </span>
             </Link>
 
-            <Link :href="`/posyandu/bayi-imun/${row.id_bayi_imun}/edit`">
+            <Link :href="`/posyandu/bayi-imun/${row.id_bayi_imun}/edit`" @click="handleLinkClick">
               <span class="action-btn btn-edit">
                 <i class="icon-pencil"></i>
               </span>
             </Link>
 
-            <span class="action-btn btn-delete"
-                  @click="deleteRow(row)">
+            <span class="action-btn btn-delete" @click="deleteRow(row)">
               <i class="icon-trash"></i>
             </span>
-
           </div>
         </template>
-
       </DataTable>
-
     </div>
 
     <!-- PAGINATION -->
-    <div class="pagination-section"
-         v-if="props.data?.links?.length">
-
+    <div class="pagination-section" v-if="props.data?.links?.length">
       <div class="pagination-info">
-        Menampilkan {{ props.data.from }}
-        - {{ props.data.to }}
-        dari {{ props.data.total }} data
+        Menampilkan {{ props.data.from }} - {{ props.data.to }} dari {{ props.data.total }} data
       </div>
 
       <ul class="pagination-list">
-        <li v-for="(l, idx) in props.data.links"
-            :key="idx"
-            :class="{ active: l.active, disabled: !l.url }">
-          <a href="#"
-             @click.prevent="l.url && router.visit(l.url, { preserveScroll:true })"
-             v-html="l.label">
-          </a>
+        <li v-for="(l, idx) in props.data.links" :key="idx" :class="{ active: l.active, disabled: !l.url }">
+          <a href="#" @click.prevent="l.url && router.visit(l.url, { preserveScroll: true, onStart: saveScrollPosition })" v-html="l.label"></a>
         </li>
       </ul>
     </div>
-
   </div>
 
-  <!-- MODAL DELETE SAMA PERSIS -->
+  <!-- MODAL DELETE -->
   <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
     <div class="modal-content">
-
       <div class="modal-icon-wrapper">
         <i class="icon-bin modal-icon"></i>
       </div>
 
       <h3 class="modal-title">Hapus Data Imunisasi?</h3>
 
-      <p class="modal-text">
-        Anda akan menghapus data berikut:
-      </p>
+      <p class="modal-text">Anda akan menghapus data berikut:</p>
 
       <div class="modal-highlight">
         <strong>Nama Bayi: {{ selected.nama_bayi }}</strong>
       </div>
       <p class="modal-warning">
         <i class="icon-exclamation-triangle"></i>
-           Data yang dihapus tidak dapat dikembalikan
+        Data yang dihapus tidak dapat dikembalikan
       </p>
       <div class="modal-actions">
-        <button class="modal-btn modal-btn-cancel" @click="closeModal">
-          Batal
-        </button>
-        <button class="modal-btn modal-btn-delete" @click="confirmDelete">
-          Hapus
-        </button>
+        <button class="modal-btn modal-btn-cancel" @click="closeModal">Batal</button>
+        <button class="modal-btn modal-btn-delete" @click="confirmDelete">Hapus</button>
       </div>
-
     </div>
   </div>
-
-
 </template>
 
 <style scoped>
@@ -1145,5 +1161,4 @@ onMounted(() => {
 .toast.success { background-color: #4caf50; }
 .toast.error   { background-color: #f44336; }
 .toast.info    { background-color: #2196f3; }
-
 </style>
