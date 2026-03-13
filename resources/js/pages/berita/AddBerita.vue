@@ -201,6 +201,24 @@ function submitForm() {
                                 />
                                 <div v-if="form.errors.penulis" class="invalid-feedback">{{ form.errors.penulis }}</div>
                             </div>
+
+                            <!-- Tambahan Field Kategori -->
+                            <div class="form-group">
+                                <label class="form-label">Kategori <span class="text-muted">(opsional)</span></label>
+                                <select 
+                                    class="form-control" 
+                                    :class="{ 'is-invalid': form.errors.kategori }"
+                                    v-model="form.kategori"
+                                >
+                                    <option value="Info">Info</option>
+                                    <option value="Penting">Penting</option>
+                                    <option value="Kegiatan">Kegiatan</option>
+                                    <option value="Kesehatan">Kesehatan</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                                <div v-if="form.errors.kategori" class="invalid-feedback">{{ form.errors.kategori }}</div>
+                                <small class="text-muted">Kategori akan terdeteksi otomatis jika tidak dipilih</small>
+                            </div>
                         </div>
 
                         <!-- Kolom Kanan -->
@@ -391,6 +409,15 @@ textarea.form-control {
     height: auto;
     padding: 12px 16px;
     resize: vertical;
+}
+
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+    padding-right: 48px;
 }
 
 .invalid-feedback {
