@@ -3,6 +3,16 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 import DataTable from '@/components/ui/DataTable.vue';
 import { ref, computed, onMounted } from 'vue';
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+
+const toast = ref({
+  show: false,
+  type: 'success',
+  message: '',
+  timeout: null
+})
 
 const props = defineProps({
     berita: {
@@ -42,7 +52,17 @@ const handleLinkClick = () => {
 
 onMounted(() => {
     restoreScrollPosition()
-    // Debug: lihat data di console
+
+    console.log('FLASH MESSAGE:', page.props.flash)
+
+    if (page.props.flash?.success) {
+        showToast('success', page.props.flash.success)
+    }
+
+    if (page.props.flash?.error) {
+        showToast('error', page.props.flash.error)
+    }
+
     console.log('Props berita:', props.berita)
 })
 
@@ -82,20 +102,18 @@ function closeModal() {
 }
 
 function confirmDelete() {
-    if (!selected.value?.id_berita) {
-        return;
-    }
+    if (!selected.value?.id_berita) return
 
-    saveScrollPosition();
-    
     router.delete(`/berita/${selected.value.id_berita}`, {
         preserveScroll: true,
         onSuccess: () => {
-            closeModal();
-            router.reload({ only: ['berita'] });
-            restoreScrollPosition();
+            closeModal()
+            showToast('success', 'Data berita berhasil dihapus', 3000)
+        },
+        onError: () => {
+            showToast('error', 'Gagal menghapus data berita', 4000)
         }
-    });
+    })
 }
 
 // Format tanggal
@@ -138,9 +156,47 @@ const getCategoryBadgeClass = (kategori) => {
             return 'badge-info'
     }
 }
+function showToast(type, message, duration = 3000) {
+  if (toast.value.timeout) {
+    clearTimeout(toast.value.timeout)
+  }
+
+  toast.value.show = true
+  toast.value.type = type
+  toast.value.message = message
+
+  if (duration > 0) {
+    toast.value.timeout = setTimeout(() => {
+      toast.value.show = false
+      toast.value.timeout = null
+    }, duration)
+  }
+}
+
+function hideToast() {
+  toast.value.show = false
+
+  if (toast.value.timeout) {
+    clearTimeout(toast.value.timeout)
+    toast.value.timeout = null
+  }
+}
+
 </script>
 
 <template>
+    <Transition name="slide-fade">
+            <div v-if="toast.show" class="toast-notification" :class="toast.type">
+                <div class="toast-content">
+                    <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+                    <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+                    <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+                    <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+                    <span class="toast-message">{{ toast.message }}</span>
+                    <button class="toast-close" @click="hideToast">×</button>
+                </div>
+            </div>
+    </Transition>
         <div class="data-container">
             <!-- Header Section -->
             <div class="header-section">
@@ -789,7 +845,52 @@ const getCategoryBadgeClass = (kategori) => {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: white;
+    border-radius: 8px;
+    padding: 14px 18px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
 
+.toast-notification.success {
+    border-left: 5px solid #22c55e;
+}
+
+.toast-notification.error {
+    border-left: 5px solid #ef4444;
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+}
+/*animasi nya */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all .3s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(40px);
+}
 /* Responsive */
 @media (max-width: 768px) {
     .data-container {
