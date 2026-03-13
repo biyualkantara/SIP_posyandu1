@@ -144,7 +144,8 @@ class KehadiranKaderController extends Controller
             throw $e;
         }
 
-        return redirect('/posyandu/kehadiran-kader');
+        return redirect('/posyandu/kehadiran-kader')
+        ->with('success', 'Data kehadiran kader berhasil disimpan');
     }
 
     public function show($id)

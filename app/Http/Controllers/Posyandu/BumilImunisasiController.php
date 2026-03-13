@@ -232,7 +232,11 @@ class BumilImunisasiController extends Controller
         $kelurahan = DB::table('klrhn')->select('id_kel', 'id_kec', 'nama_kel')->orderBy('nama_kel')->get()->groupBy('id_kec');
         $posyandu  = DB::table('duspy')->select('id_posyandu', 'id_kel', 'nama_posyandu')->orderBy('nama_posyandu')->get()->groupBy('id_kel');
         $wuspus    = DB::table('wuspus')->select('id_wuspus', 'id_posyandu', 'nik_wuspus', 'nama_wuspus')->orderBy('nama_wuspus')->get()->groupBy('id_posyandu');
-        $imun      = DB::table('imunisasi')->select('id_imun','jns_imun')->orderBy('jns_imun')->get();
+        $imun = DB::table('imunisasi')
+        ->where('imun_untuk', 'BUMIL')
+        ->select('id_imun', 'jns_imun')
+        ->orderBy('jns_imun')
+        ->get();
 
         return Inertia::render('bumil/imunisasi/Edit', [
             'row' => $row,
