@@ -104,6 +104,7 @@ class WuspusImunisasiController extends Controller
 
    public function create()
 {
+    
     $kecamatan = DB::table('kcmtn')
         ->select('id_kec', 'nama_kec')
         ->orderBy('nama_kec')
@@ -234,6 +235,7 @@ class WuspusImunisasiController extends Controller
             ->get();
 
         $imun = DB::table('imunisasi')
+            ->where('imun_untuk', 'WUS/PUS')
             ->select('id_imun', 'jns_imun')
             ->orderBy('jns_imun')
             ->get();
