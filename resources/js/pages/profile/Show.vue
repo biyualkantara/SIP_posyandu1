@@ -1,29 +1,52 @@
 <script setup>
-import { Link, router } from '@inertiajs/vue3'
+import { Link } from '@inertiajs/vue3'
 
 const props = defineProps({
   user: Object
 })
 
-// Fungsi untuk kembali ke halaman sebelumnya
-const goBack = () => {
-  router.visit('/posyandu/data-umum')
+const formatDate = (date) => {
+  if (!date) return '-'
+  const d = new Date(date)
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+  const year = d.getFullYear()
+  const month = months[d.getMonth()]
+  const day = d.getDate().toString().padStart(2, '0')
+  const hours = d.getHours().toString().padStart(2, '0')
+  const minutes = d.getMinutes().toString().padStart(2, '0')
+  const seconds = d.getSeconds().toString().padStart(2, '0')
+  return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`
+}
+
+const getRoleClass = (role) => {
+  const roleStr = String(role || '').toLowerCase()
+  if (roleStr.includes('super') || roleStr === 'superadmin') return 'role-superadmin'
+  if (roleStr === 'admin') return 'role-admin'
+  if (roleStr === 'kader') return 'role-kader'
+  return 'role-default'
+}
+
+const formatRole = (role) => {
+  if (!role) return '-'
+  if (role === 'superadmin') return 'Super Admin'
+  if (role === 'admin') return 'Admin'
+  if (role === 'kader') return 'Kader'
+  return role
 }
 </script>
 
 <template>
   <AdminLayout>
     <div class="profile-wrapper">
-      <!-- Header Section -->
       <div class="profile-header">
         <div class="header-content">
           <div class="header-left">
-            <button @click="goBack" class="btn-back">
+            <Link href="/posyandu/data-umum" class="btn-back">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
               </svg>
               <span>Kembali</span>
-            </button>
+            </Link>
             <div class="header-title">
               <h1>Profil Saya</h1>
               <p>Informasi detail akun Anda</p>
@@ -56,6 +79,20 @@ const goBack = () => {
             </div>
           </div>
 
+          <!-- Username -->
+          <div class="info-item">
+            <div class="info-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M5.37 20c.92-3 4.29-4 6.63-4s5.71 1 6.63 4"></path>
+              </svg>
+              <span>Username</span>
+            </div>
+            <div class="info-value">
+              {{ user.username || '-' }}
+            </div>
+          </div>
+
           <!-- Email -->
           <div class="info-item">
             <div class="info-label">
@@ -66,7 +103,21 @@ const goBack = () => {
               <span>Email</span>
             </div>
             <div class="info-value">
-              {{ user.email }}
+              {{ user.email || '-' }}
+            </div>
+          </div>
+
+          <!-- No HP (BARU - dari tabel operator) -->
+          <div class="info-item">
+            <div class="info-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+              </svg>
+              <span>No. HP</span>
+            </div>
+            <div class="info-value">
+              {{ user.no_hp || '-' }}
             </div>
           </div>
 
@@ -81,12 +132,26 @@ const goBack = () => {
             </div>
             <div class="info-value">
               <span class="role-badge" :class="getRoleClass(user.role)">
-                {{ user.role }}
+                {{ formatRole(user.role) }}
               </span>
             </div>
           </div>
 
-          <!-- Dibuat Pada -->
+          <!-- Alamat (BARU - dari tabel operator) -->
+          <div class="info-item full-width">
+            <div class="info-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span>Alamat</span>
+            </div>
+            <div class="info-value">
+              {{ user.alamat || '-' }}
+            </div>
+          </div>
+
+          <!-- Dibuat Pada (menggunakan reg_times) -->
           <div class="info-item">
             <div class="info-label">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -105,39 +170,20 @@ const goBack = () => {
   </AdminLayout>
 </template>
 
-<script>
-export default {
-  methods: {
-    formatDate(date) {
-      if (!date) return '-'
-      // Format: 2025-11-22 07:08:09 → 22 Nov 2025 - 07:08:09
-      const d = new Date(date)
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-      const year = d.getFullYear()
-      const month = months[d.getMonth()]
-      const day = d.getDate().toString().padStart(2, '0')
-      const time = date.split(' ')[1] || ''
-      return `${day} ${month} ${year} - ${time}`
-    },
-    getRoleClass(role) {
-      const roleStr = String(role || '').toLowerCase()
-      if (roleStr.includes('super')) return 'role-superadmin'
-      if (roleStr === 'admin') return 'role-admin'
-      if (roleStr === 'user') return 'role-user'
-      return 'role-default'
-    }
-  }
-}
-</script>
-
 <style scoped>
 .profile-wrapper {
   width: 100%;
-  padding: 1.5rem;
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
 .profile-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px;
+  background: white;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .header-content {
@@ -145,48 +191,52 @@ export default {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 16px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 16px;
+  flex: 1;
 }
 
 .header-title h1 {
-  font-size: 1.875rem;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   color: #1e293b;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
 }
 
 .header-title p {
   color: #64748b;
-  font-size: 0.95rem;
+  font-size: 14px;
   margin: 0;
 }
 
+/* Button Back - Konsisten dengan halaman lain */
 .btn-back {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  background: white;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #f1f5f9;
   color: #475569;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 
 .btn-back:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: #e2e8f0;
   color: #1e293b;
-  transform: translateX(-2px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .btn-back svg {
@@ -195,62 +245,66 @@ export default {
   stroke: currentColor;
 }
 
+/* Button Edit */
 .btn-edit {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  background: white;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
+  gap: 8px;
+  padding: 10px 24px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
   text-decoration: none;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(30, 41, 59, 0.1);
 }
 
 .btn-edit:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  color: #1e293b;
+  background: #0f172a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
 }
 
+.btn-edit svg {
+  stroke: white;
+}
+
+/* Profile Card */
 .profile-card {
   background: white;
-  border-radius: 12px;
-  border: 1px solid #e9eef2;
-  overflow: hidden;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
 }
 
 .info-item {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e9eef2;
-  border-right: 1px solid #e9eef2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.info-item:nth-child(even) {
-  border-right: none;
-}
-
-.info-item:nth-last-child(-n+2) {
-  border-bottom: none;
+.info-item.full-width {
+  grid-column: 1 / -1;
 }
 
 .info-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
   color: #64748b;
-  font-size: 0.85rem;
+  font-size: 13px;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  margin-bottom: 0.75rem;
 }
 
 .info-label svg {
@@ -260,36 +314,39 @@ export default {
 }
 
 .info-value {
-  color: #0f172a;
-  font-size: 1.1rem;
+  color: #1e293b;
+  font-size: 16px;
   font-weight: 500;
-  padding-left: 1.625rem;
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #eef1f4;
+  word-break: break-word;
 }
 
 /* Role Badge */
 .role-badge {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: capitalize;
 }
 
 .role-superadmin {
-  background: #f1f5f9;
-  color: #334155;
-  border: 1px solid #cbd5e1;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .role-admin {
   background: #dbeafe;
-  color: #1e3a8a;
+  color: #1e40af;
 }
 
-.role-user {
-  background: #dcfce7;
-  color: #166534;
+.role-kader {
+  background: #d1fae5;
+  color: #065f46;
 }
 
 .role-default {
@@ -297,47 +354,12 @@ export default {
   color: #475569;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .profile-wrapper {
-    padding: 1rem;
+    padding: 16px;
   }
 
-  .header-left {
-    width: 100%;
-  }
-
-  .btn-back {
-    flex-shrink: 0;
-  }
-
-  .header-title h1 {
-    font-size: 1.5rem;
-  }
-
-  .info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .info-item {
-    border-right: none;
-    padding: 1rem 1.25rem;
-  }
-
-  .info-item:nth-last-child(-n+2) {
-    border-bottom: 1px solid #e9eef2;
-  }
-
-  .info-item:last-child {
-    border-bottom: none;
-  }
-
-  .btn-edit {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
   .header-content {
     flex-direction: column;
     align-items: stretch;
@@ -346,12 +368,25 @@ export default {
   .header-left {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
   }
 
   .btn-back {
     width: 100%;
     justify-content: center;
+  }
+
+  .btn-edit {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .profile-card {
+    padding: 20px;
   }
 }
 </style>

@@ -16,7 +16,7 @@ class BayiPnb extends Model
         'tb',
         'hasil',
         'pmt',
-        'keterangan',
+        'ket',
     ];
 
     public $timestamps = false;
