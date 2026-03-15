@@ -89,13 +89,13 @@ Route::post('/logout', [AuthController::class,'logout']);
 */
 
 Route::middleware(['auth','role:superadmin'])->group(function () {
-    Route::get('/operator', [OperatorController::class, 'index']);
-    Route::get('/operator/create', [OperatorController::class, 'create']);
-    Route::post('/operator', [OperatorController::class, 'store']);
-    Route::get('/operator/{id}', [OperatorController::class, 'show']);
-    Route::get('/operator/{id}/edit', [OperatorController::class, 'edit']);
-    Route::put('/operator/{id}', [OperatorController::class, 'update']);
-    Route::delete('/operator/{id}', [OperatorController::class, 'destroy']);
+    Route::get('/operator', [OperatorController::class, 'index'])->name('operator.index');
+    Route::get('/operator/create', [OperatorController::class, 'create'])->name('operator.create');
+    Route::post('/operator', [OperatorController::class, 'store'])->name('operator.store');
+    Route::get('/operator/{id}', [OperatorController::class, 'show'])->name('operator.show');
+    Route::get('/operator/{id}/edit', [OperatorController::class, 'edit'])->name('operator.edit');
+    Route::put('/operator/{id}', [OperatorController::class, 'update'])->name('operator.update');
+    Route::delete('/operator/{id}', [OperatorController::class, 'destroy'])->name('operator.destroy');
 });
 
 /*

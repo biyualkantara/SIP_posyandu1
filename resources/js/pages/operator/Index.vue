@@ -1,8 +1,52 @@
 <script setup>
-import { Link, router } from '@inertiajs/vue3'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import DataTable from '@/components/ui/DataTable.vue'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
+const page = usePage()
+
+const toast = ref({
+  show: false,
+  type: 'success',
+  message: '',
+})
+
+function showToast(type, message, duration = 3000) {
+  toast.value.show = true
+  toast.value.type = type
+  toast.value.message = message
+
+  setTimeout(() => {
+    toast.value.show = false
+  }, duration)
+}
+
+watch(
+  () => page.props.flash,
+  (flash) => {
+    if (flash?.success) {
+      showToast('success', flash.success)
+    }
+
+    if (flash?.error) {
+      showToast('error', flash.error)
+    }
+  },
+  { immediate: true, deep: true }
+)
+
+function hideToast() {
+  toast.value.show = false
+}
+onMounted(() => {
+  if (page.props.flash?.success) {
+    showToast('success', page.props.flash.success)
+  }
+
+  if (page.props.flash?.error) {
+    showToast('error', page.props.flash.error)
+  }
+})
 const props = defineProps({
   data: Object,
   filter: Object
@@ -127,14 +171,26 @@ function confirmDelete() {
     preserveScroll: true,
     onSuccess: () => {
       closeModal()
-      router.reload({ only: ['data'] })
     }
   })
 }
 </script>
 
 <template>
-<AdminLayout>
+   <!-- Toast Notification -->
+        <Transition name="slide-fade">
+            <div v-if="toast.show" class="toast-notification" :class="toast.type">
+                <div class="toast-content">
+                    <span v-if="toast.type === 'success'" class="toast-icon">✅</span>
+                    <span v-else-if="toast.type === 'error'" class="toast-icon">❌</span>
+                    <span v-else-if="toast.type === 'info'" class="toast-icon">ℹ️</span>
+                    <span v-else-if="toast.type === 'warning'" class="toast-icon">⚠️</span>
+                    <span class="toast-message">{{ toast.message }}</span>
+                    <button class="toast-close" @click="hideToast">×</button>
+                </div>
+            </div>
+        </Transition>
+<!-- <AdminLayout> -->
   <div class="data-container">
     <!-- Header Section -->
     <div class="header-section">
@@ -316,7 +372,7 @@ function confirmDelete() {
       </div>
     </div>
   </div>
-</AdminLayout>
+<!-- </AdminLayout> -->
 </template>
 
 <style scoped>
@@ -899,6 +955,81 @@ function confirmDelete() {
 .slide-fade-leave-to {
   transform: translateX(30px);
   opacity: 0;
+}
+/* Toast Notification */
+.toast-notification {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10000;
+    min-width: 320px;
+    max-width: 400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+    animation: slideInRight 0.3s ease;
+    border-left: 4px solid;
+}
+
+.toast-notification.success {
+    border-left-color: #10b981;
+}
+
+.toast-notification.error {
+    border-left-color: #ef4444;
+}
+
+.toast-notification.info {
+    border-left-color: #3b82f6;
+}
+
+.toast-notification.warning {
+    border-left-color: #f59e0b;
+}
+
+.toast-content {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toast-icon {
+    font-size: 20px;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.toast-close:hover {
+    color: #475569;
+}
+
+/* Animations */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+    transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateX(30px);
+    opacity: 0;
 }
 
 @keyframes slideInRight {
