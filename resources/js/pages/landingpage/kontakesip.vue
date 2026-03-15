@@ -57,13 +57,12 @@ onBeforeUnmount(() => document.body.classList.remove("esip-contact-page"));
 
 <style scoped>
 /* =========================
-   LIMITLESS OVERRIDE (khusus page ini)
+   LIMITLESS OVERRIDE
    ========================= */
 :global(body.esip-contact-page .content) {
   padding: 0 !important;
 }
 
-/* hilangkan background wrapper Limitless biar strip bersih */
 :global(body.esip-contact-page .page-container),
 :global(body.esip-contact-page .page-content),
 :global(body.esip-contact-page .content-wrapper),
@@ -72,133 +71,145 @@ onBeforeUnmount(() => document.body.classList.remove("esip-contact-page"));
   background-image: none !important;
 }
 
-/* penting: biar section bisa full width (nembus container Limitless) */
 :global(body.esip-contact-page .page-content) {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+
 :global(body.esip-contact-page .content-wrapper) {
   overflow: visible !important;
 }
 
 /* =========================
-   STRIP KONTAK (FULL WIDTH)
+   STRIP KONTAK DENGAN VARIASI BIRU
    ========================= */
 .esip-contact-wrap {
-  background: #fbe69b;
-
-  /* full-bleed */
+  background: linear-gradient(145deg, #d4e8ff 0%, #9fc5e8 50%, #6ba5d9 100%);
+  position: relative;
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-
-  padding: 48px 0;
+  padding: 60px 0;
 }
 
-/* isi strip (dibuat lebar biar kiri & kanan “kepencar” kayak gambar 2) */
-.esip-contact-inner {
-  width: min(1320px, 100%);
-  margin: 0 auto;
-  padding: 0 70px;
+.esip-contact-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/storage/tentangesip_page/background_biru.png");
+  background-repeat: repeat;
+  background-size: 250px;
+  background-position: center;
+  opacity: 0.3;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
 
+.esip-contact-inner {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 0 40px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 60px;
+  position: relative;
+  z-index: 1;
 }
 
 /* =========================
    KIRI
    ========================= */
 .left {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1;
 }
 
 .brand-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
 .brand-logo {
-  width: 44px;
-  height: 44px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
-  filter: drop-shadow(3px 3px 6px rgba(49, 38, 38, 0.25));
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .brand-text {
-  font-weight: 900;
-  font-size: 30px;
-  color: #2aa7d6;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
-  line-height: 1;
+  font-weight: 800;
+  font-size: 32px;
+  background: linear-gradient(135deg, #0a4c7a, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+  line-height: 1.2;
 }
 
 .subtitle {
-  font-weight: 900;
-  font-size: 20px;
-  margin: 0 0 14px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0 0 15px;
+  color: #0a3b5c;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 .department {
-  font-weight: 800;
-  font-size: 18px;
-  line-height: 1.35;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.18);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1e405b;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 /* =========================
-   KANAN (BOX)
+   KANAN
    ========================= */
 .right {
-  flex: 0 0 auto;
   display: flex;
-  gap: 34px;
-  justify-content: flex-end;
+  gap: 30px;
 }
 
 .box {
-  width: 250px;
-  height: 190px;
-  background: #efe6c9;
-  box-shadow: 7px 7px 10px rgba(0, 0, 0, 0.25);
+  width: 220px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  padding: 35px 20px 25px;
   position: relative;
   text-align: center;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  padding-top: 22px; /* ruang label */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    15px 15px 30px rgba(0, 40, 80, 0.15),
+    inset 0 0 20px rgba(255, 255, 255, 0.5);
 }
 
 .label {
-  background: #ffe47a;
-  color: #000000;             
-  font-weight: 900;
-  width: 120px;
-  padding: 6px 0;
-
+  background: linear-gradient(145deg, #f9e88a, #ffeaa5);
+  color: #0a4c7a;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 8px 25px;
+  border-radius: 30px;
   position: absolute;
-  top: 12px;
+  top: -15px;
   left: 50%;
   transform: translateX(-50%);
-}
-
-/* kalau mau label tetep kebaca, kasih shadow tipis */
-.label {
-  text-shadow: 0 1px 1px rgba(0,0,0,.35);
+  white-space: nowrap;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .box-body {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
-  line-height: 1.35;
-  color: #111;
+  line-height: 1.6;
+  color: #0a3b5c;
+  margin-top: 5px;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 /* =========================
@@ -207,34 +218,46 @@ onBeforeUnmount(() => document.body.classList.remove("esip-contact-page"));
 @media (max-width: 992px) {
   .esip-contact-inner {
     flex-direction: column;
-    padding: 0 22px;
-    gap: 28px;
+    text-align: center;
+    padding: 0 20px;
+    gap: 40px;
+  }
+
+  .brand-row {
+    justify-content: center;
   }
 
   .right {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
-    gap: 18px;
   }
 
   .box {
-    width: min(260px, 100%);
+    width: 260px;
   }
 }
 
 @media (max-width: 576px) {
+  .esip-contact-wrap {
+    padding: 40px 0;
+  }
+
   .brand-text {
-    font-size: 22px;
+    font-size: 24px;
   }
-  .subtitle {
-    font-size: 18px;
-  }
-  .department {
-    font-size: 16px;
-  }
+
   .box {
     width: 100%;
+    max-width: 280px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .department {
+    font-size: 14px;
   }
 }
 </style>
