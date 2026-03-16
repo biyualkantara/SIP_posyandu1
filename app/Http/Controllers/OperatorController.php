@@ -86,7 +86,9 @@ class OperatorController extends Controller
             'klrhn'       => $request->klrhn,
         ]);
 
-        return redirect('/operator')->with('success', 'Operator berhasil ditambahkan');
+         return redirect()
+                ->route('operator.index')
+                ->with('success', 'Data operator berhasil disimpan.');
     }
 
     public function show($id)
@@ -173,7 +175,9 @@ class OperatorController extends Controller
             ->where('id_operator', $id)
             ->update($data);
 
-        return redirect('/operator')->with('success', 'Operator berhasil diperbarui');
+        return redirect()
+                ->route('operator.index')
+                ->with('success', 'Data operator berhasil diperbarui.');
     }
 
     public function destroy($id)
@@ -182,6 +186,8 @@ class OperatorController extends Controller
             ->where('id_operator', $id)
             ->delete();
 
-        return redirect('/operator')->with('success', 'Operator berhasil dihapus');
+         return redirect()
+            ->route('operator.index')
+            ->with('success', 'Data operator berhasil dihapus.');
     }
 }
