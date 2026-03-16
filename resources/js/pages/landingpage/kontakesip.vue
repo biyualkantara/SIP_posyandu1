@@ -100,8 +100,8 @@ onBeforeUnmount(() => document.body.classList.remove("esip-contact-page"));
   background-repeat: repeat;
   background-size: 250px;
   background-position: center;
-  opacity: 0.3;
-  mix-blend-mode: soft-light;
+  opacity: 0.2;
+  mix-blend-mode: overlay;
   pointer-events: none;
 }
 
@@ -183,13 +183,16 @@ onBeforeUnmount(() => document.body.classList.remove("esip-contact-page"));
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 
-    15px 15px 30px rgba(0, 40, 80, 0.15),
+    15px 15px 30px rgba(0, 40, 80, 0.2),
     inset 0 0 20px rgba(255, 255, 255, 0.5);
 }
 
+/* =========================
+   LABEL BIRU (sebelumnya kuning)
+   ========================= */
 .label {
-  background: linear-gradient(145deg, #f9e88a, #ffeaa5);
-  color: #0a4c7a;
+  background: linear-gradient(145deg, #0a4c7a, #1e6a9f);
+  color: white;
   font-weight: 700;
   font-size: 16px;
   padding: 8px 25px;
@@ -199,17 +202,18 @@ onBeforeUnmount(() => document.body.classList.remove("esip-contact-page"));
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 15px rgba(0, 40, 80, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.5px;
 }
 
 .box-body {
   font-size: 16px;
   font-weight: 500;
   line-height: 1.6;
-  color: #0a3b5c;
+  color: white;
   margin-top: 5px;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* =========================
@@ -238,6 +242,16 @@ onBeforeUnmount(() => document.body.classList.remove("esip-contact-page"));
   }
 }
 
+@media (max-width: 768px) {
+  .box {
+    width: 240px;
+  }
+  
+  .brand-text {
+    font-size: 28px;
+  }
+}
+
 @media (max-width: 576px) {
   .esip-contact-wrap {
     padding: 40px 0;
@@ -257,6 +271,11 @@ onBeforeUnmount(() => document.body.classList.remove("esip-contact-page"));
   }
 
   .department {
+    font-size: 14px;
+  }
+  
+  .label {
+    padding: 6px 20px;
     font-size: 14px;
   }
 }
