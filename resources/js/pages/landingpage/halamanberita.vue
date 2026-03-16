@@ -4,6 +4,16 @@
   <HeroLanding />
 
   <AdminLayout>
+    <!-- Background dengan efek overlay pattern (sama seperti hero dan daftar posyandu) -->
+    <div class="page-background">
+      <img
+        src="/storage/landing_page/bg-landing-page.png"
+        class="background-img"
+        alt="Background"
+      />
+      <div class="background-overlay"></div>
+    </div>
+
     <div class="esip-news-page">
       <div class="content-inner">
         <!-- Header dengan judul -->
@@ -114,6 +124,23 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 
 <style scoped>
 /* =========================
+   VARIABEL WARNA (SAMA DENGAN DAFTAR POSYANDU)
+   ========================= */
+:global(:root){
+  --primary-soft: #e3f2fd;
+  --primary-light: #bbdefb;
+  --primary-main: #2196f3;
+  --primary-dark: #1976d2;
+  --accent-soft: #fff3e0;
+  --accent-main: #ff9800;
+  --shadow-sm: 0 4px 12px rgba(33, 150, 243, 0.08);
+  --shadow-md: 0 8px 24px rgba(33, 150, 243, 0.12);
+  --shadow-lg: 0 16px 32px rgba(33, 150, 243, 0.16);
+  --radius-md: 20px;
+  --radius-lg: 28px;
+}
+
+/* =========================
    LIMITLESS OVERRIDE
    ========================= */
 :global(body.esip-news-body .content) {
@@ -129,7 +156,41 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 }
 
 /* =========================
-   PAGE WRAP + BACKGROUND
+   BACKGROUND SAMA SEPERTI HERO DAN DAFTAR POSYANDU
+   ========================= */
+.page-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.background-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.25;
+}
+
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("/storage/tentangesip_page/background_biru.png");
+  background-repeat: repeat;
+  background-size: 300px;
+  background-position: center;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* =========================
+   PAGE WRAP
    ========================= */
 .esip-news-page {
   display: flex;
@@ -139,17 +200,7 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   isolation: isolate;
   position: relative;
-}
-
-.esip-news-page::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: url("/storage/tentangesip_page/bg-kotak-kotak.png");
-  background-repeat: repeat;
-  background-size: auto;
-  background-position: center -12px;
+  background: transparent; /* Background transparan karena sudah ada page-background */
 }
 
 .content-inner {
@@ -157,6 +208,8 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
   width: min(1200px, 100%);
   margin: 0 auto;
   padding: 0 20px;
+  position: relative;
+  z-index: 2;
 }
 
 /* =========================
@@ -168,11 +221,12 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 }
 
 .news-heading {
-  color: #00a6d6;
+  color: var(--primary-dark);
   font-size: 32px;
   font-weight: 700;
   padding-top: 50px;
   margin: 10px 0 10px;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
 }
 
 /* =========================
@@ -186,23 +240,26 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 }
 
 /* =========================
-   NEWS CARD (sama seperti halamandaftarberita)
+   NEWS CARD dengan efek glassmorphism
    ========================= */
 .news-card {
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.5);
   transition: all 0.3s ease;
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
   height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .news-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .news-image {
@@ -226,7 +283,8 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 .image-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #e6e6e6 0%, #f4f4f4 100%);
+  background: linear-gradient(135deg, rgba(230, 230, 230, 0.5) 0%, rgba(244, 244, 244, 0.5) 100%);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -241,7 +299,7 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 }
 
 .news-title {
-  color: #333;
+  color: #1e293b;
   font-size: 18px;
   font-weight: 700;
   margin: 0 0 12px;
@@ -257,7 +315,7 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
   gap: 15px;
   margin-bottom: 12px;
   font-size: 13px;
-  color: #666;
+  color: #64748b;
   flex-wrap: wrap;
 }
 
@@ -269,11 +327,11 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 
 .news-author i, .news-date i {
   font-size: 14px;
-  color: #999;
+  color: var(--primary-light);
 }
 
 .news-summary {
-  color: #555;
+  color: #475569;
   font-size: 14px;
   line-height: 1.6;
   margin-bottom: 16px;
@@ -289,7 +347,7 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: #00a6d6;
+  background: var(--primary-main);
   color: white;
   text-decoration: none;
   border-radius: 25px;
@@ -297,12 +355,13 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
   font-weight: 500;
   transition: all 0.3s ease;
   align-self: flex-start;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .read-more-btn:hover {
-  background: #008bb5;
-  transform: translateX(5px);
-  box-shadow: 0 5px 15px rgba(0, 166, 214, 0.3);
+  background: var(--primary-dark);
+  transform: translateX(5px) translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .arrow {
@@ -329,20 +388,23 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
   align-items: center;
   gap: 10px;
   padding: 12px 30px;
-  background: #fff;
-  color: #333;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  color: var(--primary-dark);
   text-decoration: none;
-  border-radius: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 40px;
+  box-shadow: var(--shadow-sm);
   font-size: 14px;
   font-weight: 600;
   transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .view-all-btn:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
-  background: #f8f9fa;
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.8);
 }
 
 .view-all-btn .arrow {
@@ -355,10 +417,12 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  background: white;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
   margin: 40px 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .empty-icon {
@@ -370,12 +434,12 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
 .empty-title {
   font-size: 20px;
   font-weight: 600;
-  color: #333;
+  color: #1e293b;
   margin-bottom: 10px;
 }
 
 .empty-description {
-  color: #666;
+  color: #64748b;
   margin-bottom: 20px;
 }
 
@@ -420,6 +484,22 @@ onBeforeUnmount(() => document.body.classList.remove("esip-news-body"));
   
   .content-inner {
     padding: 0 15px;
+  }
+  
+  .news-card {
+    border-radius: 20px;
+  }
+  
+  .news-image {
+    height: 180px;
+  }
+  
+  .news-content {
+    padding: 16px;
+  }
+  
+  .news-title {
+    font-size: 16px;
   }
 }
 </style>
