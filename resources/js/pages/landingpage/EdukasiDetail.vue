@@ -80,21 +80,22 @@ function goBack() {
     window.history.back();
 }
 </script>
+
 <template>
     <div class="detail-page">
-        <!-- BACK -->
+        <!-- BACK BUTTON -->
         <div class="btn-back">
             <a href="javascript:void(0)" @click="goBack">← Kembali</a>
         </div>
 
-        <!-- CARD -->
-        <div class="detail-container panel panel-body">
+        <!-- CARD UTAMA DENGAN EFEK KACA -->
+        <div class="detail-container">
             <h1 class="detail-title">
                 {{ artikel.title }}
             </h1>
 
             <!-- jika ada video -->
-            <div v-if="artikel.video" class="video-container">
+            <div v-if="artikel.video" class="video-wrapper">
                 <iframe
                     width="100%"
                     height="400"
@@ -118,90 +119,242 @@ function goBack() {
 </template>
 
 <style scoped>
-/* PAGE */
-.detail-page {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #cfe7ff, #e9f4ff);
-    padding: 40px 16px 60px;
+/* =========================
+   LIMITLESS OVERRIDE
+   ========================= */
+:global(body .content) {
+    padding: 0 !important;
 }
 
-/* BACK BUTTON */
+:global(body .page-container),
+:global(body .page-content),
+:global(body .content-wrapper),
+:global(body .content) {
+    background: transparent !important;
+    background-image: none !important;
+}
+
+/* =========================
+   PAGE BASE - BACKGROUND BIRU GRADIENT
+   ========================= */
+.detail-page {
+    min-height: 100vh;
+    padding: 40px 16px 60px;
+    background: linear-gradient(145deg, #d4e8ff 0%, #9fc5e8 50%, #6ba5d9 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+    isolation: isolate;
+}
+
+.detail-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("/storage/tentangesip_page/background_biru.png");
+    background-repeat: repeat;
+    background-size: 300px;
+    background-position: center;
+    opacity: 0.15;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* =========================
+   BACK BUTTON - BIRU
+   ========================= */
 .btn-back {
-    margin: 0 auto 20px;
     max-width: 800px;
+    margin: 0 auto 20px;
+    position: relative;
+    z-index: 1;
 }
 
 .btn-back a {
+    display: inline-block;
     text-decoration: none;
-    background: #f1f1f1;
-    padding: 8px 18px;
-    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 10px 22px;
+    border-radius: 50px;
     font-weight: 600;
-    color: #333;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    color: #0a4c7a;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 5px 5px 15px rgba(0, 40, 80, 0.15);
+    transition: all 0.3s ease;
+    font-size: 15px;
 }
 
-/* CONTAINER */
+.btn-back a:hover {
+    transform: translateX(-5px);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 8px 8px 20px rgba(0, 40, 80, 0.25);
+}
+
+/* =========================
+   CONTAINER UTAMA - EFEK KACA
+   ========================= */
 .detail-container {
     max-width: 800px;
-    margin: auto;
-    background: #fff;
-    padding: 35px;
-    border-radius: 14px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
-}
-.video-container {
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    padding: 45px;
+    border-radius: 40px;
+    box-shadow: 20px 20px 40px rgba(0, 40, 80, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    overflow: hidden;
+    z-index: 1;
 }
 
-.video-container iframe {
+/* =========================
+   TITLE - GRADIENT BIRU
+   ========================= */
+.detail-title {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #0a4c7a, #2c7fb8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+    line-height: 1.3;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.detail-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, #0a4c7a, #7fb4d9);
+    border-radius: 2px;
+}
+
+/* =========================
+   VIDEO WRAPPER
+   ========================= */
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+    border-radius: 24px;
+    margin-bottom: 30px;
+    box-shadow: 10px 10px 25px rgba(0, 40, 80, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.video-wrapper iframe {
     position: absolute;
     width: 100%;
     height: 100%;
     left: 0;
     top: 0;
+    border-radius: 24px;
 }
 
-/* TITLE */
-.detail-title {
-    font-size: 28px;
-    font-weight: 800;
-    margin-bottom: 20px;
-    color: #222;
-    line-height: 1.4;
-}
-
-/* IMAGE */
+/* =========================
+   IMAGE
+   ========================= */
 .detail-image {
     width: 100%;
     height: auto;
-    max-height: 380px;
-    object-fit: contain; /* supaya tidak terpotong */
-    border-radius: 10px;
-    margin-bottom: 20px;
-    background: white;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 24px;
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 20px;
+    box-shadow: 10px 10px 25px rgba(0, 40, 80, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* CONTENT */
+/* =========================
+   CONTENT
+   ========================= */
 .detail-content {
-    font-size: 16px;
+    font-size: 17px;
     line-height: 1.8;
-    color: #444;
+    color: #1e405b;
     text-align: justify;
 }
 
-/* RESPONSIVE */
+.detail-content :deep(p) {
+    margin-bottom: 20px;
+}
+
+.detail-content :deep(ul) {
+    margin: 15px 0;
+    padding-left: 25px;
+}
+
+.detail-content :deep(li) {
+    margin-bottom: 8px;
+    color: #1e405b;
+}
+
+.detail-content :deep(li::marker) {
+    color: #0a4c7a;
+}
+
+.detail-content :deep(strong) {
+    color: #0a3b5c;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 992px) {
+    .detail-title {
+        font-size: 32px;
+    }
+    
+    .detail-container {
+        padding: 35px;
+    }
+}
 
 @media (max-width: 768px) {
     .detail-container {
-        padding: 25px;
+        padding: 30px;
+        border-radius: 30px;
     }
 
     .detail-title {
-        font-size: 22px;
+        font-size: 28px;
+    }
+
+    .detail-content {
+        font-size: 16px;
+    }
+
+    .detail-image {
+        max-height: 300px;
+        padding: 15px;
+    }
+    
+    .video-wrapper {
+        border-radius: 20px;
+    }
+    
+    .video-wrapper iframe {
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .detail-container {
+        padding: 25px 20px;
+        border-radius: 25px;
+    }
+    
+    .detail-title {
+        font-size: 24px;
     }
 
     .detail-content {
@@ -209,23 +362,13 @@ function goBack() {
     }
 
     .detail-image {
-        max-height: 260px;
+        max-height: 250px;
+        padding: 10px;
     }
-}
-
-/* RESPONSIVE */
-
-@media (max-width: 768px) {
-    .detail-title {
-        font-size: 26px;
-    }
-
-    .detail-container {
-        padding: 25px;
-    }
-
-    .detail-content {
-        font-size: 15px;
+    
+    .btn-back a {
+        padding: 8px 18px;
+        font-size: 14px;
     }
 }
 </style>

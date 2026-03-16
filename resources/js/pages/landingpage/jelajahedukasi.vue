@@ -41,7 +41,6 @@
                     Semua
                 </a>
 
-                <!-- sesuai data-filter HTML kamu -->
                 <a
                     href="#"
                     class="btn-kategori"
@@ -93,7 +92,7 @@
                 <div
                     v-for="item in filteredItems"
                     :key="item.id"
-                    class="card-edukasi panel panel-body"
+                    class="card-edukasi"
                 >
                     <span
                         class="badge"
@@ -118,14 +117,14 @@
                 <!-- empty state -->
                 <div
                     v-if="filteredItems.length === 0"
-                    class="empty panel panel-body"
+                    class="empty"
                 >
                     Tidak ada hasil untuk “{{ keyword }}”
                 </div>
             </section>
 
             <!-- WA BOX -->
-            <div class="wa-box panel panel-body">
+            <div class="wa-box">
                 <p class="wa-text">
                     Ingin tahu informasi terbaru dari Posyandu Kota Cimahi?
                 </p>
@@ -146,8 +145,10 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3'
+
 const keyword = ref('');
 const activeFilter = ref('all');
+
 /* dummy data (tinggal ganti dari API nanti) */
 const items = ref([
     {
@@ -238,39 +239,74 @@ onBeforeUnmount(() => document.body.classList.remove('esip-edukasi-body'));
 
 <style scoped>
 /* =========================
-   PAGE BASE
+   LIMITLESS OVERRIDE
+   ========================= */
+:global(body.esip-edukasi-body .content) {
+    padding: 0 !important;
+}
+
+:global(body.esip-edukasi-body .page-container),
+:global(body.esip-edukasi-body .page-content),
+:global(body.esip-edukasi-body .content-wrapper),
+:global(body.esip-edukasi-body .content) {
+    background: transparent !important;
+    background-image: none !important;
+}
+
+/* =========================
+   PAGE BASE - BACKGROUND BIRU GRADIENT
    ========================= */
 .esip-edukasi-page {
     min-height: 100vh;
     padding: 25px 0 70px;
-
-    background: linear-gradient(135deg,#cfe7ff,#e9f4ff);
-
+    background: linear-gradient(145deg, #d4e8ff 0%, #9fc5e8 50%, #6ba5d9 100%);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+    isolation: isolate;
+}
+
+.esip-edukasi-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("/storage/tentangesip_page/background_biru.png");
+    background-repeat: repeat;
+    background-size: 300px;
+    background-position: center;
+    opacity: 0.15;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* =========================
-   BACK BUTTON
+   BACK BUTTON - BIRU
    ========================= */
 .btn-back{
     margin:20px 25px;
+    position: relative;
+    z-index: 1;
 }
 
 .btn-back a{
     font-size:14px;
     text-decoration:none;
-    background:#ffffff;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
     padding:8px 18px;
     border-radius:50px;
-    color:#444;
+    color: #0a4c7a;
     font-weight:700;
-
-    box-shadow:0 6px 14px rgba(0,0,0,0.12);
+    box-shadow: 5px 5px 15px rgba(0, 40, 80, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     transition:all .25s;
+    display: inline-block;
 }
 
 .btn-back a:hover{
     transform:translateY(-2px);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 8px 8px 20px rgba(0, 40, 80, 0.25);
 }
 
 /* =========================
@@ -278,23 +314,49 @@ onBeforeUnmount(() => document.body.classList.remove('esip-edukasi-body'));
    ========================= */
 .judul-section{
     padding:10px 16px 0;
+    position: relative;
+    z-index: 1;
+    text-align: center;
 }
 
 .judul-page{
-    font-size:42px;
-    font-weight:900;
+    font-size:48px;
+    font-weight:800;
     margin:0;
-    color:#1c2b4a;
+    background: linear-gradient(135deg, #0a4c7a, #2c7fb8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 3px 3px 6px rgba(255, 255, 255, 0.5);
+    position: relative;
+    padding-bottom: 15px;
+    display: inline-block;
+}
+
+.judul-page::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 4px;
+    background: linear-gradient(90deg, #0a4c7a, #7fb4d9);
+    border-radius: 2px;
 }
 
 .subjudul{
-    font-size:17px;
-    margin-top:6px;
-    color:#5b6a8a;
+    font-size:18px;
+    margin-top:10px;
+    color: #1e405b;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* =========================
-   SEARCH
+   SEARCH - BIRU
    ========================= */
 .search-container{
     display:flex;
@@ -302,46 +364,53 @@ onBeforeUnmount(() => document.body.classList.remove('esip-edukasi-body'));
     margin:28px auto;
     gap:10px;
     padding:0 16px;
+    position: relative;
+    z-index: 1;
 }
 
 .search-container input{
     width:min(420px,100%);
     padding:13px 15px;
-
-    border-radius:12px;
-    border:none;
+    border-radius:30px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
     outline:none;
-
-    background:#fff;
-
-    box-shadow:0 6px 14px rgba(0,0,0,0.12);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: 5px 5px 15px rgba(0, 40, 80, 0.1);
+    color: #0a3b5c;
 }
 
 .search-container input:focus{
-    box-shadow:
-        0 0 0 3px rgba(120,150,255,.3),
-        0 6px 14px rgba(0,0,0,0.12);
+    box-shadow: 0 0 0 3px rgba(10, 76, 122, 0.2), 5px 5px 15px rgba(0, 40, 80, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+    border-color: #0a4c7a;
+}
+
+.search-container input::placeholder {
+    color: #1e405b;
+    opacity: 0.6;
 }
 
 .search-container button{
     padding:13px 18px;
-    border-radius:12px;
-    background:#ffd95b;
-    border:none;
+    border-radius:30px;
+    background: linear-gradient(145deg, #0a4c7a, #1e6a9f);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     cursor:pointer;
-
     font-weight:900;
-
-    box-shadow:0 6px 14px rgba(0,0,0,0.14);
+    color: white;
+    box-shadow: 5px 5px 15px rgba(0, 40, 80, 0.2);
     transition:.2s;
 }
 
 .search-container button:hover{
     transform:translateY(-2px);
+    background: linear-gradient(145deg, #0d5588, #2b74a5);
+    box-shadow: 8px 8px 20px rgba(0, 40, 80, 0.3);
 }
 
 /* =========================
-   FILTER KATEGORI
+   FILTER KATEGORI - BIRU
    ========================= */
 .kategori-wrapper{
     display:flex;
@@ -349,29 +418,34 @@ onBeforeUnmount(() => document.body.classList.remove('esip-edukasi-body'));
     gap:14px;
     flex-wrap:wrap;
     padding:0 16px;
+    position: relative;
+    z-index: 1;
 }
 
 .btn-kategori{
-    background:#ffffff;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
     padding:9px 18px;
     border-radius:30px;
     font-weight:700;
     font-size:14px;
-
     text-decoration:none;
-    color:#3d3d3d;
-
-    box-shadow:0 5px 12px rgba(0,0,0,0.12);
-
+    color: #0a3b5c;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 3px 3px 10px rgba(0, 40, 80, 0.1);
     transition:all .25s;
 }
 
 .btn-kategori:hover{
     transform:translateY(-2px);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 5px 5px 15px rgba(0, 40, 80, 0.15);
 }
 
 .btn-kategori.active{
-    background:#ffd95b;
+    background: linear-gradient(145deg, #0a4c7a, #1e6a9f);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* =========================
@@ -381,29 +455,25 @@ onBeforeUnmount(() => document.body.classList.remove('esip-edukasi-body'));
     width:min(1200px,100%);
     margin:35px auto;
     padding:0 16px;
-
     display:grid;
     grid-template-columns:repeat(3,1fr);
     gap:26px;
+    position: relative;
+    z-index: 1;
 }
 
 /* =========================
-   CARD EDUKASI
+   CARD EDUKASI - EFEK KACA
    ========================= */
 .card-edukasi{
-
-    background:#ffffff;
-
-    border-radius:16px;
-
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
     padding:22px;
-
     text-align:center;
-
-    box-shadow:0 12px 25px rgba(0,0,0,0.12);
-
+    box-shadow: 15px 15px 30px rgba(0, 40, 80, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     transition:all .25s;
-
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -411,14 +481,17 @@ onBeforeUnmount(() => document.body.classList.remove('esip-edukasi-body'));
 }
 
 .card-edukasi:hover{
-    transform:translateY(-6px);
-    box-shadow:0 18px 35px rgba(0,0,0,0.18);
+    transform:translateY(-8px) scale(1.02);
+    box-shadow: 20px 20px 40px rgba(0, 40, 80, 0.25);
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .card-edukasi h3{
-    font-size:16px;
-    font-weight:800;
+    font-size:18px;
+    font-weight:700;
     line-height:1.4;
+    color: #0a3b5c;
+    margin: 10px 0;
 }
 
 /* =========================
@@ -428,162 +501,170 @@ onBeforeUnmount(() => document.body.classList.remove('esip-edukasi-body'));
     width:85%;
     height:150px;
     object-fit:contain;
+    filter: drop-shadow(5px 5px 15px rgba(0, 40, 80, 0.2));
 }
 
 /* =========================
-   BADGE
+   BADGE - BIRU
    ========================= */
 .badge{
-    font-size:11px;
-    padding:6px 12px;
+    font-size:12px;
+    padding:6px 15px;
     border-radius:20px;
-    font-weight:800;
+    font-weight:700;
     color:#fff;
     align-self:flex-start;
+    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .badge-video{
-    background:#ff5b5b;
+    background: #ff6b6b;
 }
 
 .badge-artikel{
-    background:#3a86ff;
+    background: #0a4c7a;
 }
 
 .badge-berita{
-    background:#2dbd63;
+    background: #2c7fb8;
 }
 
 /* =========================
-   BUTTON AKSI
+   BUTTON AKSI - BIRU
    ========================= */
 .btn-aksi{
     width:100%;
     text-align:center;
-
-    background:#ffd95b;
-
-    padding:10px 16px;
-
-    border-radius:10px;
-
+    background: linear-gradient(145deg, #0a4c7a, #1e6a9f);
+    padding:12px 16px;
+    border-radius:30px;
     text-decoration:none;
-
-    color:#333;
-
-    font-weight:800;
-
+    color:white;
+    font-weight:600;
     transition:all .25s;
-
-    box-shadow:0 6px 14px rgba(0,0,0,0.14);
+    box-shadow: 5px 5px 15px rgba(0, 40, 80, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn-aksi:hover{
-    transform:translateY(-2px);
+    transform:translateY(-3px);
+    background: linear-gradient(145deg, #0d5588, #2b74a5);
+    box-shadow: 8px 8px 20px rgba(0, 40, 80, 0.3);
 }
 
 /* =========================
-   EMPTY
+   EMPTY - BIRU
    ========================= */
 .empty{
     grid-column:1/-1;
-
-    background:#fff;
-
-    padding:20px;
-
-    border-radius:12px;
-
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    padding:30px;
+    border-radius:30px;
     text-align:center;
-
     font-weight:700;
-
-    box-shadow:0 10px 20px rgba(0,0,0,0.12);
+    color: #0a3b5c;
+    box-shadow: 15px 15px 30px rgba(0, 40, 80, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 /* =========================
-   WA BOX
+   WA BOX - BIRU
    ========================= */
 .wa-box{
-
     width:min(1200px,100%);
     margin:40px auto 0;
-
     padding:18px 24px;
-
-    border-radius:14px;
-
-    background:#ffe7c8;
-
+    border-radius:30px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:10px;
+    box-shadow: 15px 15px 30px rgba(0, 40, 80, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    position: relative;
+    z-index: 1;
+}
 
-    box-shadow:0 10px 25px rgba(0,0,0,0.12);
+.wa-text{
+    font-size:16px;
+    font-weight:500;
+    color: #0a3b5c;
+    margin:0;
 }
 
 .btn-wa{
-
     display:inline-flex;
     align-items:center;
     gap:8px;
-
-    background:#25d366;
-
-    padding:10px 18px;
-
-    border-radius:30px;
-
+    background: linear-gradient(145deg, #25D366, #128C7E);
+    padding:12px 24px;
+    border-radius:40px;
     color:#fff;
-
-    font-weight:800;
-
+    font-weight:600;
     text-decoration:none;
-
     transition:.25s;
-
-    box-shadow:0 8px 18px rgba(0,0,0,0.15);
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn-wa:hover{
-    transform:translateY(-2px);
+    transform:translateY(-3px);
+    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* =========================
    RESPONSIVE
    ========================= */
-
 @media(max-width:992px){
-
-.konten-edukasi{
-grid-template-columns:repeat(2,1fr);
+    .konten-edukasi{
+        grid-template-columns:repeat(2,1fr);
+    }
+    .judul-page{
+        font-size:42px;
+    }
+    .subjudul{
+        font-size:16px;
+    }
 }
 
-.judul-page{
-font-size:32px;
-}
-
+@media(max-width:768px){
+    .konten-edukasi{
+        grid-template-columns:repeat(2,1fr);
+        gap:20px;
+    }
+    .judul-page{
+        font-size:36px;
+    }
 }
 
 @media(max-width:600px){
-
-.konten-edukasi{
-grid-template-columns:1fr;
-}
-
-.judul-page{
-font-size:26px;
-}
-
-.subjudul{
-font-size:14px;
-}
-
-.wa-box{
-flex-direction:column;
-text-align:center;
-}
-
+    .konten-edukasi{
+        grid-template-columns:1fr;
+    }
+    .judul-page{
+        font-size:28px;
+    }
+    .subjudul{
+        font-size:14px;
+    }
+    .wa-box{
+        flex-direction:column;
+        text-align:center;
+        padding:20px;
+    }
+    .btn-wa{
+        width:100%;
+        justify-content:center;
+    }
+    .kategori-wrapper{
+        gap:8px;
+    }
+    .btn-kategori{
+        padding:7px 14px;
+        font-size:13px;
+    }
 }
 </style>
