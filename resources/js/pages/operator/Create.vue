@@ -33,10 +33,7 @@ const saveScrollPosition = () => {
 function submit() {
   saveScrollPosition()
   form.post('/operator', {
-    onSuccess: () => router.visit('/operator'),
-    onError: (errors) => {
-      console.log(errors)
-    }
+    preserveScroll: true
   })
 }
 
@@ -454,7 +451,81 @@ select.form-control:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* Toast Notification */
+.toast-notification {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10000;
+    min-width: 320px;
+    max-width: 400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+    animation: slideInRight 0.3s ease;
+    border-left: 4px solid;
+}
 
+.toast-notification.success {
+    border-left-color: #10b981;
+}
+
+.toast-notification.error {
+    border-left-color: #ef4444;
+}
+
+.toast-notification.info {
+    border-left-color: #3b82f6;
+}
+
+.toast-notification.warning {
+    border-left-color: #f59e0b;
+}
+
+.toast-content {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toast-icon {
+    font-size: 20px;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.toast-close:hover {
+    color: #475569;
+}
+
+/* Animations */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+    transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateX(30px);
+    opacity: 0;
+}
 /* Responsive */
 @media (max-width: 992px) {
   .form-grid {
