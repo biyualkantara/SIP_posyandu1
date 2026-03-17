@@ -1,268 +1,486 @@
+<template>
+    <div class="rekapitulasi-container">
+        <h1>Rekapitulasi Data Posyandu</h1>
+        
+        <div class="filter-card">
+            <h3>Filter Laporan (Opsional)</h3>
+            <p class="filter-subtitle">Kosongkan jika ingin semua data</p>
+            
+            <div class="filter-grid">
+                <!-- Kecamatan (OPSIONAL) -->
+                <div class="filter-item">
+                    <label>Kecamatan</label>
+                    <select v-model="form.id_kecamatan">
+                        <option value="">-- Semua Kecamatan --</option>
+                        <option v-for="k in kecamatan" :key="k.id_kec" :value="k.id_kec">
+                            {{ k.nama_kec }}
+                        </option>
+                    </select>
+                </div>
+                
+                <!-- Kelurahan (OPSIONAL) -->
+                <div class="filter-item">
+                    <label>Kelurahan</label>
+                    <select v-model="form.id_kelurahan" :disabled="!form.id_kecamatan">
+                        <option value="">-- Semua Kelurahan --</option>
+                        <option v-for="k in kelurahanOptions" :key="k.id_kel" :value="k.id_kel">
+                            {{ k.nama_kel }}
+                        </option>
+                    </select>
+                </div>
+                
+                <!-- Posyandu (OPSIONAL) -->
+                <div class="filter-item">
+                    <label>Posyandu</label>
+                    <select v-model="form.id_posyandu" :disabled="!form.id_kelurahan">
+                        <option value="">-- Semua Posyandu --</option>
+                        <option v-for="p in posyanduOptions" :key="p.id_posyandu" :value="p.id_posyandu">
+                            {{ p.nama_posyandu }}
+                        </option>
+                    </select>
+                </div>
+                
+                <!-- Tahun (OPSIONAL) -->
+                <div class="filter-item">
+                    <label>Tahun</label>
+                    <select v-model="form.tahun">
+                        <option value="">-- Semua Tahun --</option>
+                        <option v-for="tahun in tahunOptions" :key="tahun" :value="tahun">
+                            {{ tahun }}
+                        </option>
+                    </select>
+                    <small class="info-text">*Kosongkan untuk semua tahun</small>
+                </div>
+
+                <!-- Format Output -->
+                <div class="filter-item">
+                    <label>Format Output</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" v-model="form.output" value="pdf" />
+                            <span>PDF</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" v-model="form.output" value="excel" />
+                            <span>Excel (XLSX)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORMAT CARDS - TAMPILKAN SEMUA FORMAT 1-6 DENGAN DESKRIPSI YANG BENAR -->
+        <div class="format-grid">
+            <!-- Format 1 -->
+            <div class="format-card">
+                <div class="format-header">
+                    <span class="format-number">1</span>
+                    <h4>Catatan Ibu Hamil, Kelahiran & Kematian</h4>
+                </div>
+                <p class="format-desc">
+                    <strong>Data:</strong> Nama ibu, nama bayi, tanggal lahir, 
+                    tanggal meninggal bayi, tanggal meninggal ibu, keterangan
+                </p>
+                <div class="format-actions">
+                    <button @click="exportFormat('f1')" class="btn-export" :class="form.output">
+                        <span>{{ form.output === 'pdf' ? '📄' : '📊' }}</span>
+                        Download {{ form.output.toUpperCase() }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Format 2 -->
+            <div class="format-card">
+                <div class="format-header">
+                    <span class="format-number">2</span>
+                    <h4>Register Bayi (0-12 bulan)</h4>
+                </div>
+                <p class="format-desc">
+                    <strong>Data:</strong> Nama bayi, tgl lahir, BB lahir, nama orang tua,
+                    hasil penimbangan per bulan, imunisasi (BCG, DPT, POLIO, CAMPAK, HEP),
+                    vitamin A, kematian bayi
+                </p>
+                <div class="format-actions">
+                    <button @click="exportFormat('f2')" class="btn-export" :class="form.output">
+                        <span>{{ form.output === 'pdf' ? '📄' : '📊' }}</span>
+                        Download {{ form.output.toUpperCase() }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Format 3 -->
+            <div class="format-card">
+                <div class="format-header">
+                    <span class="format-number">3</span>
+                    <h4>Register WUS & PUS (KB & Imunisasi TT)</h4>
+                </div>
+                <p class="format-desc">
+                    <strong>Data:</strong> Nama WUS/PUS, umur, nama suami, tahapan KS,
+                    kelompok dasawisma, jumlah anak (hidup/meninggal), LILA, kapsul yodium,
+                    imunisasi TT, jenis kontrasepsi, riwayat pergantian KB
+                </p>
+                <div class="format-actions">
+                    <button @click="exportFormat('f3')" class="btn-export" :class="form.output">
+                        <span>{{ form.output === 'pdf' ? '📄' : '📊' }}</span>
+                        Download {{ form.output.toUpperCase() }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Format 4 -->
+            <div class="format-card">
+                <div class="format-header">
+                    <span class="format-number">4</span>
+                    <h4>Register Ibu Hamil</h4>
+                </div>
+                <p class="format-desc">
+                    <strong>Data:</strong> Nama ibu hamil, umur, kelompok dasawisma,
+                    tgl daftar, UK, hamil ke, pil tambah darah, imunisasi TT, kapsul yodium,
+                    hasil penimbangan per bulan, risiko, riwayat melahirkan, kondisi bayi
+                </p>
+                <div class="format-actions">
+                    <button @click="exportFormat('f4')" class="btn-export" :class="form.output">
+                        <span>{{ form.output === 'pdf' ? '📄' : '📊' }}</span>
+                        Download {{ form.output.toUpperCase() }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Format 5 -->
+            <div class="format-card">
+                <div class="format-header">
+                    <span class="format-number">5</span>
+                    <h4>Data Pengunjung & Petugas</h4>
+                </div>
+                <p class="format-desc">
+                    <strong>Data:</strong> Jumlah pengunjung (balita, WUS, PUS, ibu hamil, ibu menyusui),
+                    jumlah petugas (kader, PLKB, medis), jumlah bayi lahir (L/P),
+                    jumlah bayi meninggal (L/P) per bulan
+                </p>
+                <div class="format-actions">
+                    <button @click="exportFormat('f5')" class="btn-export" :class="form.output">
+                        <span>{{ form.output === 'pdf' ? '📄' : '📊' }}</span>
+                        Download {{ form.output.toUpperCase() }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Format 6 -->
+            <div class="format-card">
+                <div class="format-header">
+                    <span class="format-number">6</span>
+                    <h4>Data Kegiatan Posyandu</h4>
+                </div>
+                <p class="format-desc">
+                    <strong>Data:</strong> Jumlah ibu hamil, yang diperiksa, FE tablet,
+                    ibu menyusui, akseptor KB per jenis, balita (L/P), kepemilikan KMS,
+                    balita ditimbang, naik BB, vitamin A, PMT, imunisasi TT per bulan
+                </p>
+                <div class="format-actions">
+                    <button @click="exportFormat('f6')" class="btn-export" :class="form.output">
+                        <span>{{ form.output === 'pdf' ? '📄' : '📊' }}</span>
+                        Download {{ form.output.toUpperCase() }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pesan error -->
+        <div v-if="$page.props.flash.error" class="alert-error">
+            {{ $page.props.flash.error }}
+        </div>
+    </div>
+</template>
+
 <script setup>
-import Card from '@/components/ui/Card.vue';
-import CardIcon from '@/components/ui/CardIcon.vue';
-import { ref } from 'vue';
-import BaseModal from '@/components/ui/Modal.vue';
-import ModalHeader from '@/components/ui/ModalHeader.vue';
-import ModalBody from '@/components/ui/ModalBody.vue';
-import ModalFooter from '@/components/ui/ModalFooter.vue';
-import VueSelect from 'vue3-select-component';
-import { Form, useForm } from '@inertiajs/vue3';
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
     kecamatan: Array,
     kelurahan: Object,
     posyandu: Object,
-});
+    wuspus: Object
+})
 
-const modalOpen = ref(false);
-const format = ref(null);
-
-function openModal(selectedFormat) {
-    format.value = selectedFormat;
-    modalOpen.value = true;
-}
-
-const form = useForm({
+// Filter form - semua OPSIONAL
+const form = ref({
     id_kecamatan: '',
     id_kelurahan: '',
     id_posyandu: '',
-    tahun: 'All',
-});
+    tahun: '',
+    output: 'pdf'
+})
 
-function exportData() {
-    const queryParams = new URLSearchParams({
-        id_kecamatan: form.id_kecamatan,
-        id_kelurahan: form.id_kelurahan,
-        id_posyandu: form.id_posyandu,
-        tahun: form.tahun,
-    }).toString();
+// Tahun sekarang
+const tahunSekarang = new Date().getFullYear()
 
-    const url = `/rekapitulasi/${format.value}/export?${queryParams}`;
-    window.location.href = url;
-    modalOpen.value = false;
-
-    // clear form
-    form.id_kecamatan = '';
-    form.id_kelurahan = ''; 
-    form.id_posyandu = '';
-    form.tahun = 'All';
-}
-function displayFormat(formatKey) {
-    switch (formatKey) {
-        case 'f1':
-            return 'FORMAT 1';
-        case 'f2':
-            return 'FORMAT 2';
-        case 'f3':
-            return 'FORMAT 3';
-        case 'f4':
-            return 'FORMAT 4';
-        case 'f5':
-            return 'FORMAT 5';
-        case 'f6':
-            return 'FORMAT 6';
-        default:
-            return '';
+// Opsi tahun
+const tahunOptions = computed(() => {
+    const tahun = []
+    for (let i = tahunSekarang; i >= 2020; i--) {
+        tahun.push(i)
     }
+    return tahun
+})
+
+// Options kelurahan
+const kelurahanOptions = computed(() => {
+    if (!form.value.id_kecamatan) return []
+    return props.kelurahan[form.value.id_kecamatan] || []
+})
+
+// Options posyandu
+const posyanduOptions = computed(() => {
+    if (!form.value.id_kelurahan) return []
+    return props.posyandu[form.value.id_kelurahan] || []
+})
+
+// Reset saat kecamatan berubah
+watch(() => form.value.id_kecamatan, () => {
+    form.value.id_kelurahan = ''
+    form.value.id_posyandu = ''
+})
+
+// Reset saat kelurahan berubah
+watch(() => form.value.id_kelurahan, () => {
+    form.value.id_posyandu = ''
+})
+
+// Fungsi export
+function exportFormat(format) {
+    // Validasi tahun
+    if (form.value.tahun && form.value.tahun > tahunSekarang) {
+        alert(`Tahun ${form.value.tahun} belum tersedia. Maksimal tahun ${tahunSekarang}`)
+        return
+    }
+    
+    const params = new URLSearchParams({
+        id_kecamatan: form.value.id_kecamatan || '',
+        id_kelurahan: form.value.id_kelurahan || '',
+        id_posyandu: form.value.id_posyandu || '',
+        tahun: form.value.tahun || 'All',
+        output: form.value.output
+    })
+    
+    window.open(`/rekapitulasi/export/${format}?${params.toString()}`, '_blank')
 }
-
-import babyboy from '../../../images/baby-boy.png'
-import hospital from '../../../images/hospital.png'
-import maternityCare from '../../../images/maternity-care.png'
-import medicalReport from '../../../images/medical-report.png'
-import parents from '../../../images/parents.png'
-
 </script>
 
-<template>
-    <AdminLayout>
-        <div class="mt-3 p-4 bg-white">
-            <h1>Rekapitulasi SIP</h1>
-            <hr>
-            <div class="row">
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <Card>
-                        <template #icon>
-                            <CardIcon :src="babyboy" />
-                        </template>
+<style scoped>
+.rekapitulasi-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
-                        <template #title>FORMAT 1</template>
+h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 24px;
+}
 
-                        <template #description>
-                            Catatan Ibu Hamil, Kelahiran, Kematian Bayi, <br />
-                            dan Kematian Ibu Hamil, Melahirkan / Nifas.
-                        </template>
+.filter-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
 
-                        <template #actions>
-                            <button class="btn btn-primary btn-block" @click="openModal('f1')">DOWNLOAD</button>
-                        </template>
-                    </Card>
-                </div>
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <Card>
-                        <template #icon>
-                            <CardIcon :src="medicalReport" />
-                        </template>
+.filter-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+}
 
-                        <template #title>FORMAT 2</template>
+.filter-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 20px;
+}
 
-                        <template #description>
-                            Register Bayi Dan Balita Dalam Wilayah Kerja Posyandu
-                        </template>
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
 
-                        <template #actions>
-                            <button class="btn btn-primary btn-block" @click="openModal('f2')"> DOWNLOAD</button>
-                        </template>
-                    </Card>
-                </div>
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <Card>
-                        <template #icon>
-                            <CardIcon :src="parents" />
-                        </template>
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
 
-                        <template #title>FORMAT 3</template>
+.filter-item label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
 
-                        <template #description>
-                            Register Wus Dan Pus Dalam Wilayah Kerja Posyandu
-                        </template>
+.filter-item select {
+    height: 42px;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    padding: 0 12px;
+    font-size: 14px;
+    background: #f8fafc;
+}
 
-                        <template #actions>
-                            <button class="btn btn-primary btn-block" @click="openModal('f3')">DOWNLOAD</button>
-                        </template>
-                    </Card>
-                </div>
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <Card>
-                        <template #icon>
-                            <CardIcon :src="maternityCare" />
-                        </template>
+.filter-item select:focus {
+    border-color: #3498db;
+    outline: none;
+}
 
-                        <template #title>FORMAT 4</template>
+.filter-item select:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+}
 
-                        <template #description>
-                            Register Ibu Hamil Di Wilayah Kerja Posyandu
-                        </template>
+.info-text {
+    color: #64748b;
+    font-size: 11px;
+    margin-top: 4px;
+}
 
-                        <template #actions>
-                            <button class="btn btn-primary btn-block" @click="openModal('f4')">DOWNLOAD</button>
-                        </template>
-                    </Card>
-                </div>
-            </div>
+.radio-group {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+}
 
-            <div class="row mt-4">
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <Card>
-                        <template #icon>
-                            <CardIcon :src="hospital" />
-                        </template>
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
 
-                        <template #title>FORMAT 5</template>
+.radio-label input[type="radio"] {
+    width: 16px;
+    height: 16px;
+}
 
-                        <template #description>
-                            Jumlah Pengunjung / Jumlah Petugas Posyandu / Jumlah Bayi Lahir / Meninggal
-                        </template>
+/* Format Grid */
+.format-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+}
 
-                        <template #actions>
-                            <button class="btn btn-primary btn-block" @click="openModal('f5')">DOWNLOAD</button>
-                        </template>
-                    </Card>
-                </div>
+.format-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+}
 
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <Card>
-                         <template #icon>
-                            <CardIcon :src="maternityCare" />
-                        </template>
+.format-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    border-color: #3498db;
+}
 
-                        <template #title>FORMAT 6</template>
+.format-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
 
-                        <template #description>
-                            Data Hasil Kegiatan Posyandu
-                        </template>
+.format-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #3498db;
+    color: white;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+}
 
-                        <template #actions>
-                            <button class="btn btn-primary btn-block" @click="openModal('f6')">DOWNLOAD</button>
-                        </template>
-                    </Card>
-                </div>
-            </div>
-        </div>
+.format-header h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
 
-        <div class="overlay" style="inset: 0; background-color: gray; opacity: 0.5; position: fixed;" v-if="modalOpen" @click="modalOpen = false">
-        </div>
+.format-desc {
+    font-size: 12px;
+    color: #475569;
+    margin-bottom: 16px;
+    line-height: 1.5;
+    min-height: 60px;
+}
 
-        <BaseModal :show="modalOpen" @close="modalOpen = false">
-            <template #header>
-            <ModalHeader @close="modalOpen = false">
-                <h2>Ekspor {{ displayFormat(format) }}</h2>
-            </ModalHeader>
-            </template>
+.format-desc strong {
+    color: #1e293b;
+}
 
-            <template #body>
-            <ModalBody>
-                <!-- pilih kecamatan, kelurahan, posyandu -->
-                <p>Apakah Anda yakin ingin mengekspor data dengan format {{ format }}?</p>
-                
-                <div class="form-group">
-                    <label for="kecamatan">Pilih Kecamatan</label>
-                    <VueSelect
-                        class="mt-2"
-                        label="Pilih Kecamatan"
-                        v-model="form.id_kecamatan"
-                        :options="kecamatan.map(kec => ({ label: kec.nama_kec, value: kec.id_kec }))"
-                        name="id_kecamatan"
-                        required
-                    />
-                </div>
+.format-actions {
+    display: flex;
+    justify-content: flex-end;
+}
 
-                <div class="form-group">
-                    <label for="kelurahan">Pilih Kelurahan</label>
-                    <VueSelect
-                        class="mt-4"
-                        label="Pilih Kelurahan"
-                    v-model="form.id_kelurahan"
-                    :options="kelurahan[form.id_kecamatan]?.map(kel => ({ label: kel.nama_kel, value: kel.id_kel })) || []"
-                    name="id_kelurahan"
-                    required
-                />
-                </div>
+.btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
 
-                <div class="form-group">
-                    <label for="posyandu">Pilih Posyandu</label>
-                    <VueSelect
-                        class="mt-4"
-                        label="Pilih Posyandu"
-                        v-model="form.id_posyandu"
-                    :options="posyandu[form.id_kelurahan]?.map(pos => ({ label: pos.nama_posyandu, value: pos.id_posyandu })) || []"
-                    name="id_posyandu"
-                    required
-                />
-                </div>
+/* 🔥 FIX: Warna button download biru muda ketuaan */
+.btn-export.pdf {
+    background: #3498db;  /* Biru muda ketuaan */
+    color: white;
+}
 
-                <div class="form-group">
-                    <label for="tahun">Pilih Tahun</label>
-                    <VueSelect
-                        class="mt-4"
-                        label="Pilih Tahun"
-                        v-model="form.tahun"
-                        :options="[2020, 2021, 2022, 2023, 2024, 2025].map(tahun => ({ label: tahun.toString(), value: tahun }))"
-                        name="tahun"
-                />
-                </div>
+.btn-export.excel {
+    background: #2ecc71;  /* Hijau untuk Excel */
+    color: white;
+}
 
+.btn-export.pdf:hover {
+    background: #2980b9;  /* Biru lebih tua saat hover */
+    transform: translateY(-1px);
+}
 
-            </ModalBody>
-            </template>
+.btn-export.excel:hover {
+    background: #27ae60;  /* Hijau lebih tua saat hover */
+    transform: translateY(-1px);
+}
 
-            <template #footer>
-                <ModalFooter>
-                <button type="buttom" class="btn btn-link" @click.prevent="modalOpen = false">Tidak</button>
-                <button type="submit" class="btn btn-primary" @click.prevent="exportData">Ya, Ekspor</button>
-            </ModalFooter>
-            </template>
-        </BaseModal>
-    </AdminLayout>
-</template>
+.alert-error {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 24px;
+    border-left: 4px solid #ef4444;
+}
+
+@media (max-width: 768px) {
+    .rekapitulasi-container {
+        padding: 16px;
+    }
+    
+    .format-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
