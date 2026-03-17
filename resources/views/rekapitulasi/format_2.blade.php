@@ -54,7 +54,7 @@
         table.main-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed; /* Crucial for keeping columns aligned */
+            table-layout: fixed;
         }
 
         table.main-table th, 
@@ -76,17 +76,8 @@
         .f2-date { width: 40px; }
         .f2-bb { width: 30px; }
         .f2-parent { width: 45px; }
-        .f2-xs { width: 16px; } /* For months and immunizations */
+        .f2-xs { width: 16px; }
         .f2-ket { width: 50px; }
-
-        /* Column Width Adjustments for Format 4 (17 Columns) */
-        .f4-no { width: 25px; }
-        .f4-name { width: 90px; }
-        .f4-age { width: 30px; }
-        .f4-husband { width: 80px; }
-        .f4-ks { width: 40px; }
-        .f4-dw { width: 60px; }
-        .f4-med { width: 40px; }
     </style>
 </head>
 <body>
@@ -94,14 +85,14 @@
     <div class="page-break">
         <div class="title-container">
             <div class="title-main">FORMAT - 2 : REGISTER BAYI DALAM WILAYAH KERJA POSYANDU</div>
-            <div style="font-weight: bold;">JANUARI S.D DESEMBER {{ $tahun }}</div>
+            <div style="font-weight: bold;">JANUARI S.D DESEMBER {{ $tahun ?: date('Y') }}</div>
         </div>
 
         <div class="meta-info">
             <table>
-                <tr><td>POSYANDU</td><td>: {{ $posyandu }}</td></tr>
-                <tr><td>DESA/KEL.</td><td>: {{ $kelurahan }}</td></tr>
-                <tr><td>KECAMATAN</td><td>: {{ $kecamatan }}</td></tr>
+                <tr><td>POSYANDU</td><td>: {{ $posyandu ?? 'SEMUA POSYANDU' }}</td></tr>
+                <tr><td>DESA/KEL.</td><td>: {{ $kelurahan ?? 'SEMUA KELURAHAN' }}</td></tr>
+                <tr><td>KECAMATAN</td><td>: {{ $kecamatan ?? 'SEMUA KECAMATAN' }}</td></tr>
                 <tr><td>KAB/KOTA</td><td>: Cimahi</td></tr>
             </table>
         </div>
@@ -141,26 +132,73 @@
                 </tr>
             </thead>
             <tbody>
+                @forelse($records ?? [] as $index => $row)
                 <tr>
-                    <td>1</td>
-                    <td style="text-align: left;">M. ALIF AL FARISY</td>
-                    <td>22-11-2022</td>
-                    <td>2,7 / 48</td>
-                    <td>YUSUF</td>
-                    <td>RATNA</td>
-                    <td>04</td>
-                    <td>8,1</td><td>8,5</td><td>8,6</td><td>8,6</td><td>8,8</td><td>9,1</td><td>9,1</td><td>9,4</td><td>9,5</td><td>9,5</td><td>9,9</td><td>10,2</td>
-                    <td>v</td><td></td>
-                    <td>v</td>
-                    <td>v</td><td>v</td><td>v</td>
-                    <td>v</td><td>v</td><td>v</td><td>v</td>
-                    <td>v</td>
-                    <td>v</td><td>v</td><td>v</td>
-                    <td></td>
-                    <td>Sdh</td>
+                    <td>{{ $index + 1 }}</td>
+                    <td style="text-align: left;">{{ $row->nama_bayi ?? '-' }}</td>
+                    <td>{{ $row->tgl_lahir ? \Carbon\Carbon::parse($row->tgl_lahir)->format('d-m-Y') : '-' }}</td>
+                    <td>{{ $row->bb_lahir ?? '-' }}</td>
+                    <td>{{ $row->nama_ayah ?? '-' }}</td>
+                    <td>{{ $row->nama_ibu ?? '-' }}</td>
+                    <td>{{ $row->dasa_wisma ?? '-' }}</td>
+                    
+                    {{-- Hasil Penimbangan per Bulan --}}
+                    <td>{{ $row->bb_jan ?? '-' }}</td>
+                    <td>{{ $row->bb_feb ?? '-' }}</td>
+                    <td>{{ $row->bb_mar ?? '-' }}</td>
+                    <td>{{ $row->bb_apr ?? '-' }}</td>
+                    <td>{{ $row->bb_mei ?? '-' }}</td>
+                    <td>{{ $row->bb_jun ?? '-' }}</td>
+                    <td>{{ $row->bb_jul ?? '-' }}</td>
+                    <td>{{ $row->bb_ags ?? '-' }}</td>
+                    <td>{{ $row->bb_sep ?? '-' }}</td>
+                    <td>{{ $row->bb_okt ?? '-' }}</td>
+                    <td>{{ $row->bb_nov ?? '-' }}</td>
+                    <td>{{ $row->bb_des ?? '-' }}</td>
+                    
+                    {{-- Vit A --}}
+                    <td>{{ $row->vit_a1 ?? '-' }}</td>
+                    <td>{{ $row->vit_a2 ?? '-' }}</td>
+                    
+                    {{-- BCG --}}
+                    <td>{{ $row->bcg ?? '-' }}</td>
+                    
+                    {{-- DPT --}}
+                    <td>{{ $row->dpt1 ?? '-' }}</td>
+                    <td>{{ $row->dpt2 ?? '-' }}</td>
+                    <td>{{ $row->dpt3 ?? '-' }}</td>
+                    
+                    {{-- POLIO --}}
+                    <td>{{ $row->polio1 ?? '-' }}</td>
+                    <td>{{ $row->polio2 ?? '-' }}</td>
+                    <td>{{ $row->polio3 ?? '-' }}</td>
+                    <td>{{ $row->polio4 ?? '-' }}</td>
+                    
+                    {{-- CAMPAK --}}
+                    <td>{{ $row->campak ?? '-' }}</td>
+                    
+                    {{-- HEPATITIS --}}
+                    <td>{{ $row->hep1 ?? '-' }}</td>
+                    <td>{{ $row->hep2 ?? '-' }}</td>
+                    <td>{{ $row->hep3 ?? '-' }}</td>
+                    
+                    {{-- Tanggal Meninggal & Keterangan --}}
+                    <td>{{ $row->tgl_meninggal ? \Carbon\Carbon::parse($row->tgl_meninggal)->format('d-m-Y') : '-' }}</td>
+                    <td style="text-align: left;">{{ $row->keterangan ?? '-' }}</td>
                 </tr>
+                @empty
+                <tr>
+                    <td colspan="35" style="text-align: center; padding: 20px; font-style: italic;">
+                        ⚠️ TIDAK ADA DATA UNTUK PERIODE INI
+                    </td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
+        
+        <div style="margin-top: 10px; font-size: 7px; text-align: right;">
+            Dicetak: {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}
+        </div>
     </div>
 </body>
 </html>

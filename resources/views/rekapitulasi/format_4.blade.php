@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Format 5 - Register Ibu Hamil</title>
+    <title>Format 4 - Register Ibu Hamil</title>
     <style>
         @page {
             size: A4 landscape;
@@ -12,7 +12,7 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 10px;
+            font-size: 9px;
             margin: 0;
             padding: 0;
             -webkit-print-color-adjust: exact;
@@ -27,7 +27,7 @@
 
         .meta-info {
             margin-bottom: 10px;
-            font-size: 11px;
+            font-size: 10px;
             width: 100%;
         }
         
@@ -39,7 +39,7 @@
         
         .meta-info td {
             border: none;
-            padding: 1px;
+            padding: 2px;
             text-align: left;
         }
 
@@ -55,7 +55,7 @@
             padding: 2px;
             text-align: center;
             vertical-align: middle;
-            font-size: 9px;
+            font-size: 8px;
             overflow: hidden;
         }
 
@@ -64,45 +64,40 @@
             font-weight: bold;
         }
 
-        /* --- PERBAIKAN ROTASI TEKS --- */
-        /* Menggunakan div wrapper untuk rotasi sempurna -90 derajat */
         .th-vertical {
-            height: 110px; /* Tinggi header dimaksimalkan untuk teks panjang */
-            vertical-align: bottom; /* Agar teks mulai dari bawah */
+            height: 100px;
+            vertical-align: bottom;
             padding-bottom: 5px;
             position: relative;
         }
 
         .vertical-text {
-            transform: rotate(-90deg); /* Putar 90 derajat ke kiri */
+            transform: rotate(-90deg);
             transform-origin: center;
             display: inline-block;
             white-space: nowrap;
-            width: 20px; /* Lebar sempit agar tidak memakan tempat horizontal */
-            /* Trik centering setelah rotasi */
+            width: 20px;
             margin-bottom: 15px; 
         }
 
-        /* Kelas khusus untuk mengatur lebar kolom */
-        .col-no { width: 20px; }
-        .col-nama { width: 100px; text-align: left !important; padding-left: 4px !important; }
-        .col-umur { width: 25px; }
+        .col-no { width: 15px; }
+        .col-nama { width: 90px; text-align: left !important; padding-left: 4px !important; }
+        .col-umur { width: 20px; }
         .col-dasa { width: 25px; }
-        .col-date { width: 35px; }
-        .col-check { width: 20px; }
-        .col-bulan { width: 16px; }
+        .col-date { width: 30px; }
+        .col-check { width: 15px; }
+        .col-bulan { width: 12px; }
 
-        /* Styling baris nomor */
         .row-number th {
-            font-size: 8px;
+            font-size: 7px;
             background-color: #ddd;
-            height: 15px;
+            height: 12px;
             vertical-align: middle;
             padding: 0;
         }
 
         .data-row td {
-            height: 20px;
+            height: 18px;
         }
     </style>
 </head>
@@ -110,22 +105,22 @@
 
     <div class="header-section">
         FORMAT - 4 : REGISTER IBU HAMIL DALAM WILAYAH KERJA POSYANDU<br>
-        JANUARI S.D DESEMBER {{ $tahun  }}
+        JANUARI S.D DESEMBER {{ $tahun ?: date('Y') }}
     </div>
 
     <div class="meta-info">
         <table>
             <tr>
                 <td width="100">POSYANDU</td>
-                <td>: {{ $posyandu }}</td>
+                <td>: {{ $posyandu ?? 'SEMUA POSYANDU' }}</td>
             </tr>
             <tr>
                 <td>DESA/KEL</td>
-                <td>: {{ $kelurahan }}</td>
+                <td>: {{ $kelurahan ?? 'SEMUA KELURAHAN' }}</td>
             </tr>
             <tr>
                 <td>KECAMATAN</td>
-                <td>: {{ $kecamatan }}</td>
+                <td>: {{ $kecamatan ?? 'SEMUA KECAMATAN' }}</td>
             </tr>
             <tr>
                 <td>KAB/KODYA</td>
@@ -220,93 +215,59 @@
              </tr>
         </thead>
         <tbody>
+            @forelse($records ?? [] as $index => $row)
             <tr class="data-row">
-                <td>1</td>
-                <td class="col-nama">Silvia</td>
-                <td>22</td>
-                <td>Binangkit</td>
-                <td>10/1</td>
-                <td>6</td>
-                <td>1</td>
-                <td>v</td>
-                <td></td>
-                <td></td>
-                <td>v</td>
-                <td></td>
-                <td>v</td>
-                <td>45</td><td>46</td><td>47</td><td>48</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-                <td></td> 
-                <td>23/4</td>
-                <td>v</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>v</td>
-                <td></td>
-                <td></td>
+                <td>{{ $index + 1 }}</td>
+                <td class="col-nama">{{ $row->nama_ibu }}</td>
+                <td>{{ $row->umur }}</td>
+                <td>{{ $row->dasa_wisma }}</td>
+                <td>{{ $row->tgl_daftar ? \Carbon\Carbon::parse($row->tgl_daftar)->format('d/m') : '-' }}</td>
+                <td>{{ $row->uk }}</td>
+                <td>{{ $row->hamil_ke }}</td>
+                <td>{{ $row->pil_i }}</td>
+                <td>{{ $row->pil_ii }}</td>
+                <td>{{ $row->pil_iii }}</td>
+                <td>{{ $row->tt_i }}</td>
+                <td>{{ $row->tt_ii }}</td>
+                <td>{{ $row->kapsul_yodium }}</td>
+                
+                {{-- Hasil Penimbangan per Bulan --}}
+                <td>{{ $row->bb_jan }}</td>
+                <td>{{ $row->bb_feb }}</td>
+                <td>{{ $row->bb_mar }}</td>
+                <td>{{ $row->bb_apr }}</td>
+                <td>{{ $row->bb_mei }}</td>
+                <td>{{ $row->bb_jun }}</td>
+                <td>{{ $row->bb_jul }}</td>
+                <td>{{ $row->bb_ags }}</td>
+                <td>{{ $row->bb_sep }}</td>
+                <td>{{ $row->bb_okt }}</td>
+                <td>{{ $row->bb_nov }}</td>
+                <td>{{ $row->bb_des }}</td>
+                
+                <td>{{ $row->resiko }}</td>
+                <td>{{ $row->tgl_melahirkan }}</td>
+                <td>{{ $row->nakes }}</td>
+                <td>{{ $row->dukun }}</td>
+                <td>{{ $row->bayi_lt2kg }}</td>
+                <td>{{ $row->bayi_2_25 }}</td>
+                <td>{{ $row->bayi_gt25 }}</td>
+                <td>{{ $row->bayi_mati }}</td>
+                <td>{{ $row->ibu_meninggal }}</td>
             </tr>
-
-            <tr class="data-row">
-                <td>2</td>
-                <td class="col-nama">Intan</td>
-                <td>25</td>
-                <td>Mawar</td>
-                <td>12/1</td>
-                <td>8</td>
-                <td>2</td>
-                <td>v</td>
-                <td>v</td>
-                <td></td>
-                <td></td>
-                <td>v</td>
-                <td></td>
-                <td>50</td><td>51</td><td>52</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-                <td>v</td>
-                <td>15/3</td>
-                <td>v</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>v</td>
-                <td></td>
-                <td></td>
-                <td></td>
+            @empty
+            <tr>
+                <td colspan="34" style="text-align: center; padding: 20px;">
+                    ⚠️ TIDAK ADA DATA IBU HAMIL UNTUK PERIODE INI
+                </td>
             </tr>
-            
-             <tr class="data-row">
-                <td>3</td>
-                <td class="col-nama">Ika P.</td>
-                <td>28</td>
-                <td>Melati</td>
-                <td>5/2</td>
-                <td>5</td>
-                <td>3</td>
-                <td>v</td>
-                <td></td>
-                <td></td>
-                <td>v</td>
-                <td></td>
-                <td>v</td>
-                <td></td><td>55</td><td>56</td><td>57</td><td>58</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-
-            <tr class="data-row"><td>4</td><td class="col-nama"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>5</td><td class="col-nama"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>6</td><td class="col-nama"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>7</td><td class="col-nama"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>8</td><td class="col-nama"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-
+            @endforelse
         </tbody>
     </table>
-
+    
+    <div style="margin-top: 10px; font-size: 7px; text-align: right;">
+        Dicetak: {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }} | 
+        Total Ibu Hamil: {{ count($records ?? []) }}
+    </div>
 </body>
 </html>

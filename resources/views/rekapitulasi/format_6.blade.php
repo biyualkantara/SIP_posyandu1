@@ -12,7 +12,7 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 10px;
+            font-size: 9px;
             margin: 0;
             padding: 0;
             -webkit-print-color-adjust: exact;
@@ -26,19 +26,19 @@
         .header-title {
             font-weight: bold;
             font-size: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-transform: uppercase;
         }
 
         .meta-info {
-            font-size: 11px;
+            font-size: 10px;
             line-height: 1.4;
         }
 
         table.main-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed; /* Kunci agar kolom rapi */
+            table-layout: fixed;
         }
 
         table.main-table th, 
@@ -47,7 +47,7 @@
             padding: 2px;
             text-align: center;
             vertical-align: middle;
-            font-size: 9px;
+            font-size: 8px;
             overflow: hidden;
             white-space: nowrap;
         }
@@ -57,9 +57,8 @@
             font-weight: bold;
         }
 
-        /* --- Styling Header Vertikal (Rotasi) --- */
         .th-vertical {
-            height: 100px;
+            height: 90px;
             vertical-align: bottom;
             position: relative;
             padding-bottom: 5px;
@@ -74,32 +73,28 @@
             margin-bottom: 15px; 
         }
 
-        /* --- Pengaturan Lebar Kolom --- */
-        .col-no { width: 20px; }
-        .col-bulan { width: 70px; text-align: left !important; padding-left: 5px !important; }
-        .col-std { width: 30px; } /* Kolom standar angka */
-        .col-kb { width: 20px; } /* Kolom KB (Sempit) */
-        .col-balita { width: 25px; } /* Kolom L/P Balita */
+        .col-no { width: 15px; }
+        .col-bulan { width: 50px; text-align: left !important; padding-left: 3px !important; }
+        .col-std { width: 22px; }
+        .col-kb { width: 18px; }
+        .col-balita { width: 18px; }
 
-        /* Baris Nomor (1-28) */
         .row-number th {
-            font-size: 8px;
+            font-size: 7px;
             background-color: #ddd;
             height: 12px;
             padding: 0;
         }
 
-        /* Styling Data */
         .data-row td {
-            height: 20px;
+            height: 18px;
         }
         
         .text-left { text-align: left !important; padding-left: 5px !important; }
         
-        /* Font header kecil untuk judul panjang */
         .small-header {
-            font-size: 8px;
-            white-space: normal; /* Allow wrap */
+            font-size: 7px;
+            white-space: normal;
             line-height: 1.1;
         }
 
@@ -108,12 +103,13 @@
 <body>
 
     <div class="header-section">
-        <div class="header-title">DATA KEGIATAN POSYANDU</div> <div class="header-title" style="font-size: 10px; font-weight: normal;">FORMAT 6</div>
+        <div class="header-title">DATA KEGIATAN POSYANDU</div>
+        <div class="header-title" style="font-size: 10px; font-weight: normal;">FORMAT 6</div>
         <div class="meta-info">
-            NAMA POSYANDU : {{ $posyandu }}<br>
-            KELURAHAN : {{ $kelurahan }}<br>
-            KECAMATAN : {{ $kecamatan }}<br>
-            TAHUN : {{ $tahun }}
+            NAMA POSYANDU : {{ $posyandu ?? 'SEMUA POSYANDU' }}<br>
+            KELURAHAN : {{ $kelurahan ?? 'SEMUA KELURAHAN' }}<br>
+            KECAMATAN : {{ $kecamatan ?? 'SEMUA KECAMATAN' }}<br>
+            TAHUN : {{ $tahun ?: date('Y') }}
         </div>
     </div>
 
@@ -151,7 +147,9 @@
                 <th colspan="2" class="small-header">JML YG<br>MENDAPAT<br>VIT A</th>
                 <th colspan="2" class="small-header">JML YG<br>MENDAPAT<br>PMT</th>
 
-                <th rowspan="2" class="col-kb">L</th> <th rowspan="2" class="col-kb">P</th> </tr>
+                <th rowspan="2" class="col-kb">L</th> 
+                <th rowspan="2" class="col-kb">P</th> 
+            </tr>
 
             <tr>
                 <th class="col-balita">L</th><th class="col-balita">P</th>
@@ -163,63 +161,72 @@
             </tr>
 
             <tr class="row-number">
-                <th>1</th> <th>2</th> <th>3</th><th>4</th><th>5</th><th>6</th> <th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th> <th>15</th><th>16</th> <th>17</th><th>18</th> <th>19</th><th>20</th> <th>21</th><th>22</th> <th>23</th><th>24</th> <th>25</th><th>26</th> <th>27</th><th>28</th> </tr>
+                <th>1</th> <th>2</th> <th>3</th><th>4</th><th>5</th><th>6</th> 
+                <th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th> 
+                <th>15</th><th>16</th> <th>17</th><th>18</th> <th>19</th><th>20</th> <th>21</th><th>22</th> 
+                <th>23</th><th>24</th> <th>25</th><th>26</th> <th>27</th><th>28</th> 
+            </tr>
         </thead>
         <tbody>
+            @forelse($records ?? [] as $row)
             <tr class="data-row">
-                <td>1</td>
-                <td class="text-left">JANUARI</td>
-                <td>2</td><td>0</td><td>0</td><td>16</td>
-                <td>0</td><td>0</td><td>0</td><td>1</td><td>7</td><td>17</td><td>-</td><td>-</td>
-                <td>20</td><td>23</td> <td>20</td><td>23</td> <td>20</td><td>23</td> <td>9</td><td>12</td>  <td>0</td><td>0</td>   <td>20</td><td>23</td> <td>0</td><td>0</td>   </tr>
-
-            <tr class="data-row">
-                <td>2</td>
-                <td class="text-left">FEBRUARI</td>
-                <td>5</td><td>0</td><td>5</td><td>16</td>
-                <td>0</td><td>1</td><td>0</td><td>0</td><td>2</td><td>7</td><td>17</td><td>-</td>
-                <td>20</td><td>24</td>
-                <td>20</td><td>24</td>
-                <td>20</td><td>24</td>
-                <td>14</td><td>11</td>
-                <td>17</td><td>22</td>
-                <td>20</td><td>23</td>
-                <td>0</td><td>0</td>
+                <td>{{ $row->no }}</td>
+                <td class="text-left">{{ $row->bulan }}</td>
+                <td>{{ $row->jml_ibu_hamil }}</td>
+                <td>{{ $row->diperiksa }}</td>
+                <td>{{ $row->fe_tab }}</td>
+                <td>{{ $row->jml_ibu_menyusui }}</td>
+                
+                {{-- KB --}}
+                <td>{{ $row->kb_kondom }}</td>
+                <td>{{ $row->kb_pil }}</td>
+                <td>{{ $row->kb_implant }}</td>
+                <td>{{ $row->kb_mop }}</td>
+                <td>{{ $row->kb_mow }}</td>
+                <td>{{ $row->kb_iud }}</td>
+                <td>{{ $row->kb_suntik }}</td>
+                <td>{{ $row->kb_lain }}</td>
+                
+                {{-- Balita S --}}
+                <td>{{ $row->balita_l }}</td>
+                <td>{{ $row->balita_p }}</td>
+                
+                {{-- KMS --}}
+                <td>{{ $row->kms_l }}</td>
+                <td>{{ $row->kms_p }}</td>
+                
+                {{-- Ditimbang --}}
+                <td>{{ $row->ditimbang_l }}</td>
+                <td>{{ $row->ditimbang_p }}</td>
+                
+                {{-- Naik --}}
+                <td>{{ $row->naik_l }}</td>
+                <td>{{ $row->naik_p }}</td>
+                
+                {{-- Vit A --}}
+                <td>{{ $row->vit_a_l }}</td>
+                <td>{{ $row->vit_a_p }}</td>
+                
+                {{-- PMT --}}
+                <td>{{ $row->pmt_l }}</td>
+                <td>{{ $row->pmt_p }}</td>
+                
+                {{-- TT --}}
+                <td>{{ $row->tt_l }}</td>
+                <td>{{ $row->tt_p }}</td>
             </tr>
-
-            <tr class="data-row">
-                <td>3</td>
-                <td class="text-left">MARET</td>
-                <td>4</td><td>0</td><td>3</td><td>18</td>
-                <td>0</td><td>1</td><td>0</td><td>0</td><td>2</td><td>8</td><td>17</td><td>-</td>
-                <td>20</td><td>26</td>
-                <td>20</td><td>26</td>
-                <td>20</td><td>26</td>
-                <td>8</td><td>14</td>
-                <td>0</td><td>0</td>
-                <td>20</td><td>26</td>
-                <td>0</td><td>0</td>
+            @empty
+            <tr>
+                <td colspan="28" style="text-align: center; padding: 20px;">
+                    ⚠️ TIDAK ADA DATA KEGIATAN UNTUK PERIODE INI
+                </td>
             </tr>
-
-            <tr class="data-row">
-                <td>4</td>
-                <td class="text-left">APRIL</td>
-                <td>4</td><td>-</td><td>4</td><td>16</td>
-                <td>0</td><td>1</td><td>0</td><td>0</td><td>2</td><td>8</td><td>17</td><td>-</td>
-                <td>20</td><td>26</td><td>20</td><td>26</td><td>19</td><td>23</td><td>10</td><td>14</td><td>0</td><td>0</td><td>19</td><td>23</td><td>0</td><td>0</td>
-            </tr>
-
-            <tr class="data-row"><td>5</td><td class="text-left">MEI</td><td>2</td><td>-</td><td>2</td><td>18</td><td>0</td><td>1</td><td>0</td><td>0</td><td>2</td><td>8</td><td>19</td><td>-</td><td>19</td><td>28</td><td>19</td><td>28</td><td>19</td><td>28</td><td>11</td><td>13</td><td>0</td><td>0</td><td>19</td><td>28</td><td>0</td><td>0</td></tr>
-            <tr class="data-row"><td>6</td><td class="text-left">JUNI</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>7</td><td class="text-left">JULI</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>8</td><td class="text-left">AGUSTUS</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>9</td><td class="text-left">SEPTEMBER</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>10</td><td class="text-left">OKTOBER</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>11</td><td class="text-left">NOVEMBER</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr class="data-row"><td>12</td><td class="text-left">DESEMBER</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-
+            @endforelse
         </tbody>
     </table>
-
+    
+    <div style="margin-top: 10px; font-size: 7px; text-align: right;">
+        Dicetak: {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}
+    </div>
 </body>
 </html>

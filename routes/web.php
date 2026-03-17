@@ -248,7 +248,9 @@ Route::middleware(['auth'])->group(function () {
     */
 
     Route::get('/rekapitulasi', [RekapitulasiController::class, 'showRekapitulasiView']);
-    Route::get('/rekapitulasi/{format}/export', [RekapitulasiController::class, 'exportFormat']);
+    Route::get('/rekapitulasi/export/{format}', [RekapitulasiController::class, 'exportFormat'])
+    ->name('rekapitulasi.export')
+    ->where('format', 'f1|f2|f3|f4|f5|f6');
 
     /*
     |--------------------------------------------------------------------------
